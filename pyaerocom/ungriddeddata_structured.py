@@ -24,6 +24,7 @@ from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
 from pyaerocom.units.datetime import TsType
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
+from pyaerocom.vertical_profile import VerticalProfile
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -64,14 +65,15 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         "flag": np.iinfo("i2").min,
     }
 
-    def __init__(self, num_points: int = 100):
+    def __init__(self, num_points: int = 100, is_vertical_profile: bool = False):
         super().__init__()  # initialize metadata
+
         self._dra = self._create_data_chunk(num_points)
 
         # filters applied
         self.filter_hist = {}
 
-        self._is_vertical_profile = False
+        self._is_vertical_profile = is_vertical_profile
 
     @override
     def _new_from_meta_blocks(self, meta_ids: list, total: int = 100):
@@ -82,7 +84,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             meta = self.metadata[meta_id]
             new_metadata[meta_id] = meta
             for var in meta["var_info"]:
-                if var in self.ALLOWED_VERT_COORD_TYPES:
+                if var in self.ALLOWED_COORD_TYPES:
                     continue
                 new_var_idx[var] = self.var_idx[var]
 
@@ -105,8 +107,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     def _create_data_chunk(self, size):
         """create a datachunk of size and initialize it to _nan_type values"""
         data = DynamicRecArray(capacity=size, dtype=self._dtype)
-        for k, v in self._nan_types.items():
-            data._array[k] = v
         return data
 
     @override
@@ -309,7 +309,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
         for key in STANDARD_META_KEYS + add_meta_keys:
             if key in sd.PROTECTED_KEYS:
-                logger.warning(f"skipping protected key: {key}")
+                logger.warning(f"Skipping protected key: {key}")
                 continue
             try:
                 sd[key] = meta[key]
@@ -410,12 +410,16 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 vi = {}
             assert isinstance(vi, dict)
             if not np.isnan(altitude).all():
-                if "altitude" in vi:
-                    sd.var_info["altitude"] = vi["altitude"]
+                if "altitude" in vi[var]:
+                    sd.var_info["altitude"] = vi[var]["altitude"][tmask]
                 sd.altitude = altitude[0]  # TODO: Revise in case of moving stations
             if var in vi:
                 sd.var_info[var].update(vi[var])
-
+                if (
+                    "altitude" in vi[var]
+                ):  # vertical profile altitude stored in var_info, crop to match series
+                    sd.var_info[var]["altitude"] = vi[var]["altitude"][tmask]
+                    assert len(sd.var_info[var]["altitude"]) == len(series)
             if len(series.index) == len(series.index.unique()):
                 sd.var_info[var]["overlap"] = False
             else:
@@ -571,7 +575,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         for i, var in enumerate(var_names):
             new.var_idx[var] = var_ids[i]
         new.metadata = {}
-        for meta_id, meta in self.metadata.items():
+
+        for meta_id, meta in enumerate(self.metadata.values()):
             common_vars = [var for var in var_names if var in meta["var_info"]]
             if len(common_vars):
                 new.metadata[meta_id] = deepcopy(meta)
@@ -625,12 +630,43 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             self.metadata[meta_idx]["variables"] = contains_vars
             if "data_revision" in station_data:
                 self.metadata[meta_idx]["data_revision"] = station_data.data_revision
-
             for var in contains_vars:
-                vardata = station_data[var]
+                try:
+                    vardata = station_data[var]
+                except (KeyError, AttributeError):
+                    logger.info(f"Variable {var} not available in station data, skipping.")
+                    continue
+                altitude = None
+                self.metadata[meta_idx]["var_info"] = vi = {}
+                vi[var] = {}
+                uds = None
                 if isinstance(vardata, pd.Series):
                     times = vardata.index
                     values = vardata.values
+                elif isinstance(vardata, VerticalProfile):
+                    values = vardata.data
+                    n_times = vardata.data.shape[0]
+                    n_alts = vardata.data.shape[1]
+                    if not len(station_data.dtime) == n_times:
+                        raise ValueError(
+                            "Number of times in station data does not match number of times in VerticalProfile data"
+                        )
+                    times = np.repeat(station_data.dtime, n_alts)
+                    if not len(vardata.altitude) == n_alts:
+                        raise ValueError(
+                            "Number of altitudes in VerticalProfile data does not match number of altidues in station data"
+                        )
+                    altitude = np.tile(vardata.altitude, n_times).astype("i2")
+                    values = (
+                        values.flatten()
+                    )  # flatten into row major order - stores similar times together
+                    if not len(values) == len(times) == len(altitude):
+                        raise ValueError(
+                            "Mismatch in number of times, values and altitudes in VerticalProfile data"
+                        )
+                    vi["altitude"] = vardata.var_info["altitude"]
+                    vi[var]["altitude"] = altitude
+                    uds = UngriddedDataStructured(num_points=len(values), is_vertical_profile=True)
                 else:
                     times = station_data["dtime"]
                     values = vardata
@@ -639,21 +675,22 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 if var not in self.var_idx:
                     self.var_idx[var] = len(self.var_idx)
                 var_idx = self.var_idx[var]
-                self.metadata[meta_idx]["var_info"] = {}
-                self.metadata[meta_idx]["var_info"][var] = {}
 
-                self.metadata[meta_idx]["var_info"][var].update(station_data["var_info"][var])
+                vi[var].update(station_data["var_info"][var])
                 for x in ("longitude", "latitude", "altitude"):
-                    if x not in self.metadata[meta_idx]["var_info"][var]:
-                        self.metadata[meta_idx]["var_info"][var][x] = station_data[x]
+                    if x not in vi[var]:
+                        vi[x] = station_data[x]
 
-                uds = UngriddedDataStructured(num_points=len(values))
+                if uds is None:
+                    uds = UngriddedDataStructured(num_points=len(values))
                 v_data = uds._dra._array  # access to raw numpy-array
                 v_data["meta_id"][:] = meta_idx
                 v_data["var_id"][:] = var_idx
                 v_data["data"] = values
                 v_data["start_time"] = times
                 # v_data["end_time"] not used
+                if altitude is not None:
+                    v_data["dataaltitude"] = altitude
                 # v_data["dataaltitude"] not used
                 if var in station_data.data_err:
                     v_data["stdev"] = station_data.data_err[var]

@@ -75,10 +75,7 @@ class DynamicRecArray:
 
         :return: np.aarry of type dtype
         """
-        if self._capacity != self._length:
-            self._array = self._array[:][: self._length]
-            self._capacity = len(self._array)
-        return self._array
+        return self._array[:][: self._length]
 
     @data.setter
     def data(self, data):

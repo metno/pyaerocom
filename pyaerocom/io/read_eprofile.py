@@ -4,13 +4,21 @@ import sys
 
 import numpy as np
 import xarray
+from glob import glob
+from tqdm import tqdm
 
 from pyaerocom import const
 from pyaerocom.units import convert_unit
-from pyaerocom.exceptions import DataUnitError, DataDimensionError, EprofileFileError
+from collections.abc import Iterator
+from pyaerocom.exceptions import (
+    DataUnitError,
+    DataDimensionError,
+    EprofileFileError,
+)
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
@@ -32,7 +40,7 @@ class ReadEprofile(ReadUngriddedBase):
     _FILEMASK = "*.nc*"
 
     #: version log of this class (for caching)
-    __version__ = "0.01_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.02_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EPROFILE_NAME
@@ -57,6 +65,8 @@ class ReadEprofile(ReadUngriddedBase):
     # TODO: check this
     TS_TYPE = "hourly"
 
+    VAR_PATTERNS_FILE = {}
+
     #: dictionary specifying the file column names (values) for each Aerocom
     #: variable (keys)
     # TODO: add aod
@@ -65,10 +75,15 @@ class ReadEprofile(ReadUngriddedBase):
         "bsc1064aer": "attenuated_backscatter_0",
     }
 
+    VAR_TO_WAVELENGTH = {
+        "ec1064aer": 1064,
+        "bsc1064aer": 1064,
+    }
+
     META_NAMES_FILE = dict(
-        station_longitude="station_longitude",
-        station_latitude="station_latitude",
-        station_altitude="station_altitude",
+        station_longitude="station_longitude_t0",
+        station_latitude="station_latitude_t0",
+        station_altitude="station_altitude_t0",
         instrument_name="instrument_id",
         instrument_type="instrument_type",
         comment="comment",
@@ -98,7 +113,7 @@ class ReadEprofile(ReadUngriddedBase):
 
     #: Attribute access names for unit reading of variable data
     VAR_UNIT_NAMES = dict(
-        extinction=["unit"],  # TODO: needs checking
+        extinction=["unit", "units"],  # TODO: needs checking
         attenuated_backscatter_0=["units"],
         altitude=["units"],
     )
@@ -158,7 +173,6 @@ class ReadEprofile(ReadUngriddedBase):
             else:
                 raise ValueError(f"{var} is not supported")
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(_vars)
-
         # create empty data object (is dictionary with extended functionality)
         data_out = StationData()
         data_out["data_id"] = self.data_id
@@ -175,16 +189,21 @@ class ReadEprofile(ReadUngriddedBase):
         logger.debug(f"Reading file {filename}")
 
         with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
-            data_out["station_coords"]["longitude"] = data_out["longitude"] = (
-                data_in.station_longitude
-            )
-            data_out["station_coords"]["latitude"] = data_out["latitude"] = (
-                data_in.station_latitude
-            )
+            for var in vars_to_read:
+                if self.VAR_TO_WAVELENGTH[var] != data_in.attrs["l0_wavelength"]:
+                    raise EprofileFileError("Wavelength of variable does not match in file")
+
+            data_out["station_coords"]["longitude"] = data_in.station_longitude_t0
+
+            data_out["longitude"] = (
+                data_in.station_longitude_t0
+            )  # data_in.station_longitude.values
+            data_out["station_coords"]["latitude"] = data_in.station_latitude_t0
+            data_out["latitude"] = data_in.station_latitude_t0  # data_in.station_latitude.values
             data_out["altitude"] = (
                 data_in.station_altitude_t0 + data_in.altitude.values
             )  # Note altitude is an array for the data, station altitude is different. Moreover, EPROFILE as of 21.05.2025 gives altitude in altitude above ground level, so add the station altitude to get the altitude above sea level
-            data_out["station_coords"]["altitude"] = data_in.station_altitude
+            data_out["station_coords"]["altitude"] = data_in.station_altitude_t0
             data_out["altitude_attrs"] = (
                 data_in.altitude.attrs
             )  # get attrs for altitude units + extra
@@ -202,7 +221,6 @@ class ReadEprofile(ReadUngriddedBase):
 
             # get metadata expected in StationData but not in data_in's metadata
             data_out["wavelength_emis"] = data_in.l0_wavelength
-            data_out["zenith_angle"] = data_in.z_ref.values
             data_out["filename"] = filename
 
             loc_split = data_in.attrs["site_location"].split(", ")
@@ -213,16 +231,22 @@ class ReadEprofile(ReadUngriddedBase):
             data_out["dtime"] = data_in.time.values
 
             for var in vars_to_read:
+                # check if the desired variable is in the file
+                netcdf_var_name = self.VAR_NAMES_FILE[var]
+                if netcdf_var_name not in data_in.variables:
+                    logger.info(f"Variable {var} not found in file {filename}")
+                    # var_info.pop(var)
+                    continue
+                if self.VAR_TO_WAVELENGTH[var] != data_in.attrs["l0_wavelength"]:
+                    logger.info(
+                        f"Wavelength of {var} does not match in file {filename}. Skipping..."
+                    )
+                    continue
+
                 data_out["var_info"][var] = {}
                 unit_ok = False
                 outliers_removed = False
                 has_altitude = False
-
-                netcdf_var_name = self.VAR_NAMES_FILE[var]
-                # check if the desired variable is in the file
-                if netcdf_var_name not in data_in.variables:
-                    logger.warning(f"Variable {var} not found in file {filename}")
-                    continue
 
                 info = var_info[var]
                 arr = data_in.variables[netcdf_var_name]
@@ -269,9 +293,10 @@ class ReadEprofile(ReadUngriddedBase):
                     logger.info("No wavelength match")
                     continue
 
-                alt_data = data_in.variables[self.ALTITUDE_ID]
+                # alt_data = data_in.variables[self.ALTITUDE_ID]
+                alt_data = data_in.station_altitude_t0 + data_in.altitude.values
 
-                alt_unit = alt_data.attrs["units"]
+                alt_unit = data_in.variables[self.ALTITUDE_ID].attrs["units"]
                 to_alt_unit = const.VARS["alt"].units
                 if not alt_unit == to_alt_unit:
                     try:
@@ -292,7 +317,7 @@ class ReadEprofile(ReadUngriddedBase):
                 # create instance of ProfileData
                 profile = VerticalProfile(
                     data=val,
-                    altitude=alt_data.values,
+                    altitude=alt_data,
                     dtime=data_in.time.values,
                     var_name=var,
                     data_err=np.nan,  # EPROFILE does not provide error data
@@ -303,12 +328,13 @@ class ReadEprofile(ReadUngriddedBase):
                 # Write everything into profile
                 data_out[var] = profile
 
-            data_out["var_info"][var].update(
-                unit_ok=unit_ok,
-                err_read=False,  # EPROFILE foes not provide error data
-                outliers_removed=outliers_removed,
-                has_altitude=has_altitude,
-            )
+                data_out["var_info"][var].update(
+                    unit_ok=unit_ok,
+                    units=unit,
+                    err_read=False,  # EPROFILE foes not provide error data
+                    outliers_removed=outliers_removed,
+                    has_altitude=has_altitude,
+                )
         return data_out
 
     @override
@@ -351,15 +377,11 @@ class ReadEprofile(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
 
-        # if read_err is None:
-        #     read_err = self.READ_ERR
-
         if files is None:
             if len(self.files) == 0:
                 self.get_file_list(vars_to_retrieve, pattern=pattern)
             files = self.files
 
-        # turn files into a list because I suspect there may be a bug if you don't do this
         if isinstance(files, str):
             files = [files]
 
@@ -372,131 +394,11 @@ class ReadEprofile(ReadUngriddedBase):
 
         self.read_failed = []
 
-        data_obj = UngriddedData()
-        data_obj.is_vertical_profile = True
-        col_idx = data_obj.index
-        meta_key = -1.0
-        idx = 0
-
-        # assign metadata object
-        metadata = data_obj.metadata
-        meta_idx = data_obj.meta_idx
-
-        # last_station_id = ''
-        num_files = len(files)
-
-        disp_each = int(num_files * 0.1)
-        if disp_each < 1:
-            disp_each = 1
-
-        VAR_IDX = -1
-        for i, _file in enumerate(files):
-            if i % disp_each == 0:
-                logger.info(f"Reading file {i + 1} of {num_files} ({type(self).__name__})")
-            try:
-                stat = self.read_file(
-                    _file,
-                    vars_to_retrieve=vars_to_retrieve,
-                    remove_outliers=remove_outliers,
-                )
-                if not any([var in stat.vars_available for var in vars_to_retrieve]):
-                    logger.info(
-                        f"Station {stat.station_name} contains none of the desired variables. Skipping station..."
-                    )
-                    continue
-                meta_key += 1
-                # Fill the metadata dict
-                # the location in the data set is time step dependant!
-                # use the lat location here since we have to choose one location
-                # in the time series plot
-                metadata[meta_key] = {}
-                metadata[meta_key].update(stat.get_meta())
-                for add_meta in self.KEEP_ADD_META:
-                    if add_meta in stat:
-                        metadata[meta_key][add_meta] = stat[add_meta]
-                # metadata[meta_key]['station_id'] = station_id
-
-                metadata[meta_key]["data_revision"] = self.data_revision
-                metadata[meta_key]["variables"] = []
-                metadata[meta_key]["var_info"] = {}
-                # this is a list with indices of this station for each variable
-                # not sure yet, if we really need that or if it speeds up things
-                meta_idx[meta_key] = {}
-                # last_station_id = station_id
-
-                # Is floating point single value
-                # time = stat.dtime[0] # LB: Check this
-                for var in stat.vars_available:
-                    if var not in data_obj.var_idx:
-                        VAR_IDX += 1
-                        data_obj.var_idx[var] = VAR_IDX
-
-                    var_idx = data_obj.var_idx[var]
-
-                    val = stat[var]
-                    metadata[meta_key]["var_info"][var] = vi = {}
-                    if isinstance(val, VerticalProfile):
-                        altitude = val.altitude
-                        data = val.data
-                        add = np.prod(data.shape)
-                        # err = val.data_err
-                        metadata[meta_key]["var_info"]["altitude"] = via = {}
-
-                        vi.update(val.var_info[var])
-                        via.update(val.var_info["altitude"])
-                    else:
-                        add = 1
-                        altitude = np.nan
-                        data = val
-                    vi.update(stat.var_info[var])
-                    stop = idx + add
-                    # check if size of data object needs to be extended
-                    if stop >= data_obj._ROWNO:
-                        # if totnum < data_obj._CHUNKSIZE, then the latter is used
-                        data_obj.add_chunk(add)
-
-                    # write common meta info for this station
-                    data_obj._data[idx:stop, col_idx["latitude"]] = stat["station_coords"][
-                        "latitude"
-                    ]
-                    data_obj._data[idx:stop, col_idx["longitude"]] = stat["station_coords"][
-                        "longitude"
-                    ]
-                    data_obj._data[idx:stop, col_idx["altitude"]] = stat["station_coords"][
-                        "altitude"
-                    ]
-                    data_obj._data[idx:stop, col_idx["meta"]] = meta_key
-
-                    # write data to data object
-                    data_obj._data[idx:stop, col_idx["time"]] = np.repeat(
-                        stat.dtime, data.shape[-1]
-                    )
-                    data_obj._data[idx:stop, col_idx["stoptime"]] = np.repeat(
-                        stat.dtime, data.shape[-1]
-                    )
-                    data_obj._data[idx:stop, col_idx["data"]] = data.flatten()
-                    data_obj._data[idx:stop, col_idx["dataaltitude"]] = np.tile(
-                        altitude, data.shape[0]
-                    )
-                    data_obj._data[idx:stop, col_idx["varidx"]] = var_idx
-
-                    if var not in meta_idx[meta_key]:
-                        meta_idx[meta_key][var] = []
-                    meta_idx[meta_key][var].extend(list(range(idx, stop)))
-
-                    if var not in metadata[meta_key]["variables"]:
-                        metadata[meta_key]["variables"].append(var)
-
-                    idx += add
-
-            except Exception as e:
-                self.read_failed.append(_file)
-                logger.exception(f"Failed to read file {os.path.basename(_file)} (ERR: {repr(e)})")
-
-        # shorten data_obj._data to the right number of points
-        data_obj._data = data_obj._data[:idx]
-
-        return data_obj
+        data = self._read_files_structured(
+            files, vars_to_retrieve=vars_to_retrieve, remove_outliers=remove_outliers
+        )
+        data.clear_meta_no_data()
+        return data
 
     def _get_exclude_filelist(self):  # pragma: no cover
         """Get list of filenames that are supposed to be ignored"""
@@ -526,32 +428,90 @@ class ReadEprofile(ReadUngriddedBase):
         return self.exclude_files
 
     @override
-    def get_file_list(self) -> list[Path]:
+    def get_file_list(self, vars_to_retrieve=None, pattern=None) -> list[Path]:
         """Perform recursive file search for all input variables
 
         Note
         ----
-        Overloaded implementation of base class, since for Earlinet, the
-        paths are variable dependent
+        Overloaded implementation of base class. For EPROFILE, variables are not stored in different files, so the arguments are accepted but not used.
 
         Parameters
         ----------
         vars_to_retrieve : list
             list of variables to retrieve
         pattern : str, optional
-            file name pattern applied to search
+            file name pattern applied to search. Defaults to "/*/*/*/*.nc". to match the vprofiles directory structure. Not recommended to change this.
 
         Returns
         -------
         list
             list containing file paths
         """
+
         exclude_files = {Path(file) for file in self._get_exclude_filelist()}
+
         if self.data_dir is None:
             raise ValueError("No data directory set")
         logger.info("Fetching EPROFILE data files...")
+        search_pattern = (
+            "*/*.nc" if not pattern else pattern
+        )  # TODO: Check if can just give pattern a default value of "/*/*/*/*.nc". ruff sometimes complains about this
+        all_files = set(glob(self.data_dir + search_pattern))
 
-        all_files = set(f for f in Path(self.data_dir).rglob(self._FILEMASK) if f.is_file())
         files = list(all_files - exclude_files)
         self.files = files
         return files
+
+    def _read_files_structured(
+        self, files, vars_to_retrieve=None, remove_outliers=True
+    ) -> UngriddedDataStructured:
+        """Helper that reads list of files into UngriddedDataStructured
+
+        Note
+        ----
+        This method is not supposed to be called directly but is used in
+        :func:`read` and serves the purpose of parallel loading of data
+        """
+        self.files_failed = []
+
+        data_obj = UngriddedDataStructured.from_station_data(
+            self._station_data_iterator(files, vars_to_retrieve, remove_outliers=remove_outliers),
+            ["station_name_orig"],
+        )
+
+        num_failed = len(self.files_failed)
+        if num_failed > 0:
+            logger.warning(f"{num_failed} out of {len(files)} could not be read...")
+
+        return data_obj
+
+    def _station_data_iterator(
+        self, files, vars_to_retrieve, remove_outliers
+    ) -> Iterator[StationData]:
+        """Generator that yields StationData objects for each file in files"""
+        logger.info(f"Reading EPROFILE data from {self.data_dir}...")
+        num_files = len(files)
+
+        for i in tqdm(range(num_files), disable=None):
+            _file = files[i]
+            try:
+                station_data = self.read_file(
+                    _file,
+                    vars_to_retrieve=vars_to_retrieve,
+                    remove_outliers=remove_outliers,
+                )
+            except (
+                ValueError,
+                DataUnitError,
+                DataDimensionError,
+                KeyError,
+                EprofileFileError,
+            ) as e:
+                self.files_failed.append(_file)
+                logger.info(f"Skipping reading of EPROFILE file: {_file}. Reason: {repr(e)}")
+                continue
+            except Exception as e:
+                self.files_failed.append(_file)
+                logger.warning(f"Skipping reading of EPROFILE file: {_file}. Reason: {repr(e)}")
+                continue
+            yield station_data

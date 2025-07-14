@@ -706,13 +706,13 @@ class StationData(StationMetaData):
 
     def check_if_3d(self, var_name: str) -> bool:
         """Checks if altitude data is available in this object"""
-        if "altitude" in self:
-            val = self["altitude"]
+        if "altitude" in self.var_info[var_name]:
+            val = self.var_info[var_name]["altitude"]
             if isnumeric(val):  # is numerical value
                 return False
             # unique altitude values
             uvals = np.unique(val)
-            if len(uvals) == 1:  # only one value in altitude array (NOT 3D)
+            if len(uvals) == 1:  # only one value in altitude array (
                 return False
             elif (
                 len(uvals[~np.isnan(uvals)]) == 1
@@ -1178,7 +1178,13 @@ class StationData(StationMetaData):
         return new
 
     def resample_time(
-        self, var_name: str, ts_type: str, how=None, min_num_obs=None, inplace=False, **kwargs
+        self,
+        var_name: str,
+        ts_type: str,
+        how=None,
+        min_num_obs=None,
+        inplace=False,
+        **kwargs,
     ):
         """Resample one of the time-series in this object
 
@@ -1275,7 +1281,7 @@ class StationData(StationMetaData):
             outdata.ts_type = None
             outdata.dtime = None
             for var, info in outdata.var_info.items():
-                if not var == var_name:
+                if not var == var_name and var != "altitude":
                     info["ts_type"] = _tt
         else:  # no other variables, update global class attributes
             outdata.ts_type = to_ts_type.val
@@ -1423,13 +1429,21 @@ class StationData(StationMetaData):
             raise DataExtractionError("Cannot interpret input for altitude...")
 
         elif isinstance(data, pd.Series) or len(self.dtime) == len(data):
-            if "altitude" not in self:
+            if "altitude" not in self and "altitude" not in self.var_info[var_name]:
                 raise ValueError("Missing altitude information")
             if not isinstance(data, pd.Series):
                 data = pd.Series(data, self.dtime)
             alt = self.altitude
             if not isinstance(alt, list | np.ndarray):
-                raise AttributeError("need 1D altitude array")
+                if self.var_info[var_name].get("has_altitude", False):
+                    try:
+                        alt = self.var_info[var_name]["altitude"]
+                    except KeyError:
+                        raise AttributeError(
+                            "Need altitude information in var_info if variable has altitude"
+                        )
+                else:
+                    raise AttributeError("need 1D altitude array")
             elif not len(alt) == len(data):
                 raise DataDimensionError(
                     f"Altitude data and {var_name} data have different lengths"

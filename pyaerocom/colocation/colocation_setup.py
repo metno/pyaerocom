@@ -15,6 +15,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from pydantic_core import PydanticCustomError
 
 from pyaerocom import const
 from pyaerocom.climatology_config import ClimatologyConfig
@@ -403,6 +404,7 @@ class ColocationSetup(BaseModel):
     obs_filters: dict = {}
     colocation_layer_limits: tuple[LayerLimits, ...] | None = None
     profile_layer_limits: tuple[LayerLimits, ...] | None = None
+
     read_opts_ungridded: dict | None = {}
 
     # Attributes related to model data
@@ -497,13 +499,6 @@ class ColocationSetup(BaseModel):
                 raise ValidationError
         return self
 
-    @cached_property
-    def basedir_logfiles(self):
-        p = Path(self.basedir_coldata) / "logfiles"
-        if not p.exists():
-            p.mkdir(parents=True, exist_ok=True)
-        return str(p)
-
     @model_validator(mode="after")
     def validate_pyaro_config(self):
         if self.pyaro_config is None:
@@ -525,6 +520,52 @@ class ColocationSetup(BaseModel):
             if self.obs_id is None:
                 self.obs_id = self.pyaro_config.name
         return self
+
+    @model_validator(mode="after")
+    def validate_profile_and_colocation_layer_limits(self):
+        """
+        Validate that colocation_layer_limits and profile_layer_limits are set correctly.
+        If colocation_layer_limits is set, profile_layer_limits must also be set.
+        If profile_layer_limits is set, colocation_layer_limits must also be set.
+        Additionally, neither of these values can match.
+
+        TODO: Implement saving of the colocated data files such that this validation is not needed anymore.
+        The issue to get around is that we save the colocated data objects per layer in the same directory.
+        Only after they are read in is the boolean just_for_viz checked, which is used to determine whether
+        to compute the full range of statistics on the colocated data or not.
+        Hence, if the colocation_layer_limits and profile_layer_limits are the same, then one of the saved colocated data objects gets over written.
+        This is not a problem if the colocation_layer_limits and profile_layer_limits are different, as then the saved colocated data objects are distinct.
+        """
+        if self.colocation_layer_limits is None and self.profile_layer_limits is None:
+            return self
+        if self.colocation_layer_limits is not None and self.profile_layer_limits is None:
+            raise PydanticCustomError(
+                "Invalid profile and colocation layer limits",
+                "colocation_layer_limits is set, but profile_layer_limits is not set. Please set profile_layer_limits to differently than colocation_layer_limits.",
+            )
+        if self.profile_layer_limits is not None and self.colocation_layer_limits is None:
+            raise PydanticCustomError(
+                "Invalid profile and colocation layer limits",
+                "profile_layer_limits is set, but colocation_layer_limits is not set. Please set colocation_layer_limits to differently than profile_layer_limits.",
+            )
+
+        def are_tuples_distinct(tuple1, tuple2):
+            set1 = {frozenset(d.items()) for d in tuple1}
+            set2 = {frozenset(d.items()) for d in tuple2}
+            return set1.isdisjoint(set2)
+
+        if not are_tuples_distinct(self.colocation_layer_limits, self.profile_layer_limits):
+            raise PydanticCustomError(
+                "Invalid profile and colocation layer limits",
+                "colocation_layer_limits and profile_layer_limits must not match. Please set them to different values.",
+            )
+
+    @cached_property
+    def basedir_logfiles(self):
+        p = Path(self.basedir_coldata) / "logfiles"
+        if not p.exists():
+            p.mkdir(parents=True, exist_ok=True)
+        return str(p)
 
     def add_glob_meta(self, **kwargs):
         """

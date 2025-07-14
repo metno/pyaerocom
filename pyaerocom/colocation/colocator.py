@@ -501,7 +501,6 @@ class Colocator:
         """
         obs_reader = self.obs_reader
         obs_filters_post = self._eval_obs_filters(var_name)
-
         obs_data = obs_reader.read(
             data_ids=[self.colocation_setup.obs_id],
             vars_to_retrieve=var_name,
@@ -1099,7 +1098,9 @@ class Colocator:
             if self.colocation_setup.save_coldata:
                 self._save_coldata(coldata)
 
-        elif isinstance(coldata, ColocatedDataLists):  # look into intertools chain.from_iterable
+        elif isinstance(
+            coldata, ColocatedDataLists
+        ):  # TODO: look into intertools chain.from_iterable
             for i_list in coldata:
                 for coldata_obj in i_list:
                     coldata_obj.data.attrs["model_name"] = self.get_model_name()
