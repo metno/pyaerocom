@@ -257,7 +257,8 @@ def get_obsnetwork_dir(obs_id):
         if directory does not exist
     """
     if obs_id not in const.OBSLOCS_UNGRIDDED:
-        print(const.OBSLOCS_UNGRIDDED)
+        e_networks = [_ for _ in const.OBSLOCS_UNGRIDDED if "E" in _]
+        print(e_networks)
         raise ValueError(f"Observation network ID {obs_id} does not exist")
 
     data_dir = const.OBSLOCS_UNGRIDDED[obs_id]
