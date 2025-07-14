@@ -1,21 +1,28 @@
-name: Clear CI Cache
+name: Clear Cache and Rerun Tests
+
 on:
   workflow_dispatch:
+
 jobs:
-  clear-cache:
+  bust-cache:
     runs-on: ubuntu-latest
-    permissions:
-      actions: write
     steps:
-      - name: Fetch cache keys
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set unique cache-busting key
+        id: prep
+        run: echo "CACHE_KEY=manual-bust-$(date +%s)" >> $GITHUB_ENV
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm  # or other cache path
+          key: ${{ env.CACHE_KEY }}
+          restore-keys: |
+            manual-bust-
+
+      - name: Install deps and run tests
         run: |
-          echo "Fetching list of cache keys"
-          cacheKeys=$(gh cache list --limit 100 --json id --jq '.[].id')
-          echo "Deleting caches..."
-          for cacheKey in $cacheKeys
-          do
-              gh cache delete $cacheKey
-          done
-          echo "Cache cleared"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          npm install
+          npm test
