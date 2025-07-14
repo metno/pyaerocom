@@ -29,7 +29,7 @@ def test_all_files_exist():
     ],
 )
 def test_ReadEprofile_read_file(num: int, vars_to_retrieve: list[str]):
-    read = ReadEprofile()
+    read = ReadEprofile("Eprofile-test")
     read.files = paths = TEST_FILES
     stat = read.read_file(paths[num], vars_to_retrieve)
 
@@ -50,7 +50,7 @@ def test_ReadEprofile_read_file(num: int, vars_to_retrieve: list[str]):
 
 
 def test_ReadEprofile_read_file_error():
-    read = ReadEprofile()
+    read = ReadEprofile("Eprofile-test")
     read.files = paths = TEST_FILES
     with pytest.raises(ValueError) as e:
         read.read_file(paths[0], "invalidvar")
@@ -58,7 +58,7 @@ def test_ReadEprofile_read_file_error():
 
 
 def test_ReadEprofile_read():
-    read = ReadEprofile()
+    read = ReadEprofile("Eprofile-test")
     read.files = TEST_FILES
     data = read.read(vars_to_retrieve="bsc1064aer")
     assert isinstance(data, UngriddedDataStructured)
