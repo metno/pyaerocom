@@ -221,7 +221,6 @@ class ReadEprofile(ReadUngriddedBase):
 
             # get metadata expected in StationData but not in data_in's metadata
             data_out["wavelength_emis"] = data_in.l0_wavelength
-            # data_out["zenith_angle"] = data_in.z_ref.values
             data_out["filename"] = filename
 
             loc_split = data_in.attrs["site_location"].split(", ")
@@ -395,7 +394,9 @@ class ReadEprofile(ReadUngriddedBase):
 
         self.read_failed = []
 
-        data = self._read_files_structured(files, vars_to_retrieve=vars_to_retrieve)
+        data = self._read_files_structured(
+            files, vars_to_retrieve=vars_to_retrieve, remove_outliers=remove_outliers
+        )
         data.clear_meta_no_data()
         return data
 
@@ -461,7 +462,9 @@ class ReadEprofile(ReadUngriddedBase):
         self.files = files
         return files
 
-    def _read_files_structured(self, files, vars_to_retrieve=None) -> UngriddedDataStructured:
+    def _read_files_structured(
+        self, files, vars_to_retrieve=None, remove_outliers=True
+    ) -> UngriddedDataStructured:
         """Helper that reads list of files into UngriddedDataStructured
 
         Note
@@ -472,7 +475,7 @@ class ReadEprofile(ReadUngriddedBase):
         self.files_failed = []
 
         data_obj = UngriddedDataStructured.from_station_data(
-            self._station_data_iterator(files, vars_to_retrieve),
+            self._station_data_iterator(files, vars_to_retrieve, remove_outliers=remove_outliers),
             ["station_name_orig"],
         )
 
@@ -482,7 +485,9 @@ class ReadEprofile(ReadUngriddedBase):
 
         return data_obj
 
-    def _station_data_iterator(self, files, vars_to_retrieve) -> Iterator[StationData]:
+    def _station_data_iterator(
+        self, files, vars_to_retrieve, remove_outliers
+    ) -> Iterator[StationData]:
         """Generator that yields StationData objects for each file in files"""
         logger.info(f"Reading EPROFILE data from {self.data_dir}...")
         num_files = len(files)
@@ -493,6 +498,7 @@ class ReadEprofile(ReadUngriddedBase):
                 station_data = self.read_file(
                     _file,
                     vars_to_retrieve=vars_to_retrieve,
+                    remove_outliers=remove_outliers,
                 )
             except (
                 ValueError,

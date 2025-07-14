@@ -75,7 +75,6 @@ class DynamicRecArray:
 
         :return: np.aarry of type dtype
         """
-        # NOTE: Commenting out the shrinking of the array might be needed in debug mode
         return self._array[:][: self._length]
 
     @data.setter
