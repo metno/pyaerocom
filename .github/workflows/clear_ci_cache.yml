@@ -10,19 +10,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: Set unique cache-busting key
         id: prep
-        run: echo "CACHE_KEY=manual-bust-$(date +%s)" >> $GITHUB_ENV
+        run: echo "CACHE_KEY=pip-cache-$(date +%s)" >> $GITHUB_ENV
 
-      - name: Cache dependencies
+      - name: Cache pip
         uses: actions/cache@v4
         with:
-          path: ~/.npm  # or other cache path
+          path: ~/.cache/pip
           key: ${{ env.CACHE_KEY }}
           restore-keys: |
-            manual-bust-
+            pip-cache-
 
-      - name: Install deps and run tests
+      - name: Install dependencies
         run: |
-          npm install
-          npm test
+          python -m pip install --upgrade pip
+          pip install . 
+
+      - name: Run tests
+        run: pytest
