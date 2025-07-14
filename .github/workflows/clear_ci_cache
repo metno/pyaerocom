@@ -1,0 +1,21 @@
+name: Clear CI Cache
+on:
+  workflow_dispatch:
+jobs:
+  clear-cache:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Fetch cache keys
+        run: |
+          echo "Fetching list of cache keys"
+          cacheKeys=$(gh cache list --limit 100 --json id --jq '.[].id')
+          echo "Deleting caches..."
+          for cacheKey in $cacheKeys
+          do
+              gh cache delete $cacheKey
+          done
+          echo "Cache cleared"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
