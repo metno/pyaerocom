@@ -691,7 +691,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 # v_data["end_time"] not used
                 if altitude is not None:
                     v_data["dataaltitude"] = altitude
-                # v_data["dataaltitude"] not used
                 if var in station_data.data_err:
                     v_data["stdev"] = station_data.data_err[var]
                 if var in station_data.data_flagged:

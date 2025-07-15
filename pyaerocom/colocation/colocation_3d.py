@@ -417,11 +417,7 @@ def colocate_vertical_profile_gridded(
 
     data_ref_meta_idxs_with_var_info = []
     for key, _ in data_ref.metadata.items():
-        if (
-            "altitude"
-            not in data_ref.metadata[key]["var_info"]  # old way of checking, may need to be fixed.
-            # or "altitude" not in data_ref.metadata[i]["var_info"][var]
-        ):
+        if "altitude" not in data_ref.metadata[key]["var_info"]:
             logger.warning(
                 f"Warning: Station {data_ref.metadata[key]['station_name']} does not have any var_info"
             )

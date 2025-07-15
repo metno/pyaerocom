@@ -559,6 +559,7 @@ class ColocationSetup(BaseModel):
                 "Invalid profile and colocation layer limits",
                 "colocation_layer_limits and profile_layer_limits must not match. Please set them to different values.",
             )
+        return self
 
     @cached_property
     def basedir_logfiles(self):
