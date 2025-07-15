@@ -536,6 +536,8 @@ class ColocationSetup(BaseModel):
         Hence, if the colocation_layer_limits and profile_layer_limits are the same, then one of the saved colocated data objects gets over written.
         This is not a problem if the colocation_layer_limits and profile_layer_limits are different, as then the saved colocated data objects are distinct.
         """
+        if self.colocation_layer_limits is None and self.profile_layer_limits is None:
+            return self
         if self.colocation_layer_limits is not None and self.profile_layer_limits is None:
             raise PydanticCustomError(
                 "Invalid profile and colocation layer limits",
