@@ -30,15 +30,15 @@ GLOBAL_CONFIG = dict(
     # Regional filter for analysis
     filter_name="ALL-wMOUNTAINS",
     # colocation frequency (no statistics in higher resolution can be computed)
-    ts_type="3hourly",
+    ts_type="hourly",
     # The size of map used to display the results
     map_zoom="Europe",
     # Options for time
-    freqs=["3hourly", "daily"],  # Possible frequencies
+    freqs=["hourly", "daily"],  # Possible frequencies
     periods=[
         "2021-2022"
     ],  # Periods, can be single years or range, e.g. 2010-2015. EMEP only supports single years as of now
-    main_freq="3hourly",  # default frequency to use. This will be overwritten in most of the observation options (see below)
+    main_freq="hourly",  # default frequency to use. This will be overwritten in most of the observation options (see below)
     add_seasons=False,
     use_meteorological_seasons=True,
     # This has to be true for the web interface to show diurnal evaluation
@@ -73,7 +73,7 @@ GLOBAL_CONFIG = dict(
     min_num_obs=dict(
         # yearly=dict(monthly=9),
         # monthly=dict(daily=21, weekly=3),
-        daily=dict(hourly=18),
+        # daily=dict(hourly=18),
     ),
 )
 
@@ -103,8 +103,8 @@ BASE_FILTER = {
 }
 
 EEA_RURAL_FILTER = {
-    "station_classification": ["background"],
-    "area_classification": [
+    "station_type": ["background"],
+    "station_area": [
         "rural",
         "rural-nearcity",
         "rural-regional",
@@ -151,15 +151,15 @@ obs_filters = {
 OBS_CONFIG = {}
 
 # EEA observatio
-OBS_CONFIG["EEA"] = dict(
-    obs_id="CAMS2_83.NRT",
-    # obs_id="EEAAQeRep.NRT",
-    obs_vars=species_list,
-    web_interface_name="EEA-UTD",
-    obs_vert_type="Surface",
-    read_opts_ungridded=dict(files=[], force_caching=True),
-    obs_filters=obs_filters,
-)
+# OBS_CONFIG["EEA"] = dict(
+#     obs_id="CAMS2_83.NRT",
+#     # obs_id="EEAAQeRep.NRT",
+#     obs_vars=species_list,
+#     web_interface_name="EEA-UTD",
+#     obs_vert_type="Surface",
+#     read_opts_ungridded=dict(files=[], force_caching=True),
+#     obs_filters=obs_filters,
+# )
 
 ##################################################
 #        Putting it all together

@@ -11,16 +11,21 @@ import typer
 
 from pyaerocom import change_verbosity, const
 from pyaerocom.scripts.cams2_82.config import CFG
+from pyaerocom.io.cams2_82.reader import DATA_FOLDER_PATH
 from pyaerocom.scripts.cams2_82.evaluation import (
-    EvalType,
     date_range,
     runner,
-    runnermedianscores,
 )
+from pyaerocom.scripts.cams2_82.config import obs_filters, species_list, EEA_FILTER
+
+from pyaerocom.io import PyaroConfig
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 logger = logging.getLogger(__name__)
 
+
+DEFAULT_EEA_PATH = Path("/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download")
+DEFAULT_MODEL_PATH = DATA_FOLDER_PATH
 
 def make_model_entry(
     start_date: datetime,
@@ -29,12 +34,56 @@ def make_model_entry(
 
 ) -> dict:
     return dict(
+        model_id = "IFS",
         model_data_dir=str(model_path.resolve()),
-        gridded_reader_id={"model": "ReadCAMS2_83"},
+        gridded_reader_id={"model": "ReadCAMS2_82"},
         model_kwargs=dict(
             daterange=[f"{start_date:%F}", f"{end_date:%F}"],
         ),
     )
+
+def make_EEA_entry(
+    start_date: datetime,
+    end_date: datetime,
+    obs_path: Path,
+) -> dict:
+    filters={
+                "time_bounds": {
+                "startend_include": [[start_date.strftime("%Y-%m-%d %H:%M:%S"), end_date.strftime("%Y-%m-%d %H:%M:%S")]]
+            },
+
+        }
+    data_id = "eeareader"
+    config_eea = PyaroConfig(
+        name="eea",
+        reader_id=data_id,
+        filename_or_obj_or_url=obs_path,
+        filters=filters,
+        dataset= "unverified",
+        name_map={
+            "PM2.5": "concpm25",
+            "PM10": "concpm10",
+            
+        },
+    )
+
+    return  dict(
+        obs_id=config_eea.name,
+        pyaro_config=config_eea,
+        web_interface_name="EEA",
+        obs_vars=species_list,
+        obs_vert_type="Surface",
+        ts_type="hourly",
+        obs_filters=EEA_FILTER,   
+    )
+
+
+def make_period(start_date: date, end_date: date) -> list[str]:
+    if start_date == end_date:
+        return [f"{start_date:%Y%m%d}"]
+    periods = [f"{start_date:%Y%m%d}-{end_date:%Y%m%d}"]
+
+    return periods
 
 
 def make_config(
@@ -58,7 +107,7 @@ def make_config(
 
     cfg = deepcopy(CFG)
     cfg.update(
-        periods=eval_type.periods(start_date, end_date),
+        periods=make_period(start_date, end_date),
         json_basedir=str(data_path),
         coldata_basedir=str(coldata_path),
     )
@@ -67,12 +116,8 @@ def make_config(
 
 
     obs_dates = date_range(start_date, end_date)
-    cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [  # type:ignore[index]
-        str(p)
-        for p in obs_paths(
-            *obs_dates, root_path=obs_path
-        )
-    ]
+    cfg["obs_cfg"]["EEA"] = make_EEA_entry(start_date, end_date, obs_path)
+    cfg["model_cfg"]["IFS"] = make_model_entry(start_date, end_date, model_path)
 
     
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
@@ -92,7 +137,6 @@ def make_config(
 @app.command()
 def main(
     
-    eval_type: EvalType = typer.Argument(...),
     start_date: datetime = typer.Argument(
         ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation start date"
     ),
@@ -103,8 +147,8 @@ def main(
     model_path: Path = typer.Option(
         DEFAULT_MODEL_PATH, exists=True, readable=True, help="path to model data"
     ),
-    obs_path: Path = typer.Option(
-        DEFAULT_OBS_PATH, exists=True, readable=True, help="path to observation data"
+    eea_obs_path: Path = typer.Option(
+        DEFAULT_EEA_PATH, exists=True, readable=True, help="path to observation data"
     ),
     data_path: Path = typer.Option(
         Path("../../data").resolve(),
@@ -160,7 +204,7 @@ def main(
         end_date,
         
         model_path,
-        obs_path,
+        eea_obs_path,
         data_path,
         coldata_path,
         
@@ -177,7 +221,6 @@ def main(
     # we do not want the cache produced in previous runs to be silently cleared
     const.RM_CACHE_OUTDATED = False
 
-    analysis = False
    
     logger.info("Standard run")
     runner(cfg, cache, dry_run=dry_run, pool=pool)

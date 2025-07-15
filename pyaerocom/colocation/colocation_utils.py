@@ -901,21 +901,27 @@ def colocate_gridded_ungridded(
             # can end up resulting in incorrect number of timestamps after resampling
             # (the error was discovered using EBASMC, concpm10, 2019 and colocation
             # frequency monthly)
+
             try:
                 # assign the unified timeseries data to the colocated data array
                 arr[0, :, i] = _df["ref"].values
                 arr[1, :, i] = _df["data"].values
             except ValueError:
-                try:
-                    mask = _df.index.intersection(time_idx)
-                    _df = _df.loc[mask]
-                    arr[0, :, i] = _df["ref"].values
-                    arr[1, :, i] = _df["data"].values
-                except ValueError as e:
-                    logger.warning(
-                        f"Failed to colocate time for station {obs_stat.station_name}. "
-                        f"This station will be skipped (error: {e})"
-                    )
+                if len(time_idx) > len(_df.index):
+                    mask = np.intersect1d(time_idx, _df.index, return_indices=True)
+                    arr[0, mask[1], i] = _df["ref"].values
+                    arr[1, mask[1], i] = _df["data"].values
+                else:
+                    try:
+                        mask = _df.index.intersection(time_idx)
+                        _df = _df.loc[mask]
+                        arr[0, :, i] = _df["ref"].values
+                        arr[1, :, i] = _df["data"].values
+                    except ValueError as e:
+                        logger.warning(
+                            f"Failed to colocate time for station {obs_stat.station_name}. "
+                            f"This station will be skipped (error: {e})"
+                        )
         except TemporalResolutionError as e:
             # resolution of obsdata is too low
             logger.warning(

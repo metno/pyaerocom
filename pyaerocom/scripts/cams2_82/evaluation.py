@@ -122,9 +122,6 @@ def read_observations(specie: str, *, files: list, cache: str | Path | None) -> 
     logger.info(f"Finished {specie}")
 
 
-def run_forecast(specie: str, *, stp: EvalSetup, analysis: bool) -> None:
-    ana_cams2_83 = CAMS2_83_Processer(stp)
-    ana_cams2_83.run(analysis=analysis, var_list=specie)
 
 
 def runner(
@@ -159,60 +156,3 @@ def runner(
     logger.info("Running Statistics")
     ExperimentProcessor(stp).run()
     logger.info("Done Running Statistics")
-
-
-def runnermos(
-    cfg: dict,
-    cache: str | Path | None,
-    dry_run: bool = False,
-):
-    logger.info(f"Running the evaluation for the config\n{pformat(cfg)}")
-    if dry_run:
-        return
-
-    if cache is not None:
-        const.CACHEDIR = str(cache)
-
-    stp = EvalSetup(**cfg)
-
-    logger.info(f"Clearing cache at {const.CACHEDIR}")
-    clear_cache()
-
-    logger.info("Running Statistics (MOS)")
-    ExperimentProcessor(stp).run()
-    logger.info("Done Running Statistics (MOS)")
-
-
-def runnermedianscores(
-    cfg: dict,
-    cache: str | Path | None,
-    *,
-    analysis: bool = False,
-    dry_run: bool = False,
-    pool: int = 1,
-):
-    if dry_run:
-        return
-
-    if cache is not None:
-        const.CACHEDIR = str(cache)
-
-    stp = EvalSetup(**cfg)
-
-    logger.info(
-        "Running CAMS2_83 Specific Statistics, cache is not cleared, regular statistics are assumed to have been run"
-    )
-    if pool > 1:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
-        with ProcessPoolExecutor(max_workers=pool) as executor:
-            futures = [
-                executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
-                for specie in species_list
-            ]
-        for future in as_completed(futures):
-            future.result()
-    else:
-        logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
-        CAMS2_83_Processer(stp).run(analysis=analysis)
-
-    logger.info("Median scores run finished")
