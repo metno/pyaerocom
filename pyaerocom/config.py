@@ -290,17 +290,6 @@ class Config:
     def _basedirs_search_db(self) -> list[str]:
         return [self.ROOTDIR, self.HOMEDIR]
 
-    def _infer_config_from_basedir(self, basedir):
-        basedir = os.path.normpath(basedir)
-        for env_id, chk_sub in self._check_subdirs_cfg.items():
-            chkdir = os.path.join(basedir, chk_sub)
-            if self._check_access(chkdir):
-                return (self._config_files[env_id], env_id)
-
-        raise FileNotFoundError(
-            f"Could not infer environment configuration for input directory: {basedir}"
-        )
-
     def infer_config(self):
         """
         check if ~/MyPyaerocom/paths.ini exists.
@@ -434,29 +423,12 @@ class Config:
         self._var_param = None
 
     @property
-    def has_access_users_database(self):
-        chk_dir = self._check_subdirs_cfg["users-db"]
-        chk_paths = [
-            os.path.join("/metno/aerocom_users_database/", chk_dir),
-            os.path.join(self.HOMEDIR, "/aerocom_users_database/", chk_dir),
-        ]
-        for p in chk_paths:
-            if self._check_access(p):
-                return True
-        return False
-
-    @property
     def has_access_lustre(self):
         """Boolean specifying whether MetNO AeroCom server is accessible"""
         for path in self._search_dirs:
             if self._LUSTRE_CHECK_PATH in path and self._check_access(path):
                 return True
         return False
-
-    @property
-    def ALL_DATABASE_IDS(self):
-        """ID's of available database configurations"""
-        return list(self._config_files)
 
     @property
     def ROOTDIR(self):
@@ -1000,7 +972,7 @@ class Config:
 
         names_cfg = self._add_obsnames_config(cr)
 
-        candidates = {}
+        candidates: dict[str, str] = {}
         dirconfirmed = None
         repl = "${BASEDIR}"
         if cr.has_section("obsfolders"):
