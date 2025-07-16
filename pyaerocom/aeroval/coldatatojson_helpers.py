@@ -1100,6 +1100,7 @@ def _process_map_and_scat(
                             "obs": obs,
                             "mod": mod,
                             "date": jsdate,
+                            "units": subset.units[0],
                         }
 
     return (map_data, scat_data)
