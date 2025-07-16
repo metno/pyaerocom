@@ -50,7 +50,7 @@ CHK_CFG4 = {
 
 
 @pytest.mark.parametrize(
-    "eval_config,chk_files",
+    "cfg,chk_files",
     [
         ("cfgexp1", CHK_CFG1),
         ("cfgexp2", CHK_CFG2),
@@ -88,7 +88,7 @@ def test_ExperimentOutput__FILES(eval_config: dict, chk_files: dict):
             assert len(files) == check
 
 
-@pytest.mark.parametrize("eval_config,reanalyse_existing", [("cfgexp4", True), ("cfgexp4", False)])
+@pytest.mark.parametrize("cfg,reanalyse_existing", [("cfgexp4", True), ("cfgexp4", False)])
 def test_reanalyse_existing(eval_config: dict, reanalyse_existing: bool):
     eval_config["reanalyse_existing"] = reanalyse_existing
     cfg = EvalSetup(**eval_config)
@@ -108,7 +108,7 @@ def test_reanalyse_existing(eval_config: dict, reanalyse_existing: bool):
     assert list(output.glob("**/*.nc"))
 
 
-@pytest.mark.parametrize("eval_config", ["cfgexp4"])
+@pytest.mark.parametrize("cfg", ["cfgexp4"])
 def test_superobs_different_resolutions(eval_config: dict):
     cfg = EvalSetup(**eval_config)
     cfg.model_cfg.get_entry("TM5-AP3-CTRL").model_ts_type_read = None
