@@ -192,8 +192,8 @@ class Config:
         self._filtermaskdir = None
         self._local_tmp_dir = None
         self._downloaddatadir = None
-        self._confirmed_access = []
-        self._rejected_access = []
+        self._confirmed_access = set()
+        self._rejected_access = set()
 
         # Options
         self._caching_active = True
@@ -282,9 +282,9 @@ class Config:
 
         logger.info(f"Checking access to: {loc}")
         if check_dir_access(loc):
-            self._confirmed_access.append(loc)
+            self._confirmed_access.add(loc)
             return True
-        self._rejected_access.append(loc)
+        self._rejected_access.add(loc)
         return False
 
     def _basedirs_search_db(self) -> list[str]:

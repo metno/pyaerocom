@@ -268,8 +268,8 @@ def test_empty_init(empty_cfg):
     assert cfg._filtermaskdir is None
     assert cfg._local_tmp_dir is None
     assert cfg._downloaddatadir is None
-    assert cfg._confirmed_access == []
-    assert cfg._rejected_access == []
+    assert cfg._confirmed_access == set()
+    assert cfg._rejected_access == set()
 
     # Options
     assert cfg._caching_active is True
