@@ -49,7 +49,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         """
         converted = []
         for file in files:
-            logger.info(f"Processing: {file}")
+            logger.info(f"Processing: {file} 🛠️")
             coldata = ColocatedData(data=file)
             self.process_coldata(coldata)
             converted.append(file)
@@ -164,7 +164,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
 
         logger.info(
-            f"Computing json files for {model_name} ({model_var}) vs. {obs_name} ({obs_var})"
+            f"Computing json files for {model_name} ({model_var}) vs. {obs_name} ({obs_var}) ⏳"
         )
 
         meta_glob = _init_meta_glob(
@@ -201,12 +201,12 @@ class ColdataToJsonEngine(ProcessingEngine):
         if annual_stats_constrained:
             data = _apply_annual_constraint(data)
 
-        if not coldata.data.attrs.get("just_for_viz", False):  # make the regular json output
+        if not bool(coldata.data.attrs.get("just_for_viz", False)):  # make the regular json output
             if not diurnal_only:
                 if (
                     use_fairmode and obs_var in SPECIES
                 ):  # calculate fairmode only for species where it makes sense
-                    logger.info("Processing Fairmode statistics")
+                    logger.info("Processing Fairmode statistics ⏳")
                     self._process_fairmode(
                         data=data,
                         obs_name=obs_name,
@@ -221,7 +221,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                         regions_how=regions_how,
                         regs=regs,
                     )
-                logger.info("Processing statistics timeseries for all regions")
+                logger.info("Processing statistics timeseries for all regions ⏳")
 
                 self._process_stats_timeseries_for_all_regions(
                     data=data,
@@ -251,7 +251,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 )
 
             if coldata.ts_type == "hourly" and use_diurnal:
-                logger.info("Processing diurnal profiles")
+                logger.info("Processing diurnal profiles ⏳")
                 self._process_diurnal_profiles(
                     coldata=data["hourly"],  # coldata,
                     regions_how=regions_how,
@@ -259,8 +259,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     meta_glob=meta_glob,
                 )
         else:
-            logger.info("Processing profile data for visualization")
-
+            logger.info("Processing profile data for visualization ⏳")
             self._process_profile_data_for_visualization(
                 data=data,
                 use_country=use_country,
@@ -275,7 +274,7 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         logger.info(
             f"Finished computing json files for {model_name} ({model_var}) vs. "
-            f"{obs_name} ({obs_var})"
+            f"{obs_name} ({obs_var}) 🟢"
         )
 
         dt = time() - t00
@@ -437,7 +436,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 model_var,
             )
 
-        logger.info("Processing heatmap data for all regions")
+        logger.info("Processing heatmap data for all regions ⏳")
 
         hm_all = _process_heatmap_data(
             data,
@@ -459,7 +458,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 hm_data, freq, obs_name, var_name_web, vert_code, model_name, model_var
             )
 
-        logger.info("Processing regional timeseries for all regions")
+        logger.info("Processing regional timeseries for all regions ⏳")
         ts_objs_regional = _process_regional_timeseries(data, regnames, regions_how, meta_glob)
 
         self.exp_output.write_timeseries(ts_objs_regional)
@@ -468,7 +467,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 if cd is not None:
                     cd.data = cd.flatten_latlondim_station_name().data
 
-        logger.info("Processing individual site timeseries data")
+        logger.info("Processing individual site timeseries data ⏳")
         (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
 
         self.exp_output.write_timeseries(ts_objs)
@@ -476,7 +475,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         scatter_freq = min(TsType(fq) for fq in self.cfg.time_cfg.freqs)
         scatter_freq = min(scatter_freq, main_freq)
 
-        logger.info("Processing map and scat data by period")
+        logger.info("Processing map and scat data by period ⏳")
 
         for period in periods:
             # compute map_data and scat_data just for this period
@@ -565,7 +564,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 fm_data = data["hourly"].resample_time(freq, settings_from_meta=True)
             else:
                 logger.warning(
-                    f"Cannot calculate fairmode stats: Frequency {freq} could not be found for variable {obs_var}. Skipping..."
+                    f"Cannot calculate fairmode stats: Frequency {freq} could not be found for variable {obs_var}. Skipping... ⏭️"
                 )
             return
         else:
@@ -582,5 +581,11 @@ class ColdataToJsonEngine(ProcessingEngine):
             use_meteorological_seasons,
         )
         fairmode_statistics.save_fairmode_stats(
-            self.exp_output, stats, obs_name, var_name_web, vert_code, model_name, model_var
+            self.exp_output,
+            stats,
+            obs_name,
+            var_name_web,
+            vert_code,
+            model_name,
+            model_var,
         )

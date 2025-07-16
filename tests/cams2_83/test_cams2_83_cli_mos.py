@@ -28,7 +28,7 @@ def test_eval_mos_dummy(
     assert result.exit_code == 0
     assert "'add_seasons': True," in caplog.text
     assert "'use_cams2_83_fairmode': True," in caplog.text
-    assert "no output available" in caplog.text
+    assert "No output available" in caplog.text
 
 
 @pytest.mark.usefixtures("fake_CAMS2_83_Processer", "reset_cachedir")
