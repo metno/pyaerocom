@@ -31,7 +31,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
     def _run_single_entry(self, model_name, obs_name, var_list):
         if model_name == obs_name:
-            msg = f"Cannot run same dataset against each other ({model_name} vs. {obs_name})"
+            msg = f"Cannot run same dataset against each other ({model_name} vs. {obs_name}) ➡️⬅️"
             logger.info(msg)
             return
         ocfg = self.cfg.get_obs_entry(obs_name)
@@ -48,12 +48,10 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             except Exception:
                 if self.raise_exceptions:
                     raise
-                logger.warning("Failed to process superobs...")
+                logger.warning("Failed to process superobs... ❌")
         elif ocfg.only_superobs:
             logger.info(
-                f"Skipping json processing of {obs_name}, as this is "
-                f"marked to be used only as part of a superobs "
-                f"network"
+                f"Skipping json processing of {obs_name}, as this is marked to be used only as part of a superobs network ⏭️"
             )
         elif ocfg.only_json:
             if not ocfg.coldata_dir:
@@ -88,7 +86,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             col = self.get_colocator(model_name, obs_name)
             if self.cfg.processing_opts.only_json:
                 files_to_convert = col.get_available_coldata_files(var_list)
-                logger.info(f"Found files to process: {files_to_convert}")
+                logger.info(f"Found files to process: {files_to_convert} 🔎")
             else:
                 col.run(var_list)
                 files_to_convert = col.files_written
@@ -141,7 +139,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         obs_list = self.cfg.obs_cfg.keylist(obs_name)
         model_list = self.cfg.model_cfg.keylist(model_name)
         if not model_list:
-            logger.info("No model found, will make dummy model data")
+            logger.info("No model found, will make dummy model data 🛠️")
             self.cfg.webdisp_opts.hide_charts = ("scatterplot",)
             self.cfg.webdisp_opts.pages = ("evaluation", "infos")
             model_id = make_dummy_model(obs_list, self.cfg)
@@ -152,7 +150,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             model_id = None
             use_dummy_model = False
 
-        logger.info("Start processing")
+        logger.info("Start processing 🚀")
 
         # compute model maps (completely independent of obs-eval processing below)
         if self.cfg.webdisp_opts.add_model_maps:
@@ -173,7 +171,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             self.update_interface()
         if use_dummy_model:
             delete_dummy_model(model_id)
-        logger.info("Finished processing. 🎉")
+        logger.info("Finished processing. 🦄✨🎉")
 
     def update_interface(self):
         """Update aeroval interface

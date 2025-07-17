@@ -343,13 +343,13 @@ class ExperimentOutput(ProjectOutput):
 
         if vert_code not in self.cfg.obs_cfg.all_vert_types:
             logger.warning(
-                f"Invalid or outdated vert code {vert_code} in ts file {uri}. File will be deleted."
+                f"Invalid or outdated vert code {vert_code} in ts file {uri}. File will be deleted. 🗑️"
             )
             self.avdb.rm_by_uri(uri)
             return True
         if obs_name in self._invalid["obs"]:
             logger.info(
-                f"Invalid or outdated obs name {obs_name} in ts file {uri}. File will be deleted."
+                f"Invalid or outdated obs name {obs_name} in ts file {uri}. File will be deleted. 🗑️"
             )
             self.avdb.rm_by_uri(uri)
             return True
@@ -358,7 +358,7 @@ class ExperimentOutput(ProjectOutput):
             try:
                 data = self.avdb.get_by_uri(uri)
             except Exception:
-                logger.exception(f"FATAL: detected corrupt json file: {uri}. Removing file...")
+                logger.exception(f"FATAL: detected corrupt json file: {uri}. Removing file... 🗑️")
                 self.avdb.rm_by_uri(uri)
                 return True
 
@@ -401,7 +401,7 @@ class ExperimentOutput(ProjectOutput):
         if also_coldata:
             coldir = self.cfg.path_manager.get_coldata_dir()
             if os.path.exists(coldir):
-                logger.info(f"Deleting everything under {coldir}")
+                logger.info(f"Deleting everything under {coldir} 🗑️")
                 shutil.rmtree(coldir)
         self._del_entry_experiments_json(self.exp_id)
 
@@ -450,7 +450,7 @@ class ExperimentOutput(ProjectOutput):
         except (VariableDefinitionError, AttributeError):
             info = var_ranges_defaults["default"]
             logger.info(
-                "Failed to infer cmap and variable ranges for '%s', using default settings which are '%s'.",
+                "Failed to infer cmap and variable ranges for '%s', using default settings which are '%s'. 🎨",
                 var,
                 info,
             )
@@ -528,7 +528,7 @@ class ExperimentOutput(ProjectOutput):
             name, tp, cat = self.cfg.var_web_info[var_name]
         else:
             name, tp, cat = var_name, "UNDEFINED", "UNDEFINED"
-            logger.warning(f"Missing menu name definition for var {var_name}.")
+            logger.warning(f"Missing menu name definition for var {var_name}. ⚠️")
 
         return VariableInfo(name, tp, cat)
 
@@ -755,7 +755,7 @@ class ExperimentOutput(ProjectOutput):
                     all_combinations.remove(first_with_mod_name)
                 else:
                     logger.warning(
-                        f"Failed to infer origin of source {src_name} and variable {var}. Check that they are provided in the config file. THis may show up as a result of rerunning an experiment with only_model_maps=True, but without the exact same set up in the config as is on disk. Skipping this entry."
+                        f"Failed to infer origin of source {src_name} and variable {var}. Check that they are provided in the config file. This may show up as a result of rerunning an experiment with only_model_maps=True, but without the exact same set up in the config as is on disk. Skipping this entry. ⏭️"
                     )
                     continue
 
@@ -787,7 +787,7 @@ class ExperimentOutput(ProjectOutput):
                 }
             else:
                 logger.warning(
-                    f"Invalid entry: model {mod_name} ({mod_var}), obs {obs_name} ({obs_var})"
+                    f"Invalid entry: model {mod_name} ({mod_var}), obs {obs_name} ({obs_var}) ⚠️"
                 )
         return new
 
@@ -857,7 +857,7 @@ class ExperimentOutput(ProjectOutput):
             try:
                 del current[exp_id]
             except KeyError:
-                logger.warning(f"no such experiment registered: {exp_id}")
+                logger.warning(f"No such experiment registered: {exp_id}")
             self.avdb.put_experiments(current, self.proj_id)
 
     def reorder_experiments(self, exp_order=None) -> None:
@@ -874,7 +874,7 @@ class ExperimentOutput(ProjectOutput):
         if exp_order is None:
             exp_order = []
         elif not isinstance(exp_order, list):
-            raise ValueError("need list as input")
+            raise ValueError("Need list as input")
 
         with self.avdb.lock():
             current = self.avdb.get_experiments(self.proj_id, default={})

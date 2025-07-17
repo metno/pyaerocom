@@ -59,11 +59,11 @@ class Colocator:
     MODELS_WITH_KWARGS = [ReadMscwCtm]
 
     STATUS_CODES: dict[int, str] = {
-        1: "SUCCESS",
-        2: "NOT OK: Missing/invalid model variable",
-        3: "NOT OK: Missing/invalid obs variable",
-        4: "NOT OK: Failed to read model variable",
-        5: "NOT OK: Colocation failed",
+        1: "SUCCESS ✅",
+        2: "NOT OK: Missing/invalid model variable ❌",
+        3: "NOT OK: Missing/invalid obs variable ❌",
+        4: "NOT OK: Failed to read model variable ❌",
+        5: "NOT OK: Colocation failed ❌",
     }
 
     def __init__(self, colocation_setup: ColocationSetup | dict, **kwargs):
@@ -120,7 +120,7 @@ class Colocator:
                 logger.warning(
                     f"Found entry in model_add_vars for obsvar {ovar} which "
                     f"is not specified in attr obs_vars, and will thus be "
-                    f"ignored"
+                    f"ignored 🙈"
                 )
             model_vars += mvars
         return model_vars
@@ -156,7 +156,7 @@ class Colocator:
                 return self._model_reader
             logger.info(
                 f"Reloading outdated model reader. ID of current reader: "
-                f"{self._model_reader.data_id}. New ID: {self.colocation_setup.model_id}"
+                f"{self._model_reader.data_id}. New ID: {self.colocation_setup.model_id} ♻️"
             )
         self._model_reader = self._instantiate_gridded_reader(what="model")
         self._loaded_model_data = {}
@@ -374,7 +374,9 @@ class Colocator:
             logger.exception(ex)
             if self.colocation_setup.raise_exceptions:
                 self._print_processing_status()
-                logger.critical(f"ABORTED: raise_exceptions is True: {traceback.format_exc()}\n")
+                logger.critical(
+                    f"ABORTED: raise_exceptions is True: {traceback.format_exc()} 🛑 \n"
+                )
                 raise ex
             vars_to_process = {}
         self._print_coloc_info(vars_to_process)
@@ -395,7 +397,7 @@ class Colocator:
                     else:
                         self._save_coldata(mda8)
                         logger.info(
-                            "Successfully calculated mda8 for [%s, %s].",
+                            "Successfully calculated mda8 for [%s, %s]. 🟢",
                             obs_var,
                             mod_var,
                         )
@@ -403,15 +405,15 @@ class Colocator:
 
                 self._processing_status.append([mod_var, obs_var, 1])
             except Exception:
-                msg = f"Failed to perform analysis: {traceback.format_exc()}\n"
+                msg = f"Failed to perform analysis: {traceback.format_exc()} ❌ \n"
                 logger.warning(msg)
                 self._processing_status.append([mod_var, obs_var, 5])
                 if self.colocation_setup.raise_exceptions:
                     self._print_processing_status()
-                    logger.critical("ABORTED: raise_exceptions is True\n")
+                    logger.critical("ABORTED: raise_exceptions is True 🛑 \n")
 
                     raise ColocationError(traceback.format_exc())
-        logger.info("Colocation finished")
+        logger.info("Colocation finished ✅")
 
         self._print_processing_status()
         if self.colocation_setup.keep_data:
@@ -566,7 +568,7 @@ class Colocator:
                 filtered[mvar] = ovar
                 ts_types[mvar] = mdata.ts_type
             except Exception as e:
-                msg = f"Failed to load model data: {self.colocation_setup.model_id} ({mvar}). Reason {e}"
+                msg = f"Failed to load model data: {self.colocation_setup.model_id} ({mvar}). Reason {e}  ❌"
                 logger.warning(msg)
                 self._processing_status.append([mvar, ovar, 4])
                 if self.colocation_setup.raise_exceptions:
@@ -666,8 +668,7 @@ class Colocator:
             for ovar in self.colocation_setup.obs_vars:
                 if ovar not in avail:
                     logger.warning(
-                        f"Obs variable {ovar} is not available in {self.colocation_setup.obs_id} "
-                        f"and will be ignored"
+                        f"Obs variable {ovar} is not available in {self.colocation_setup.obs_id} and will be ignored 🚫"
                     )
                     self._processing_status.append([None, ovar, 3])
 
@@ -683,7 +684,7 @@ class Colocator:
     def _print_processing_status(self):
         mname = self.get_model_name()
         oname = self.get_obs_name()
-        logger.info(f"Colocation processing status for {mname} vs. {oname}")
+        logger.info(f"Colocation processing status for {mname} vs. {oname} 📦")
         logger.info(self.processing_status)
 
     def _filter_var_matches_var_name(self, var_matches, var_name):
