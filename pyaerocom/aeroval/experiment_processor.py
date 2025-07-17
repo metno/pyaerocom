@@ -171,7 +171,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             self.update_interface()
         if use_dummy_model:
             delete_dummy_model(model_id)
-        logger.info("Finished processing. 🎉")
+        logger.info("Finished processing. 🦄✨🎉")
 
     def update_interface(self):
         """Update aeroval interface
