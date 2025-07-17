@@ -343,13 +343,13 @@ class ExperimentOutput(ProjectOutput):
 
         if vert_code not in self.cfg.obs_cfg.all_vert_types:
             logger.warning(
-                f"Invalid or outdated vert code {vert_code} in ts file {uri}. File will be deleted."
+                f"Invalid or outdated vert code {vert_code} in ts file {uri}. File will be deleted. 🗑️"
             )
             self.avdb.rm_by_uri(uri)
             return True
         if obs_name in self._invalid["obs"]:
             logger.info(
-                f"Invalid or outdated obs name {obs_name} in ts file {uri}. File will be deleted."
+                f"Invalid or outdated obs name {obs_name} in ts file {uri}. File will be deleted. 🗑️"
             )
             self.avdb.rm_by_uri(uri)
             return True
@@ -358,7 +358,7 @@ class ExperimentOutput(ProjectOutput):
             try:
                 data = self.avdb.get_by_uri(uri)
             except Exception:
-                logger.exception(f"FATAL: detected corrupt json file: {uri}. Removing file...")
+                logger.exception(f"FATAL: detected corrupt json file: {uri}. Removing file... 🗑️")
                 self.avdb.rm_by_uri(uri)
                 return True
 
@@ -401,7 +401,7 @@ class ExperimentOutput(ProjectOutput):
         if also_coldata:
             coldir = self.cfg.path_manager.get_coldata_dir()
             if os.path.exists(coldir):
-                logger.info(f"Deleting everything under {coldir}")
+                logger.info(f"Deleting everything under {coldir} 🗑️")
                 shutil.rmtree(coldir)
         self._del_entry_experiments_json(self.exp_id)
 
@@ -450,7 +450,7 @@ class ExperimentOutput(ProjectOutput):
         except (VariableDefinitionError, AttributeError):
             info = var_ranges_defaults["default"]
             logger.info(
-                "Failed to infer cmap and variable ranges for '%s', using default settings which are '%s'.",
+                "Failed to infer cmap and variable ranges for '%s', using default settings which are '%s'. 🎨",
                 var,
                 info,
             )
