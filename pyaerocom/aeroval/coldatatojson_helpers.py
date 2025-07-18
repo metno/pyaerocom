@@ -1095,13 +1095,15 @@ def _process_map_and_scat(
                             scat_data[site]["region"] = map_stat["region"]
                         if use_dummy:
                             obs = mod = jsdate = scat_dummy
+                            units = None
                         else:
                             obs, mod = obs_vals.tolist(), mod_vals.tolist()
+                            units = subset.units[0]
                         scat_data[site][perstr] = {
                             "obs": obs,
                             "mod": mod,
                             "date": jsdate,
-                            "units": subset.units[0],
+                            "units": units,
                         }
 
     return (map_data, scat_data)
