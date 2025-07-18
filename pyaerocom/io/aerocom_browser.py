@@ -179,7 +179,7 @@ class AerocomBrowser(BrowseDict):
         if name_or_pattern in self:
             logger.info(f"{name_or_pattern} found in instance of AerocomBrowser")
             return self[name_or_pattern]
-        logger.info(f"Searching database for {name_or_pattern}")
+        logger.info(f"Searching database for {name_or_pattern} 🔎")
         return self._browse(
             name_or_pattern, ignorecase=ignorecase, return_if_match=True
         )  # returns list

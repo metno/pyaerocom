@@ -406,7 +406,7 @@ class Config:
                 with open(user_file, "w") as fh:
                     fh.write(user_file)
                 logger.info(
-                    f"update of file {user_file} was successful. The original file was retained as {backup_file_name}, You might want to check paths for validity."
+                    f"Update of file {user_file} was successful. The original file was retained as {backup_file_name}, You might want to check paths for validity."
                 )
             except BaseException:
                 logger.warning(f"Failed to write user file: {user_file}. Undoing changes.")
