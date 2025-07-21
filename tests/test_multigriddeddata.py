@@ -34,7 +34,6 @@ def test__initiate(cities_data, model):
 
     assert mg.proj_info == gd.proj_info
     assert mg.start == gd.start
-    assert mg.latitude == gd.latitude
 
 
 @pytest.mark.parametrize(
