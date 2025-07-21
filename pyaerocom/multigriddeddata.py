@@ -4,7 +4,6 @@ from copy import deepcopy
 
 from .griddeddata import GriddedData
 from pyaerocom.stationdata import StationData
-from iris.coords import DimCoord, AuxCoord
 from pyaerocom.exceptions import DataCoverageError
 
 
@@ -17,16 +16,21 @@ class MultiGriddedDataException(Exception):
 
 class MultiGriddedData:
     def __init__(self, data_id: str):
+        """
+        Class for holding and working with multiple GriddedData objects.
+
+        Parameters
+        ----------
+
+        data_id : str
+            Id of the data.
+
+        """
         self.children: list[GriddedData] = []
-        self.lat_map: dict[tuple[float, float], int] = {}
-        self.lon_map: dict[tuple[float, float], int] = {}
 
         self.data_id = data_id
 
         self.ndim = None
-
-        self.latitude: DimCoord | AuxCoord | None = None
-        self.longitude: DimCoord | AuxCoord | None = None
 
         self.from_files = []
 
@@ -34,12 +38,20 @@ class MultiGriddedData:
         self.stop = None
 
         self.proj_info = None
-        self.base_year = None
+
         self.units = None
         self.var_name = None
         self.ts_type = None
 
     def _initiate(self, data: GriddedData):
+        """
+        Starts the list of children, and defines all the important attributes for objects
+
+        Parameters
+        ----------
+
+        data: GriddedData
+        """
         self.proj_info = deepcopy(data.proj_info)
         self.start = data.start
         self.stop = data.stop
@@ -50,15 +62,21 @@ class MultiGriddedData:
 
         self.ndim = data.ndim
 
-        self.latitude = data.latitude[:]
-        self.longitude = data.longitude[:]
-
-        self.xranges = []
-        self.yranges = []
-
-        # self.base_year = data.base_year
-
     def add_griddeddata(self, data: GriddedData):
+        """
+        Adds a new GriddedData to children after checking if this new GriddedData object is
+        compatible with existing children
+
+        Parameters
+        ----------
+        data: GriddedData
+
+        Raises
+        -------
+        MultiGriddedDataException
+            If proj_info, var_name, ts_type, units or ndims are different from the existing ones
+
+        """
         if len(self.children) == 0:
             self._initiate(data)
 
@@ -95,16 +113,28 @@ class MultiGriddedData:
         self.start = min(self.start, data.start)
         self.stop = max(self.stop, data.stop)
 
-        # self.longitude = self._add_coord(self.longitude, data.longitude)
-        # self.latitude = self._add_coord(self.latitude, data.latitude)
-
-        # self.base_year = min(self.base_year, data.base_year)
-
         self.from_files += data.from_files
 
         self.children.append(data)
 
     def get_xyranges(self) -> tuple[list[tuple[float, float]]]:
+        """
+        Finds the max/min ranges for x and y of all children
+
+
+        Returns
+        -------
+        tuple[list[tuple[float, float]]]
+            Two list, one for xs and one for ys
+
+        Raises
+        --------
+        MultiGriddedDataException
+            If self has no proj_info
+        ValueError
+            If there is a child where x or y is not found
+
+        """
         if self.proj_info is None:
             raise MultiGriddedDataException("X and Y cannot be found, since proj_info is None")
 
@@ -129,6 +159,20 @@ class MultiGriddedData:
         return xranges, yranges
 
     def get_latlon_ranges(self) -> tuple[list[tuple[float, float]]]:
+        """
+        Finds the max/min ranges for lat and lon of all children
+
+
+        Returns
+        -------
+        tuple[list[tuple[float, float]]]
+            Two list, one for lats and one for lons
+
+        Raises
+        --------
+        MultiGriddedDataException
+            If no lats or no lons are found
+        """
         lats = []
         lons = []
 
@@ -146,26 +190,6 @@ class MultiGriddedData:
 
         return lats, lons
 
-    def check_dimcoords_tseries(self):
-        for data in self.children:
-            data.check_dimcoords_tseries()
-
-    def reorder_dimensions_tseries(self):
-        for data in self.children:
-            data.check_dimcoords_tseries()
-
-    def crop(self, lon_range=None, lat_range=None, time_range=None, region=None):
-        for data in self.children:
-            data.crop(lon_range, lat_range, time_range, region)
-
-        return self
-
-    def resample_time(self, to_ts_type, how=None, min_num_obs=None, use_iris=False):
-        for data in self.children:
-            data.resample_time(to_ts_type, how, min_num_obs, use_iris)
-
-        return self
-
     def to_time_series(
         self,
         sample_points=None,
@@ -175,6 +199,49 @@ class MultiGriddedData:
         use_iris=False,
         **coords,
     ) -> list[StationData]:
+        """Extract time-series for provided input coordinates (lon, lat)
+
+        Tries to apply to_time_series on all children, then makes list of all returned stations data.
+
+        See function in GriddedData for more info
+
+
+        Parameters
+        ----------
+        sample_points : list
+            coordinates (e.g. lon / lat) at which time series is supposed to be
+            retrieved
+        scheme : str or iris interpolator object
+            interpolation scheme (for details, see :func:`interpolate`)
+        vert_scheme : str
+            string specifying how to treat vertical coordinates. This is only
+            relevant for data that contains vertical levels. It will be ignored
+            otherwise. Note that if the input coordinate specifications contain
+            altitude information, this parameter will be set automatically to
+            'altitude'. Allowed inputs are all data collapse schemes that
+            are supported by :func:`pyaerocom.helpers.str_to_iris` (e.g. `mean,
+            median, sum`). Further valid schemes are `altitude, surface,
+            profile`.
+            If not other specified and if `altitude` coordinates are provided
+            via sample_points (or **coords parameters) then, vert_scheme will
+            be set to `altitude`. Else, `profile` is used.
+        add_meta : dict, optional
+            dictionary specifying additional metadata for individual input
+            coordinates. Keys are meta attribute names (e.g. station_name)
+            and corresponding values are lists (with length of input coords)
+            or single entries that are supposed to be assigned to each station.
+            E.g. `add_meta=dict(station_name=[<list_of_station_names>])`).
+        **coords
+            additional keyword args that may be used to provide the interpolation
+            coordinates (for details, see :func:`interpolate`)
+
+        Returns
+        -------
+        list
+            list of result dictionaries for each coordinate. Dictionary keys
+            are: ``longitude, latitude, var_name``
+
+        """
         sd_list = []
         for data in self.children:
             try:
@@ -187,15 +254,74 @@ class MultiGriddedData:
 
         return sd_list
 
-    def register_var_glob(self, delete_existing=True):
+    def register_var_glob(self, delete_existing=True):  # pragma: no cover
+        """
+        Applies register_var_glob function to first child, and returns result.
+
+        See GriddedData for more info on this function
+        """
         return self.children[0].register_var_glob(delete_existing)
 
     def regrid(
         self, other=None, lat_res_deg=None, lon_res_deg=None, scheme="areaweighted", **kwargs
     ):
+        """
+        Applies regrid function to all children.
+
+        See GriddedData for more info on this function
+        """
         for data in self.children:
             data.regrid(other, lat_res_deg, lon_res_deg, scheme, **kwargs)
 
-    def filter_region(self, region_id, inplace=False, **kwargs):
+    def filter_region(self, region_id, inplace=False, **kwargs):  # pragma: no cover
+        """
+        Applies filter_region function to all children.
+
+        See GriddedData for more info on this function
+        """
         for data in self.children:
             data.filter_region(region_id, inplace, **kwargs)
+
+    def check_dimcoords_tseries(self):  # pragma: no cover
+        """
+        Applies check_dimcoords_tseries function to all children.
+
+        See GriddedData for more info on this function
+        """
+        for data in self.children:
+            data.check_dimcoords_tseries()
+
+    def reorder_dimensions_tseries(self):  # pragma: no cover
+        """
+        Applies reorder_dimensions_tseries function to all children.
+
+        See GriddedData for more info on this function
+        """
+        for data in self.children:
+            data.reorder_dimensions_tseries()
+
+    def crop(
+        self, lon_range=None, lat_range=None, time_range=None, region=None
+    ):  # pragma: no cover
+        """
+        Applies crop function to all children, and return self.
+
+        See GriddedData for more info on this function
+        """
+        for data in self.children:
+            data.crop(lon_range, lat_range, time_range, region)
+
+        return self
+
+    def resample_time(
+        self, to_ts_type, how=None, min_num_obs=None, use_iris=False
+    ):  # pragma: no cover
+        """
+        Applies resample_time function to all children, and return self.
+
+        See GriddedData for more info on this function
+        """
+        for data in self.children:
+            data.resample_time(to_ts_type, how, min_num_obs, use_iris)
+
+        return self
