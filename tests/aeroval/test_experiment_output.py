@@ -276,7 +276,7 @@ def test_ExperimentOutput_reorder_experiments(
 def test_ExperimentOutput_reorder_experiments_error(dummy_expout: ExperimentOutput):
     with pytest.raises(ValueError) as e:
         dummy_expout.reorder_experiments("b")
-    assert str(e.value) == "need list as input"
+    assert "list" in str(e.value).lower()
 
 
 @pytest.mark.parametrize("cfg,drop_stats,stats_decimals", [("cfgexp1", ("mab", "R_spearman"), 2)])

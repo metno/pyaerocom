@@ -531,6 +531,7 @@ def list_to_shortstr(lst, indent=0):
                     RuntimeWarning,
                     "divide by zero encountered in log10",
                     "overflow encountered in scalar multiply",
+                    "invalid value encountered in cast",
                 ):
                     ndigits = -1 * np.floor(np.log10(abs(np.asarray(val)))).astype(int) + 2
                 lout.append(f"{val:.{ndigits}f}")

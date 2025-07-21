@@ -60,6 +60,7 @@ from .stationdata import StationData
 from .griddeddata import GriddedData
 from .multigriddeddata import MultiGriddedData
 from .ungriddeddata import UngriddedData
+from .ungriddeddata_structured import UngriddedDataStructured
 from .colocation.colocated_data import ColocatedData
 from .colocation.colocator import Colocator
 from .colocation.colocation_setup import ColocationSetup

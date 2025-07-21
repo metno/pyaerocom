@@ -7,3 +7,4 @@ from .web_display_setup import WebDisplaySetup
 from .experiment_info import ExperimentInfo
 from .eval_run_options import EvalRunOptions
 from .eval_setup import EvalSetup
+from .units_setup import UnitsSetup

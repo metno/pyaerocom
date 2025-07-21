@@ -27,6 +27,7 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VarNotAvailableError,
 )
+from pyaerocom.units.helpers import get_standard_unit
 
 
 logger = logging.getLogger(__name__)
@@ -105,7 +106,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if not var_list:
             raise VarNotAvailableError("List of variables is empty.")
         for var in var_list:
-            logger.info(f"Processing model maps for {model_name} ({var})")
+            logger.info(f"Processing model maps for {model_name} ({var}) 🗺️")
 
             try:  # pragma: no cover
                 make_contour, make_overlay = False, False
@@ -470,9 +471,10 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             else:
                 var_info = const.VARS[var]
                 low, high = var_info.minimum, var_info.maximum
-            data.check_unit()
+
             data.remove_outliers(low, high, inplace=True)
 
+        data.convert_unit(get_standard_unit(data.var_name))
         return data
 
     def _check_ts_for_only_model_maps(

@@ -36,6 +36,7 @@ from pyaerocom.units.datetime import TsType, is_year, to_pandas_timestamp
 from pyaerocom.variable_helpers import get_variable
 
 from pyaerocom.units import Unit
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -497,7 +498,8 @@ def _check_stats_merge(statlist, var_name, pref_attr, fill_missing_nan):
 
         is_3d.append(stat.check_if_3d(var_name))
 
-        if var_name in stat.data_err:
+        # TODO: Figure out where all zero errors come from
+        if var_name in stat.data_err and not all(stat.data_err[var_name] == 0):
             has_errs = True
 
         stats.append(stat)
@@ -533,7 +535,7 @@ def _merge_stats_2d(
 
     # remove first station from the list
     merged = stats.pop(0)
-    for i, stat in enumerate(stats):
+    for _, stat in enumerate(stats):
         merged.merge_other(
             stat,
             var_name,
@@ -545,44 +547,52 @@ def _merge_stats_2d(
 
 
 def _merge_stats_3d(stats, var_name, add_meta_keys, has_errs):
-    dtime = []
-    for stat in stats:
-        _t = stat[var_name].index.unique()
-        if not len(_t) == 1:
-            raise NotImplementedError(
-                "So far, merging of profile data "
-                "requires that profile values are "
-                "sampled at the same time"
-            )
-        dtime.append(_t[0])
-    tidx = pd.DatetimeIndex(dtime)
-
-    # AeroCom default vertical grid
     vert_grid = const.make_default_vert_grid()
-    _data = np.ones((len(vert_grid), len(tidx))) * np.nan
-    if has_errs:
-        _data_err = np.ones((len(vert_grid), len(tidx))) * np.nan
+
+    all_profiles = []
+    all_times = []
+    all_errors = []
 
     for i, stat in enumerate(stats):
+        # Merge metadata if not in first object
         if i == 0:
             merged = stat
         else:
             merged.merge_meta_same_station(stat, add_meta_keys=add_meta_keys)
+        times = stat[var_name].index.unique()
+        for t in times:
+            profile = stat[var_name].loc[t]
+            it = stat[var_name].index.get_loc(t)
+            altitude = stat.var_info[var_name]["altitude"][it]
+            # Interpolate profile to the default vertical grid
+            interpolated_profile = np.interp(vert_grid, altitude, profile.values)
+            all_profiles.append(interpolated_profile)
+            all_times.append(t)
 
-        _data[:, i] = np.interp(vert_grid, stat["altitude"], stat[var_name].values)
-
-        if has_errs:
-            try:
-                _data_err[:, i] = np.interp(vert_grid, stat["altitude"], stat.data_err[var_name])
-            except Exception:
-                pass
-    _coords = {"time": tidx, "altitude": vert_grid}
-
+            if has_errs:
+                try:
+                    profile_err = stat.data_err[var_name][it]
+                    interpolated_err = np.interp(vert_grid, altitude, profile_err)
+                    all_errors.append(interpolated_err)
+                except Exception:
+                    all_errors.append(np.full_like(vert_grid, np.nan))
+    # Create a DataArray with the merged profiles
+    all_times = pd.DatetimeIndex(all_times)
+    _data = np.vstack(all_profiles).T  # Stack profiles vertically. Shape: (altitude, time)
+    _coords = {"time": all_times, "altitude": vert_grid}
     d = xr.DataArray(data=_data, coords=_coords, dims=["altitude", "time"], name=var_name)
     d = d.sortby("time")
+
     merged[var_name] = d
     merged.dtime = d.time
     merged.altitude = d.altitude
+
+    if has_errs:
+        _data_err = np.vstack(all_errors).T  # Stack errors vertically
+        err_arr = xr.DataArray(
+            data=_data_err, coords=_coords, dims=["altitude", "time"], name=var_name
+        )
+        merged.data_err[var_name] = err_arr
     return merged
 
 
@@ -804,6 +814,14 @@ def calc_climatology(s, start, stop, min_count=None, set_year=None, resample_how
     return clim
 
 
+def resample_errors(ds: pd.Series, *args, **kwargs):
+    length = len(ds[ds.notna()])
+    if length == 0:
+        return math.nan
+
+    return math.sqrt((ds**2).sum(skipna=True)) / length
+
+
 def resample_timeseries(ts, freq, how=None, min_num_obs=None):
     """Resample a timeseries (pandas.Series)
 
@@ -835,6 +853,12 @@ def resample_timeseries(ts, freq, how=None, min_num_obs=None):
     elif "percentile" in how:
         p = int(how.split("percentile")[0])
         how = lambda x: np.nanpercentile(x, p)  # noqa: E731
+
+    if how == "error":
+        if not isinstance(ts, pd.Series):
+            raise NotImplementedError("Not yet implemented.")
+
+        how = resample_errors
 
     freq, offset = _get_pandas_freq_and_offset(freq)
     resampler = ts.resample(freq)

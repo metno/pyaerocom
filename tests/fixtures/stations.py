@@ -101,7 +101,9 @@ class FakeStationDataAccess:
 FAKE_STATION_DATA = FakeStationDataAccess()
 
 
-def create_fake_station_data(addvars, varinfo, varvals, start, stop, freq, meta) -> StationData:
+def create_fake_station_data(
+    addvars, varinfo, varvals, start, stop, freq, meta, *, add_errors: bool = False
+) -> StationData:
     if isinstance(addvars, str):
         addvars = [addvars]
     stat = StationData()
@@ -116,6 +118,9 @@ def create_fake_station_data(addvars, varinfo, varvals, start, stop, freq, meta)
         else:
             val = varvals
         stat[var] = np.ones(len(dtime)) * val
+        if add_errors:
+            stat.data_err[var] = np.ones(len(dtime)) * val
+
     return stat
 
 

@@ -703,7 +703,7 @@ class UngriddedData(UngriddedDataMetadata):
             rev = meta["data_revision"]
         else:
             try:
-                rev = self.get_data_revision[meta["data_id"]]
+                rev = self.get_data_revision(meta["data_id"])
             except Exception:
                 logger.debug("Data revision could not be accessed")
         sd.data_revision = rev
@@ -716,7 +716,7 @@ class UngriddedData(UngriddedDataMetadata):
 
         for key in STANDARD_META_KEYS + add_meta_keys:
             if key in sd.PROTECTED_KEYS:
-                logger.warning(f"skipping protected key: {key}")
+                logger.warning(f"Skipping protected key: {key}")
                 continue
             try:
                 sd[key] = meta[key]
@@ -791,11 +791,13 @@ class UngriddedData(UngriddedDataMetadata):
 
             data = pd.Series(vals, dtime)
             if not data.index.is_monotonic_increasing:
-                data = data.sort_index()
+                idx = data.index.argsort()
+                data = data.iloc[idx]
+                vals_err = vals_err[idx]
             if any(~np.isnan(vals_err)):
-                sd.data_err[var] = vals_err
+                sd.data_err[var] = vals_err  # type: ignore
             if any(~np.isnan(flagged)):
-                sd.data_flagged[var] = flagged
+                sd.data_flagged[var] = flagged  # type: ignore
 
             sd["dtime"] = data.index.values
             sd[var] = data
@@ -813,6 +815,7 @@ class UngriddedData(UngriddedDataMetadata):
                 sd.altitude = altitude
             if var in vi:
                 sd.var_info[var].update(vi[var])
+                # TODO: Check if need to do similar here as what is done in UngriddedDataStructured
 
             if len(data.index) == len(data.index.unique()):
                 sd.var_info[var]["overlap"] = False
@@ -1126,7 +1129,7 @@ class UngriddedData(UngriddedDataMetadata):
             new.metadata[meta_idx_new] = meta
             new.meta_idx[meta_idx_new] = {}
             for var in meta["var_info"]:
-                if var in self.ALLOWED_VERT_COORD_TYPES:
+                if var in self.ALLOWED_COORD_TYPES:
                     continue
                 indices = self.meta_idx[meta_idx][var]
                 totnum = len(indices)

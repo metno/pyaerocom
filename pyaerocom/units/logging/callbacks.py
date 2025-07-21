@@ -28,7 +28,7 @@ class LoggingCallback:
 
         self._logger.log(
             level,
-            "Successfully converted unit of variable '%s' from '%s' to '%s' using conversion factor '%d'.",
+            "Successfully converted unit of variable '%s' from '%s' to '%s' using conversion factor '%.6g'.",
             info.from_aerocom_var,
             info.from_cf_unit,
             info.to_cf_unit,

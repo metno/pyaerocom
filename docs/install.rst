@@ -73,3 +73,8 @@ one in ``data/`` in the pyaerocom installation directory (or at
 <https://github.com/metno/pyaerocom/blob/main-dev/pyaerocom/data/paths.ini>).
 
 To change paths, just run the command ``pya init`` and  change paths to your needs with your favorite editor.
+
+For information: It happens that the pyaerocom developers add entries to the default ``paths.ini`` file. If that
+happens. pyaerocom will add the additional lines to a user specific ``paths.ini``. Due to technical reasons, that means
+that all keywords in the file are converted to lower case characters and that comments are removed. The lower case
+keywords are the standard for Python written ini files.

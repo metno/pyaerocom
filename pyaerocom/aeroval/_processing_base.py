@@ -108,7 +108,7 @@ class HasColocator(HasConfig):
             mod_cfg = self.cfg.get_model_entry(model_name)
             col_cfg["model_cfg"] = mod_cfg
 
-            # Hack and at what lowlevel_helpers's import_from was doing
+            # Hack at what lowlevel_helpers's import_from was doing
             for key, val in mod_cfg.items():
                 if key in ColocationSetup.model_fields:
                     col_cfg[key] = val
@@ -117,7 +117,7 @@ class HasColocator(HasConfig):
             pyaro_config = obs_cfg["obs_config"] if "obs_config" in obs_cfg else None
             col_cfg["obs_config"] = pyaro_config
 
-            # Hack and at what lowlevel_helpers's import_from was doing
+            # Hack at what lowlevel_helpers's import_from was doing
             for key, val in obs_cfg.model_dump().items():
                 if key in ColocationSetup.model_fields:
                     col_cfg[key] = val

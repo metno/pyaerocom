@@ -3,7 +3,7 @@ This module contains functionality related to regions in pyaerocom
 """
 
 from __future__ import annotations
-from functools import cached_property
+from functools import cached_property, total_ordering
 
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.config import ALL_REGION_NAME
@@ -341,3 +341,23 @@ def find_closest_region_coord(
         return list(set(keep))
 
     return matches
+
+
+@total_ordering
+class RegionName(str):
+    """String class for ordering of region names. Region names
+    are sorted such that ALL_REGION_NAME always comes first, and
+    any other regions are sorted alphabetically.
+    """
+
+    def __eq__(self, other) -> bool:
+        return str(self) == str(other)
+
+    def __lt__(self, other) -> bool:
+        if str(self).lower() == str(other).lower():
+            return False
+
+        if str(self) == ALL_REGION_NAME:
+            return True
+
+        return str(self).lower() < str(other).lower()

@@ -46,6 +46,7 @@ from .eval_run_options import EvalRunOptions
 from .project_info import ProjectInfo
 from .experiment_info import ExperimentInfo
 from .cams2_83_setup import CAMS2_83Setup
+from .units_setup import UnitsSetup
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +68,8 @@ class EvalSetup(BaseModel):
     ########################################
 
     io_aux_file: Annotated[
-        Path | str, ".py file containing additional read methods for modeldata"
-    ] = ""
+        Path | str | None, ".py file containing additional read methods for modeldata"
+    ] = None
 
     var_web_info_file: Annotated[Path | str, "config file containing additional variables"] = ""
 
@@ -128,7 +129,9 @@ class EvalSetup(BaseModel):
 
     @cached_property
     def gridded_aux_funs(self) -> dict:
-        if not bool(self._aux_funs) and os.path.exists(self.io_aux_file):
+        if not bool(self._aux_funs) and (
+            self.io_aux_file is None or os.path.exists(self.io_aux_file)
+        ):
             self._import_aux_funs()
         return self._aux_funs
 
@@ -266,6 +269,16 @@ class EvalSetup(BaseModel):
         for k, v in self.model_extra.get("model_cfg", {}).items():
             mc.add_entry(k, v)
         return mc
+
+    @computed_field
+    @cached_property
+    def units_cfg(self) -> UnitsSetup:
+        if not hasattr(self, "model_extra") or self.model_extra is None:
+            return UnitsSetup()
+        model_args = {
+            key: val for key, val in self.model_extra.items() if key in UnitsSetup.model_fields
+        }
+        return UnitsSetup(**model_args)
 
     @field_serializer("model_cfg")
     def serialize_model_cfg(self, model_cfg: ModelCollection):

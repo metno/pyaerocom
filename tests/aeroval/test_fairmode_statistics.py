@@ -69,6 +69,10 @@ def test_fairmode_statistics(fairmode_statistics, dummy_coldata_to_fairmode_stat
             "MPI_R_s",
             "MPI_std_s",
             "MPI_Hperc",
+            "fa",
+            "ma",
+            "gan",
+            "gap",
             "bias",
             "NMB",
             "RMSU",
@@ -125,6 +129,10 @@ def fairmode_stats_example() -> dict:
                     "MPI_R_s": np.float64(0.001440664233921059),
                     "MPI_std_s": np.float64(-0.031303579243870915),
                     "MPI_Hperc": np.float64(0.054898295733501835),
+                    "fa": 0,
+                    "ma": 0,
+                    "gan": 10,
+                    "gap": 0,
                     "bias": np.float64(0.0008803075523111548),
                     "NMB": np.float64(0.0020848533921114204),
                     "RMSU": np.float64(9.601018936702271),
@@ -151,6 +159,10 @@ def fairmode_stats_example() -> dict:
                     "MPI_R_s": np.float64(0.001440664233921059),
                     "MPI_std_s": np.float64(-0.031303579243870915),
                     "MPI_Hperc": np.float64(0.0019844616931031385),
+                    "fa": 0,
+                    "ma": 0,
+                    "gan": 11,
+                    "gap": 0,
                     "bias": np.float64(0.05267057812092559),
                     "NMB": np.float64(0.20555936048513765),
                     "RMSU": np.float64(9.600111233121442),
@@ -177,6 +189,10 @@ def fairmode_stats_example() -> dict:
                     "MPI_R_s": np.float64(0.001440664233921059),
                     "MPI_std_s": np.float64(-0.031303579243870915),
                     "MPI_Hperc": np.float64(-0.0005195246019656068),
+                    "fa": 0,
+                    "ma": 0,
+                    "gan": 9,
+                    "gap": 0,
                     "bias": np.float64(7.04278139020833e-05),
                     "NMB": np.float64(0.0013019203413407127),
                     "RMSU": np.float64(9.600005426971212),
@@ -225,39 +241,44 @@ def test_save_fairmode_stats(
 
 
 @pytest.mark.parametrize(
-    "var, val1, val2",
+    "var, threshold, freq",
     [
         pytest.param(
             "concno2",
-            24,
-            1,
+            210.0,
+            "h",
             id="no2",
         ),
         pytest.param(
             "concpm10",
-            1,
-            0,
+            60.0,
+            "D",
             id="pm10",
         ),
     ],
 )
-def test_exceedances(fairmode_statistics, dummy_coldata_to_fairmode_statistics, var, val1, val2):
-    # reindex fake data hourly and assign new fake values all above threshold (for concno2 threshold is 200)
+def test_exceedances(
+    fairmode_statistics, dummy_coldata_to_fairmode_statistics, var, threshold, freq
+):
+    # reindex fake data and assign new fake values all above threshold (for concno2 threshold is 200)
     start = dummy_coldata_to_fairmode_statistics.data["time"].values[0]
     end = dummy_coldata_to_fairmode_statistics.data["time"].values[-1]
     dummy_coldata_to_fairmode_statistics.data = dummy_coldata_to_fairmode_statistics.data.reindex(
-        {"time": xr.date_range(start, end, freq="h")}
+        {"time": xr.date_range(start, end, freq=freq)}
     )
-
-    nhours = len(xr.date_range(start, end, freq="h"))
-    assert dummy_coldata_to_fairmode_statistics.shape == (2, nhours, 8)
+    nhours = len(xr.date_range(start, end, freq=freq))  # 335 for concpm10 and 8017 for concno2
+    assert dummy_coldata_to_fairmode_statistics.shape == (
+        2,
+        nhours,
+        8,
+    )  # dummy coldata has 8 stations
     dummy_coldata_to_fairmode_statistics.data[1] = dummy_coldata_to_fairmode_statistics.data[
         1
-    ].where(False, 250.0)
+    ].where(False, threshold)
     dummy_coldata_to_fairmode_statistics.data[0] = dummy_coldata_to_fairmode_statistics.data[
         0
-    ].where(False, 250.0)
+    ].where(False, threshold)
     [exco, excm] = fairmode_statistics._exceedances(dummy_coldata_to_fairmode_statistics.data, var)
-
-    assert all(exco == nhours // val1 + val2)
-    assert all(excm == nhours // val1 + val2)
+    # concno2 is resampled daily inside the _exceedances function, so the count is 335 for both
+    assert all(exco == len(xr.date_range(start, end, freq="D")))
+    assert all(excm == len(xr.date_range(start, end, freq="D")))

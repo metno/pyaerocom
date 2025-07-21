@@ -516,7 +516,6 @@ class Variable:
             try:
                 var_name = self._check_aliases(var_name)
             except VariableDefinitionError:
-                logger.info(f"Unknown input variable {var_name}")
                 return
             self._var_name_aerocom = var_name
 

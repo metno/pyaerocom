@@ -1078,6 +1078,7 @@ def _process_map_and_scat(
                                     # The whole trends dicts are placed in the stats dict
                                     stats["obs_trend"] = obs_trend
                                     stats["mod_trend"] = mod_trend
+                                    stats["units"] = subset.units[0]
 
                                     if avg_over_trends:
                                         stats["obs_mean_trend"] = obs_trend
@@ -1104,12 +1105,15 @@ def _process_map_and_scat(
                             scat_data[site]["region"] = map_stat["region"]
                         if use_dummy:
                             obs = mod = jsdate = scat_dummy
+                            units = None
                         else:
                             obs, mod = obs_vals.tolist(), mod_vals.tolist()
+                            units = subset.units[0]
                         scat_data[site][perstr] = {
                             "obs": obs,
                             "mod": mod,
                             "date": jsdate,
+                            "units": units,
                         }
 
     return (map_data, scat_data)
