@@ -703,7 +703,7 @@ class UngriddedData(UngriddedDataMetadata):
             rev = meta["data_revision"]
         else:
             try:
-                rev = self.get_data_revision[meta["data_id"]]
+                rev = self.get_data_revision(meta["data_id"])
             except Exception:
                 logger.debug("Data revision could not be accessed")
         sd.data_revision = rev
@@ -793,11 +793,11 @@ class UngriddedData(UngriddedDataMetadata):
             if not data.index.is_monotonic_increasing:
                 idx = data.index.argsort()
                 data = data.iloc[idx]
-                vals_err = vals_err.iloc[idx]
+                vals_err = vals_err[idx]
             if any(~np.isnan(vals_err)):
-                sd.data_err[var] = vals_err
+                sd.data_err[var] = vals_err  # type: ignore
             if any(~np.isnan(flagged)):
-                sd.data_flagged[var] = flagged
+                sd.data_flagged[var] = flagged  # type: ignore
 
             sd["dtime"] = data.index.values
             sd[var] = data
