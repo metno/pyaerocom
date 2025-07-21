@@ -711,7 +711,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
             if match_lat and match_lon:
                 meta_matches.append(meta_idx)
                 for var in meta["var_info"]:
-                    if var in self.ALLOWED_VERT_COORD_TYPES:
+                    if var in self.ALLOWED_COORD_TYPES:
                         continue  # altitude is not actually a variable but is stored in var_info like one
                     try:
                         totnum += len(self.metadata[meta_idx][var])
