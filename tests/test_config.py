@@ -8,9 +8,9 @@ from pathlib import Path
 import pytest
 
 import pyaerocom
-import pyaerocom.config as testmod
+import pyaerocom.config_reader as testmod
 from pyaerocom import const
-from pyaerocom.config import ALL_REGION_NAME, Config
+from pyaerocom.config_reader import ALL_REGION_NAME, ConfigReader
 from pyaerocom.data import resources
 from pyaerocom.grid_io import GridIO
 from pyaerocom.varcollection import VarCollection
@@ -56,7 +56,7 @@ def local_db(tmp_path: Path) -> Path:
 
 @pytest.fixture(scope="module")
 def empty_cfg():
-    cfg = testmod.Config(try_infer_environment=False)
+    cfg = testmod.ConfigReader(try_infer_environment=False)
     return cfg
 
 
@@ -69,7 +69,7 @@ def empty_cfg():
     ],
 )
 def test_Config___init__(config_file: str, try_infer_environment: bool):
-    testmod.Config(config_file, try_infer_environment)
+    testmod.ConfigReader(config_file, try_infer_environment)
 
 
 @pytest.mark.parametrize(
@@ -91,12 +91,12 @@ def test_Config___init__(config_file: str, try_infer_environment: bool):
 )
 def test_Config___init___error(config_file: str, exception: type[Exception], error: str):
     with pytest.raises(exception) as e:
-        testmod.Config(config_file, False)
+        testmod.ConfigReader(config_file, False)
     assert str(e.value) == error
 
 
 def test_Config_has_access_lustre():
-    cfg = testmod.Config(try_infer_environment=False)
+    cfg = testmod.ConfigReader(try_infer_environment=False)
     assert not cfg.has_access_lustre
 
 
@@ -114,7 +114,7 @@ def test_user_specific_paths_ini():
             outfile.write(line)
 
     assert os.path.exists(user_file)
-    cfg = testmod.Config(try_infer_environment=False)
+    cfg = testmod.ConfigReader(try_infer_environment=False)
     cfg.read_config(user_file)
     assert cfg.GAWTADSUBSETAASETAL_NAME == CHANGE_NAME
     assert Path(cfg.OUTPUTDIR).exists()
@@ -125,7 +125,7 @@ def test_user_specific_paths_ini():
 
 
 def test_Config_read_config():
-    cfg = testmod.Config(try_infer_environment=False)
+    cfg = testmod.ConfigReader(try_infer_environment=False)
     cfg_file = DEFAULT_PATHS_INI
     assert Path(cfg_file).exists()
     cfg.read_config(cfg_file)
@@ -148,7 +148,7 @@ def test_Config_read_config_partly_deleted():
     with open(user_file, "w") as outfile:
         outfile.writelines(lines)
 
-    cfg = testmod.Config(try_infer_environment=True)
+    cfg = testmod.ConfigReader(try_infer_environment=True)
     assert Path(user_file).exists()
     cfg.read_config(user_file)
     assert Path(cfg.OUTPUTDIR).exists()
@@ -301,7 +301,7 @@ def test_default_config_HOMEDIR():
 
 @lustre_avail
 def test_default_config():
-    cfg = Config()
+    cfg = ConfigReader()
 
     mypydir = Path(cfg.HOMEDIR).resolve() / "MyPyaerocom"
     assert Path(cfg.OUTPUTDIR) == Path(cfg._outputdir) == mypydir
@@ -359,17 +359,17 @@ def test_register_variable_with_Variable():
 
 
 def test_singleton():
-    config1 = Config.get_instance()
-    config2 = Config.get_instance()
+    config1 = ConfigReader.get_instance()
+    config2 = ConfigReader.get_instance()
 
-    assert config1 is config2 is pyaerocom.const
-    assert isinstance(config1, Config)
+    assert config1 is config2 is pyaerocom.const is pyaerocom.config
+    assert isinstance(config1, ConfigReader)
 
 
 def test_mock_const(mocker):
     def mock_get_instance():
         return "Lorem Ipsum"
 
-    mocker.patch.object(Config, "get_instance", mock_get_instance)
+    mocker.patch.object(ConfigReader, "get_instance", mock_get_instance)
 
     assert pyaerocom.const == "Lorem Ipsum"

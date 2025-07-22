@@ -23,7 +23,7 @@ except AttributeError:
     # Old iris version that doesn't support this override. Use old behaviour.
     pass
 
-from .config import Config
+from .config_reader import ConfigReader
 
 _has_warned_const_deprecation = False
 
@@ -34,10 +34,11 @@ def __getattr__(key: str):
     if key == "const":
         if not _has_warned_const_deprecation:
             logger.warning(
-                "Use of pyaerocom.const is deprecated. Please use Config.get_instance() instead."
+                "Use of pyaerocom.const is deprecated. Please use Config.get_instance() or pyaerocom.config instead."
             )
-
-        return Config.get_instance()
+        return ConfigReader.get_instance()
+    if key == "config":
+        return ConfigReader.get_instance()
     raise AttributeError(f"Module '{__name__}' has no attribute '{key}'")
 
 

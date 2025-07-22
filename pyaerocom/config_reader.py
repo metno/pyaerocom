@@ -33,7 +33,7 @@ if typing.TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class Config:
+class ConfigReader:
     """Class containing relevant paths for read and write routines
 
     A loaded instance of this class is created on import of pyaerocom and
@@ -44,7 +44,7 @@ class Config:
 
     # Keep record of instance for singleton pattern.
     # Should not be accessed directly. Instead use Config.get_instance()
-    _instance: Config | None = None
+    _instance: ConfigReader | None = None
 
     # NAMES
     # default names of the different obs networks
@@ -1076,14 +1076,14 @@ class Config:
         return s
 
     @staticmethod
-    def get_instance() -> Config:
+    def get_instance() -> ConfigReader:
         """Getter for singleton pattern for Config instance.
         Returns the existing instance if it exists, otherwise
         initializing it.
 
         :return: Config.
         """
-        if Config._instance is None:
-            Config._instance = Config()
+        if ConfigReader._instance is None:
+            ConfigReader._instance = ConfigReader()
 
-        return Config._instance
+        return ConfigReader._instance

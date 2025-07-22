@@ -21,7 +21,7 @@ from pyaerocom.aeroval.helpers import (
     _get_min_max_year_periods,
     _period_str_to_timeslice,
 )
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
 from pyaerocom.region import (
     Region,
