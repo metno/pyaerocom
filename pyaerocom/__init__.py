@@ -3,7 +3,6 @@ from importlib import metadata
 
 from ._logging import change_verbosity
 from ._warnings import ignore_basemap_warning, ignore_earth_radius_warning
-from warnings import warn
 
 __version__ = metadata.version(__package__)
 
