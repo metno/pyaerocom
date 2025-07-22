@@ -856,26 +856,12 @@ class ColocatedData(BaseModel):
             name of dimension to which the country coordinate is assigned.
             Default is None, in which case station_name is used.
 
-        Raises
-        ------
-        DataDimensionError
-            If data is 4D (i.e. if latitude and longitude are othorgonal
-            dimensions)
-
         Returns
         -------
         ColocatedData
             data object with countries assigned
 
         """
-        if self.has_latlon_dims:
-            # raise DataDimensionError(
-            #     "Countries cannot be assigned to 4D"
-            #     "ColocatedData with othorgonal lat / lon "
-            #     "dimensions. Please consider stacking "
-            #     "the latitude and longitude dimensions-"
-            # )
-            pass
         if assign_to_dim is None:
             assign_to_dim = "station_name"
 
@@ -909,10 +895,7 @@ class ColocatedData(BaseModel):
             self.data = arr
             return self
         else:
-            # Reconstruct `coldata` with updated data and coordinates
-            coldata.data = arr.data
-            # coldata.coords.update(arr.coords)
-            # coldata.attrs.update(arr.attrs)
+            coldata = arr
             return coldata
 
     def copy(self):
