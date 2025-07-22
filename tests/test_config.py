@@ -364,3 +364,12 @@ def test_singleton():
 
     assert config1 is config2 is pyaerocom.const
     assert isinstance(config1, Config)
+
+
+def test_mock_const(mocker):
+    def mock_get_instance():
+        return "Lorem Ipsum"
+
+    mocker.patch.object(Config, "get_instance", mock_get_instance)
+
+    assert pyaerocom.const == "Lorem Ipsum"

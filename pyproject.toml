@@ -82,9 +82,10 @@ test = [
     "pytest-cov",
     "packaging",
     "pytest-xdist",
+    "pytest-mock"
 ]
 lint = ["mypy>=1.5.1", "types-requests", "types-setuptools", "types-simplejson"]
-dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
+dev = ["pytest-sugar", "pytest-xdist", "pre-commit", "pytest-mock"]
 
 [project.scripts]
 pya = "pyaerocom.scripts.cli:main"

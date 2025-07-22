@@ -23,7 +23,8 @@ from .config import Config
 
 
 def __getattr__(key: str):
-    # Ensures that const is initialized when first accessed, instead of on import.
+    # Ensures that get_instance() is called each time const is accessed, which
+    # should make const mockable in tests by mocking get_instance on Config class.
     if key == "const":
         return Config.get_instance()
     raise AttributeError(f"Module '{__name__}' has no attribute '{key}'")
