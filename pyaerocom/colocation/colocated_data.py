@@ -868,6 +868,7 @@ class ColocatedData(BaseModel):
         # stack lat and lon dimensions into station_name for 4D data
         if all(_ in self.dims for _ in ("latitude", "longitude")):
             coldata = self if inplace else self.copy()
+            logger.info("Stacking lat and lon dimensions into station_name")
             coldata = coldata.stack(station_name=("latitude", "longitude"))
 
         else:
