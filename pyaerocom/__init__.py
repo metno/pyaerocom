@@ -25,9 +25,7 @@ from .config import Config
 def __getattr__(key: str):
     # Ensures that const is initialized when first accessed, instead of on import.
     if key == "const":
-        value = Config.get_instance()
-        setattr(sys.modules[__name__], key, value)
-        return value
+        return Config.get_instance()
     raise AttributeError(f"Module '{__name__}' has no attribute '{key}'")
 
 
