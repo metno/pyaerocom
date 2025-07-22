@@ -445,7 +445,7 @@ class ColocatedData(BaseModel):
         list
             list of countries available in these data
         """
-        if "country" not in list(self.coords):
+        if "country" not in self.coords:
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -469,7 +469,7 @@ class ColocatedData(BaseModel):
         list
             list of countries available in these data
         """
-        if "country_code" not in list(self.coords):
+        if "country_code" not in self.coords:
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -547,7 +547,7 @@ class ColocatedData(BaseModel):
             dictionary of unique country names (keys) and corresponding country
             codes (values)
         """
-        if "country" not in list(self.coords):
+        if "country" not in self.coords:
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
