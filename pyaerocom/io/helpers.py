@@ -100,7 +100,7 @@ def get_metadata_from_filename(filename):
     return fc.get_info_from_file(filename)
 
 
-def read_ebas_flags_file(ebas_flags_csv):
+def read_ebas_flags_file(ebas_flags_csv: str) -> dict[str, dict]:
     """Reads file ebas_flags.csv
 
     Parameters

@@ -5,7 +5,7 @@ AeroCom PhaseIII optical properties experiment
 
 from collections import ChainMap
 
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 
 # Used below in some of the obsconfig entries to speed up when ran locally
 OBS_ACCESS: dict = {}

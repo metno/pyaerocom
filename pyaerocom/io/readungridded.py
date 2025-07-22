@@ -52,7 +52,7 @@ class ReadUngridded:
 
     """
 
-    SUPPORTED_READERS = [
+    SUPPORTED_READERS: list[type[ReadUngriddedBase]] = [
         ReadAeronetInvV3,
         ReadAeronetSdaV3,
         ReadAeronetSunV3,
