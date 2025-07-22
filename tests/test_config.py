@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+import pyaerocom
 import pyaerocom.config as testmod
 from pyaerocom import const
 from pyaerocom.config import ALL_REGION_NAME, Config
@@ -355,3 +356,11 @@ def test_register_variable_with_Variable():
     vars = const.VARS
 
     assert test_var_name in vars.all_vars
+
+
+def test_singleton():
+    config1 = Config.get_instance()
+    config2 = Config.get_instance()
+
+    assert config1 is config2 is pyaerocom.const
+    assert isinstance(config1, Config)
