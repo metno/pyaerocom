@@ -126,10 +126,10 @@ class ColdataToJsonEngine(ProcessingEngine):
         elif not isinstance(coldata, ColocatedData):
             raise ValueError(f"Need ColocatedData object, got {type(coldata)}")
 
-        elif coldata.has_latlon_dims and regions_how == "country":
-            raise NotImplementedError(
-                "Cannot yet apply country filtering for 4D colocated data instances"
-            )
+        # elif coldata.has_latlon_dims and regions_how == "country":
+        #     raise NotImplementedError(
+        #         "Cannot yet apply country filtering for 4D colocated data instances"
+        #     )
         elif main_freq not in freqs:
             raise ConfigError(f"main_freq {main_freq} is not in experiment frequencies: {freqs}")
         if self.cfg.statistics_opts.stats_tseries_base_freq is not None:
