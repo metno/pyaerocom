@@ -1,13 +1,17 @@
 # isort:skip_file
 from importlib import metadata
-import sys
 
 from ._logging import change_verbosity
 from ._warnings import ignore_basemap_warning, ignore_earth_radius_warning
+from warnings import warn
 
 __version__ = metadata.version(__package__)
 
 import iris
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 # Enable new iris functionality to suppress deprecation warning.
 # https://scitools-iris.readthedocs.io/en/latest/generated/api/iris.html#iris.FUTURE
@@ -21,11 +25,18 @@ except AttributeError:
 
 from .config import Config
 
+_has_warned_const_deprecation = False
+
 
 def __getattr__(key: str):
     # Ensures that get_instance() is called each time const is accessed, which
     # should make const mockable in tests by mocking get_instance on Config class.
     if key == "const":
+        if not _has_warned_const_deprecation:
+            logger.warning(
+                "Use of pyaerocom.const is deprecated. Please use Config.get_instance() instead."
+            )
+
         return Config.get_instance()
     raise AttributeError(f"Module '{__name__}' has no attribute '{key}'")
 
