@@ -313,7 +313,9 @@ class Config:
 
         return self._paths_ini
 
-    def update_config_ini_file(self, user_file: str, default_file: str):
+    def update_config_ini_file(
+        self, user_file: str | os.PathLike, default_file: str | os.PathLike
+    ):
         """
         helper method that puts new keys from the default ini file into the user specific ini file
         below the path ~/MyPyaerocom
@@ -349,7 +351,9 @@ class Config:
         extra_user_keys = user_keys - default_keys
 
         if missing_default_keys or extra_user_keys:
-            backup_file_name = user_file + ".backup" + datetime.today().strftime("%Y%m%d%H%M%S")
+            backup_file_name = (
+                str(user_file) + ".backup" + datetime.today().strftime("%Y%m%d%H%M%S")
+            )
             # try to make this fail save
             try:
                 os.rename(user_file, backup_file_name)
@@ -394,7 +398,7 @@ class Config:
 
             try:
                 with open(user_file, "w") as fh:
-                    fh.write(user_file)
+                    fh.write(str(user_file))
                 logger.info(
                     f"Update of file {user_file} was successful. The original file was retained as {backup_file_name}, You might want to check paths for validity."
                 )
@@ -683,6 +687,7 @@ class Config:
 
             reader = get_ungridded_reader(obs_id)
 
+        assert reader is not None
         if obs_id not in reader.SUPPORTED_DATASETS:
             reader.SUPPORTED_DATASETS.append(obs_id)
         self.OBSLOCS_UNGRIDDED[obs_id] = data_dir
@@ -968,7 +973,7 @@ class Config:
             if _dir not in chk_dirs and self._check_access(_dir):
                 chk_dirs.append(_dir)
         if len(chk_dirs) == 0:
-            return False
+            return
 
         names_cfg = self._add_obsnames_config(cr)
 
