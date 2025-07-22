@@ -547,7 +547,7 @@ class ColocatedData(BaseModel):
             dictionary of unique country names (keys) and corresponding country
             codes (values)
         """
-        if "country" not in self.coords:
+        if "country" not in list(self.coords):
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -869,19 +869,25 @@ class ColocatedData(BaseModel):
 
         """
         if self.has_latlon_dims:
-            raise DataDimensionError(
-                "Countries cannot be assigned to 4D"
-                "ColocatedData with othorgonal lat / lon "
-                "dimensions. Please consider stacking "
-                "the latitude and longitude dimensions-"
-            )
+            # raise DataDimensionError(
+            #     "Countries cannot be assigned to 4D"
+            #     "ColocatedData with othorgonal lat / lon "
+            #     "dimensions. Please consider stacking "
+            #     "the latitude and longitude dimensions-"
+            # )
+            pass
         if assign_to_dim is None:
             assign_to_dim = "station_name"
 
-        if assign_to_dim not in self.dims:
-            raise DataDimensionError("No such dimension", assign_to_dim)
+        # stack lat and lon dimensions into station_name for 4D data
+        if all(_ in self.dims for _ in ("latitude", "longitude")):
+            coldata = self if inplace else self.copy()
+            coldata = coldata.stack(station_name=("latitude", "longitude"))
 
-        coldata = self if inplace else self.copy()
+        else:
+            if assign_to_dim not in self.dims:
+                raise DataDimensionError("No such dimension", assign_to_dim)
+            coldata = self if inplace else self.copy()
 
         if "country" in coldata.data.coords:
             logger.info("Country information is available")
