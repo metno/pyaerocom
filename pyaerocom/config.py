@@ -1,3 +1,4 @@
+from __future__ import annotations
 import configparser
 import getpass
 import logging
@@ -40,6 +41,9 @@ class Config:
 
     TODO: provide more information
     """
+
+    # Keep record of instance for singleton pattern.
+    _instance: Config | None = None
 
     # NAMES
     # default names of the different obs networks
@@ -662,7 +666,7 @@ class Config:
             self._search_dirs.append(loc)
 
     def add_ungridded_obs(
-        self, obs_id, data_dir, reader: "type[ReadUngriddedBase] | None" = None, check_read=False
+        self, obs_id, data_dir, reader: type[ReadUngriddedBase] | None = None, check_read=False
     ):
         """Add a network to the data search structure
 
@@ -782,7 +786,7 @@ class Config:
 
         self.OBS_UNGRIDDED_POST[obs_id] = addinfo.to_dict()
 
-    def _check_obsreader(self, obs_id: str, data_dir: str, reader: "type[ReadUngriddedBase]"):
+    def _check_obsreader(self, obs_id: str, data_dir: str, reader: type[ReadUngriddedBase]):
         """
         Check if files can be accessed when registering new dataset
 
@@ -1069,3 +1073,16 @@ class Config:
             else:
                 s += f"\n{k}: {v}"
         return s
+
+    @staticmethod
+    def get_instance() -> Config:
+        """Getter for singleton pattern for Config instance.
+        Returns the existing instance if it exists, otherwise
+        initializing it.
+
+        :return: Config.
+        """
+        if Config._instance is None:
+            Config._instance = Config()
+
+        return Config._instance

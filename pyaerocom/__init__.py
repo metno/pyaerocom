@@ -1,5 +1,6 @@
 # isort:skip_file
 from importlib import metadata
+import sys
 
 from ._logging import change_verbosity
 from ._warnings import ignore_basemap_warning, ignore_earth_radius_warning
@@ -20,8 +21,16 @@ except AttributeError:
 
 from .config import Config
 
-# Instantiate default configuration
-const = Config()
+
+def __getattr__(key: str):
+    # Ensures that const is initialized when first accessed, instead of on import.
+    if key == "const":
+        value = Config.get_instance()
+        setattr(sys.modules[__name__], key, value)
+        return value
+    raise AttributeError(f"Module '{__name__}' has no attribute '{key}'")
+
+
 ignore_basemap_warning()
 ignore_earth_radius_warning()
 
