@@ -43,6 +43,7 @@ class Config:
     """
 
     # Keep record of instance for singleton pattern.
+    # Should not be accessed directly. Instead use Config.get_instance()
     _instance: Config | None = None
 
     # NAMES
