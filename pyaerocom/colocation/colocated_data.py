@@ -445,7 +445,7 @@ class ColocatedData(BaseModel):
         list
             list of countries available in these data
         """
-        if "country" not in self.coords:
+        if "country" not in list(self.coords):
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -469,7 +469,7 @@ class ColocatedData(BaseModel):
         list
             list of countries available in these data
         """
-        if "country_code" not in self.coords:
+        if "country_code" not in list(self.coords):
             raise MetaDataError(
                 "No country information available in "
                 "ColocatedData. You may run class method "
@@ -891,9 +891,9 @@ class ColocatedData(BaseModel):
 
         if "country" in coldata.data.coords:
             logger.info("Country information is available")
-            return coldata
-        coords = coldata._get_stat_coords()
+            return self if inplace else coldata
 
+        coords = coldata._get_stat_coords()
         info = get_country_info_coords(coords)
 
         countries, codes = [], []
@@ -905,8 +905,15 @@ class ColocatedData(BaseModel):
         arr = arr.assign_coords(
             country=(assign_to_dim, countries), country_code=(assign_to_dim, codes)
         )
-        coldata.data = arr
-        return coldata
+        if inplace:
+            self.data = arr
+            return self
+        else:
+            # Reconstruct `coldata` with updated data and coordinates
+            coldata.data = arr.data
+            # coldata.coords.update(arr.coords)
+            # coldata.attrs.update(arr.attrs)
+            return coldata
 
     def copy(self):
         """Copy this object"""

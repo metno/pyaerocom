@@ -101,7 +101,7 @@ def init_regions_web(coldata, regions_how):
     elif regions_how == "country":
         regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
         regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
-        coldata = coldata.check_set_countries(True)
+        coldata.check_set_countries(True)
         regborders.update(coldata.get_country_codes())
         add_regs = _prepare_country_regions(coldata.get_country_codes().keys())
         regs.update(add_regs)
