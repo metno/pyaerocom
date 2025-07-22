@@ -28,6 +28,7 @@ _has_warned_const_deprecation = False
 
 
 def __getattr__(key: str):
+    global _has_warned_const_deprecation
     # Ensures that get_instance() is called each time const is accessed, which
     # should make const mockable in tests by mocking get_instance on Config class.
     if key == "const":
@@ -35,6 +36,7 @@ def __getattr__(key: str):
             logger.warning(
                 "Use of pyaerocom.const is deprecated. Please use Config.get_instance() or pyaerocom.config instead."
             )
+            _has_warned_const_deprecation = True
         return ConfigReader.get_instance()
     if key == "config":
         return ConfigReader.get_instance()
