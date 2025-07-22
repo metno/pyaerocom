@@ -23,6 +23,12 @@ from pyaerocom.region_defs import ALL_REGION_NAME, HTAP_REGIONS, OLD_AEROCOM_REG
 from pyaerocom.varcollection import VarCollection
 from pyaerocom.variable import Variable
 
+import typing
+
+if typing.TYPE_CHECKING:
+    # Working around circular import.
+    from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+
 logger = logging.getLogger(__name__)
 
 
@@ -259,7 +265,7 @@ class Config:
         # create MyPyaerocom directory
         chk_make_subdir(self.HOMEDIR, self._outhomename)
 
-    def _check_access(self, loc: os.PathLike | None) -> bool:
+    def _check_access(self, loc: str | os.PathLike | None) -> bool:
         """Uses multiprocessing approach to check if location can be accessed
 
         Parameters
@@ -655,7 +661,9 @@ class Config:
                 raise FileNotFoundError(f"Input location {loc} could not be accessed")
             self._search_dirs.append(loc)
 
-    def add_ungridded_obs(self, obs_id, data_dir, reader=None, check_read=False):
+    def add_ungridded_obs(
+        self, obs_id, data_dir, reader: "type[ReadUngriddedBase] | None" = None, check_read=False
+    ):
         """Add a network to the data search structure
 
         Parameters
@@ -774,7 +782,7 @@ class Config:
 
         self.OBS_UNGRIDDED_POST[obs_id] = addinfo.to_dict()
 
-    def _check_obsreader(self, obs_id: str, data_dir: str, reader):
+    def _check_obsreader(self, obs_id: str, data_dir: str, reader: "type[ReadUngriddedBase]"):
         """
         Check if files can be accessed when registering new dataset
 
