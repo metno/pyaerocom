@@ -56,4 +56,4 @@ def test_get_unit_conversion_fac(
 def test_get_unit_conversion_fac_error(from_unit: str, to_unit: str, var_name: str | None):
     with pytest.raises(UnitConversionError) as e:
         get_unit_conversion_fac(from_unit, to_unit, var_name)
-    assert str(e.value) == f"failed to convert unit from {from_unit} to {to_unit}"
+    assert f"Failed to convert unit from {from_unit} to {to_unit}" in str(e.value)
