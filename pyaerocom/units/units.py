@@ -129,7 +129,7 @@ class Unit:
                 MolecularMass(self._species)
             except ValueError:
                 self._species = None
-        if self.has_element_mass and self._species is not None:
+        if self._element is not None and self._species is not None:
             factor = MolecularMass(self._species) / MolecularMass(self._element)
 
         else:
@@ -199,6 +199,42 @@ class Unit:
 
         return ""
 
+    def _validate_convertible(self, other: str | Unit) -> None:
+        if isinstance(other, str):
+            other = Unit(other)
+
+        cf_units_only = self._element is None and other._element is None
+        compatible_element = (
+            (self._element is None)
+            or (other._element is None)
+            or (self._element == other._element)
+        )
+        same_species = (self._species is not None and other._species is not None) and (
+            self._species == other._species
+        )
+        same_variable = (self._aerocom_var is None and other._aerocom_var is None) or (
+            self._aerocom_var == other._aerocom_var
+        )
+
+        if cf_units_only:
+            if not self._cfunit.is_convertible(other._cfunit):
+                raise ValueError(f"Unit '{self._cfunit}' is not convertible to '{other._cfunit}'.")
+
+        if not compatible_element:
+            raise ValueError(
+                f"Unit '{self}' is not convertible to '{other}'. Element '{self._element}' is not compatible with '{other._element}'."
+            )
+
+        if same_species and same_variable:
+            if not self._cfunit.is_convertible(other._cfunit):
+                raise ValueError(
+                    f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
+                )
+
+        if (self._element == other._element) and same_variable:
+            if not self._cfunit.is_convertible(other._cfunit):
+                raise ValueError(f"Unit '{self._cfunit}' is not convertible to '{other._cfunit}'.")
+
     def is_convertible(self, other: str | Unit) -> bool:
         """
         Return whether this unit is convertible to other. It handles a couple of
@@ -211,6 +247,12 @@ class Unit:
 
         :param other: Other Unit.
         """
+        try:
+            self._validate_convertible(other)
+        except ValueError:
+            return False
+
+        return True
         if isinstance(other, str):
             other = Unit(other)
 
