@@ -81,10 +81,10 @@ class Colocator:
 
         self.colocation_setup = colocation_setup
         self.logging: bool = True
-        self._loaded_model_data: dict | None = {}
+        self._loaded_model_data: dict[str, GriddedData] = {}
         self.data: dict = {}
 
-        self._processing_status: list[str] = []
+        self._processing_status: list[tuple[str | None, str | None, int]] = []
         self.files_written: list[str] = []
 
         self._model_reader: ReadGridded | ReadMscwCtm | ReadCAMS2_83 | None = None
@@ -299,7 +299,7 @@ class Colocator:
             raise AttributeError("stop time is not set")
         return to_datestring_YYYYMMDD(to_pandas_timestamp(self.stop))
 
-    def prepare_run(self, var_list: list[str] | None = None) -> dict:
+    def prepare_run(self, var_list: list[str] | None = None) -> dict[str, str]:
         """
         Prepare colocation run for current setup.
 
@@ -403,11 +403,11 @@ class Colocator:
                         )
                         data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8
 
-                self._processing_status.append([mod_var, obs_var, 1])
+                self._processing_status.append((mod_var, obs_var, 1))
             except Exception:
                 msg = f"Failed to perform analysis: {traceback.format_exc()} ❌ \n"
                 logger.warning(msg)
-                self._processing_status.append([mod_var, obs_var, 5])
+                self._processing_status.append((mod_var, obs_var, 5))
                 if self.colocation_setup.raise_exceptions:
                     self._print_processing_status()
                     logger.critical("ABORTED: raise_exceptions is True 🛑 \n")
@@ -471,7 +471,9 @@ class Colocator:
 
         return valid
 
-    def _filter_var_matches_varlist(self, vars_to_process, var_list) -> dict:
+    def _filter_var_matches_varlist(
+        self, vars_to_process: dict[str, str], var_list: list[str]
+    ) -> dict[str, str]:
         _vars_to_process = {}
         if isinstance(var_list, str):
             var_list = [var_list]
@@ -531,7 +533,9 @@ class Colocator:
                 if ovar not in self.colocation_setup.obs_filters:
                     self.obs_filters[ovar] = {}
 
-    def _check_load_model_data(self, var_matches):
+    def _check_load_model_data(
+        self, var_matches: dict[str, str]
+    ) -> tuple[dict[str, str], dict[str, str]]:
         """
         Try to preload modeldata for input variable matches
 
@@ -570,7 +574,7 @@ class Colocator:
             except Exception as e:
                 msg = f"Failed to load model data: {self.colocation_setup.model_id} ({mvar}). Reason {e}  ❌"
                 logger.warning(msg)
-                self._processing_status.append([mvar, ovar, 4])
+                self._processing_status.append((mvar, ovar, 4))
                 if self.colocation_setup.raise_exceptions:
                     raise ColocationError(msg)
         return filtered, ts_types
@@ -670,7 +674,7 @@ class Colocator:
                     logger.warning(
                         f"Obs variable {ovar} is not available in {self.colocation_setup.obs_id} and will be ignored 🚫"
                     )
-                    self._processing_status.append([None, ovar, 3])
+                    self._processing_status.append((None, ovar, 3))
 
             if self.colocation_setup.raise_exceptions:
                 invalid = [var for var in self.colocation_setup.obs_vars if var not in avail]
@@ -707,15 +711,13 @@ class Colocator:
         muv = self.colocation_setup.model_use_vars
         modreader = self.model_reader
         for ovar in self.colocation_setup.obs_vars:
-            if ovar in muv:
-                mvar = muv[ovar]
-            else:
-                mvar = ovar
+            mvar = muv.get(ovar, ovar)
+
             self._check_add_model_read_aux(mvar)
             if modreader.has_var(mvar):
                 var_matches[mvar] = ovar
             else:
-                self._processing_status.append([mvar, ovar, 2])
+                self._processing_status.append((mvar, ovar, 2))
                 all_ok = False
 
             if ovar in self.colocation_setup.model_add_vars:  # observation variable
@@ -725,7 +727,7 @@ class Colocator:
                     if modreader.has_var(addvar):
                         var_matches[addvar] = ovar
                     else:
-                        self._processing_status.append([addvar, ovar, 2])
+                        self._processing_status.append((addvar, ovar, 2))
                         all_ok = False
 
         if not all_ok and self.colocation_setup.raise_exceptions:
@@ -762,7 +764,7 @@ class Colocator:
             if tst == "":
                 tst = self.colocation_setup.ts_type
         elif not is_model and self.colocation_setup.obs_ts_type_read is not None:
-            tst = self.obs_ts_type_read
+            tst = self.colocation_setup.obs_ts_type_read
         if isinstance(tst, dict):
             if var_name in tst:
                 tst = tst[var_name]

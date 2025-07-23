@@ -129,7 +129,7 @@ class Unit:
                 MolecularMass(self._species)
             except ValueError:
                 self._species = None
-        if self._element is not None and self._species is not None:
+        if self.has_element_mass and self._species is not None:
             factor = MolecularMass(self._species) / MolecularMass(self._element)
 
         else:
