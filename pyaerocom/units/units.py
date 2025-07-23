@@ -200,6 +200,19 @@ class Unit:
         return ""
 
     def _validate_convertible(self, other: str | Unit) -> None:
+        """
+        Validates whether the unit is convertible to another by raising an exception
+        if not convertible:
+
+        - Units that contain elements (eg. kg N m-2) need to have compatible mass ratios:
+           - This is assumed to be the case if element and species are the same, the aerocom
+           variable is the same (to account for variables that don't have a clear mass ratio —
+           eg. wetrdn.)
+
+        :param other: Other Unit.
+
+        :raises ValueError: If unit is not convertible.
+        """
         if isinstance(other, str):
             other = Unit(other)
 
@@ -253,35 +266,6 @@ class Unit:
             return False
 
         return True
-        if isinstance(other, str):
-            other = Unit(other)
-
-        cf_units_only = self._element is None and other._element is None
-        compatible_element = (
-            (self._element is None)
-            or (other._element is None)
-            or (self._element == other._element)
-        )
-        same_species = (self._species is not None and other._species is not None) and (
-            self._species == other._species
-        )
-        same_variable = (self._aerocom_var is None and other._aerocom_var is None) or (
-            self._aerocom_var == other._aerocom_var
-        )
-
-        if cf_units_only:
-            return self._cfunit.is_convertible(other._cfunit)
-
-        if not compatible_element:
-            return False
-
-        if same_species and same_variable:
-            return self._cfunit.is_convertible(other._cfunit)
-
-        if (self._element == other._element) and same_variable:
-            return self._cfunit.is_convertible(other._cfunit)
-
-        return False
 
     def is_dimensionless(self) -> bool:
         """
