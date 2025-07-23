@@ -433,14 +433,18 @@ def test_ColocatedData_filter_region(
 
 
 @pytest.mark.parametrize("coldataset", ["fake_4d"])
-def test_ColocatedData_filter_region_error(coldata: ColocatedData):
-    with pytest.raises(DataDimensionError) as e:
-        coldata.check_set_countries()
-    assert str(e.value).startswith("Countries cannot be assigned")
-
-    with pytest.raises(AttributeError) as e:
-        coldata.filter_region(region_id="France", check_country_meta=True)
-    assert str(e.value).endswith("'ColocatedData' object has no attribute 'countries_available'")
+def test_ColocatedData_assigns_countries_to_4d_data(coldata: ColocatedData):
+    assert len(coldata.dims) == 4
+    assert "latitude" in coldata.coords
+    assert "latitude" in coldata.coords
+    assert "station_name" not in coldata.coords
+    assert "country" not in coldata.coords
+    assert "country_code" not in coldata.coords
+    coldata.check_set_countries()
+    assert len(coldata.dims) == 3
+    assert "station_name" in coldata.coords
+    assert "country" in coldata.coords
+    assert "country" in coldata.coords
 
 
 @pytest.mark.parametrize(
