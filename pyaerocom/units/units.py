@@ -231,11 +231,13 @@ class Unit:
 
         if cf_units_only:
             if not self._cfunit.is_convertible(other._cfunit):
-                raise ValueError(f"Unit '{self._cfunit}' is not convertible to '{other._cfunit}'.")
+                raise ValueError(
+                    f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
+                )
 
         if not compatible_element:
             raise ValueError(
-                f"Unit '{self}' is not convertible to '{other}'. Element '{self._element}' is not compatible with '{other._element}'."
+                f"Element '{self._element}' is not compatible with '{other._element}'."
             )
 
         if same_species and same_variable:
@@ -246,7 +248,9 @@ class Unit:
 
         if (self._element == other._element) and same_variable:
             if not self._cfunit.is_convertible(other._cfunit):
-                raise ValueError(f"Unit '{self._cfunit}' is not convertible to '{other._cfunit}'.")
+                raise ValueError(
+                    f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
+                )
 
     def is_convertible(self, other: str | Unit) -> bool:
         """
@@ -370,10 +374,8 @@ class Unit:
             assert isinstance(other, Unit)
             to_unit = other
 
-        if not self.is_convertible(to_unit):
-            raise ValueError(
-                f"Unable to convert units. Got incompatible units '{repr(self)}' and '{repr(to_unit)}'."
-            )
+        self._validate_convertible(other)
+
         to_unit_cf = to_unit._cfunit
         factor = float(self._cfunit.convert(1, to_unit_cf, inplace=False))
 
