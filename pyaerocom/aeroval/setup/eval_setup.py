@@ -104,6 +104,13 @@ class EvalSetup(BaseModel):
                 ("Model Maps Settings", self.modelmaps_opts.model_dump()),
                 ("pip freeze count", f"{len(self.pip_freeze)} packages"),
             ]
+            max_label_len = max(len(label) for label, _ in entries)
+
+            summary_lines = ["EvalSetup Summary:"]
+            for label, val in entries:
+                summary_lines.append(f"  ├─ {label.ljust(max_label_len)} : {val}")
+            summary_lines[-1] = summary_lines[-1].replace("├─", "└─", 1)  # Last entry uses └─
+
             return "\n".join(summary_lines)
         except Exception:
             return super().__str__()
