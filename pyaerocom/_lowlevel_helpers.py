@@ -78,43 +78,6 @@ def _class_name(obj):
     return type(obj).__name__
 
 
-# TODO: Check to see if instances of these classes can instead use pydantic
-class Validator(abc.ABC):
-    def __set_name__(self, owner, name):
-        self._name = name
-
-    def __get__(self, obj, objtype=None):
-        try:
-            return obj.__dict__[self._name]
-        except (AttributeError, KeyError):
-            raise AttributeError("value not set...")
-
-    def __set__(self, obj, val):
-        val = self.validate(val)
-        obj.__dict__[self._name] = val
-
-    @abc.abstractmethod
-    def validate(self, val):
-        pass
-
-
-class TypeValidator(Validator):
-    def __init__(self, type):
-        self._type = type
-
-    def validate(self, val):
-        if not isinstance(val, self._type):
-            raise ValueError(f"need instance of {self._type}")
-        return val
-
-
-class StrType(Validator):
-    def validate(self, val):
-        if not isinstance(val, str):
-            raise ValueError(f"need str, got {val}")
-        return val
-
-
 class Loc(abc.ABC):
     """Abstract descriptor representing a path location
 
@@ -173,12 +136,6 @@ class Loc(abc.ABC):
     @abc.abstractmethod
     def create(self, value):
         pass
-
-
-class DirLoc(Loc):
-    def create(self, value):
-        os.makedirs(value, exist_ok=True)
-        logger.info(f"created directory {value}")
 
 
 class AsciiFileLoc(Loc):
