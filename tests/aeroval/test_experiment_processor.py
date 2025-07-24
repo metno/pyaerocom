@@ -118,20 +118,35 @@ def test_rerun_by_model(eval_config: dict, pyaro_testconfig, fake_aod_MSCWCtm_da
     assert (
         processor.exp_output.results_available
     ), "Experiment data should be available after initial run"
-
-    processor.exp_output.delete_experiment_data(also_coldata=True)  # Clear previous data
+    assert "TM5-AP3-CTRL" in str(
+        processor.exp_output
+    ), "TM5-AP3-CTRL model should be present in results after initial run"
+    processor.exp_output.delete_experiment_data(also_coldata=True)
     assert not processor.exp_output.results_available, "Experiment data should be cleared"
+    assert "TM5-AP3-CTRL" not in str(
+        processor.exp_output
+    ), "TM5-AP3-CTRL model should not be present in results after clearing"
+    # Rerun with the TM5-AP3-CTRL model
     processor.run(model_name="TM5-AP3-CTRL")
     assert (
         processor.exp_output.results_available
     ), "Experiment data should be available after rerun"
+    assert "TM5-AP3-CTRL" in str(
+        processor.exp_output
+    ), "TM5-AP3-CTRL model should be present in results after rerun"
+    # Rerun with a non-existing model
+    with pytest.raises(KeyError) as e:
+        processor.run(model_name="NonExistingModel")
+    assert "No matches could be found that match input NonExistingModel" in str(
+        e.value
+    ), "Should raise KeyError for non-existing model"
 
 
 @pytest.mark.parametrize("cfg", ["cfgexp4"])
 def test_rerun_by_obs_network(eval_config: dict):
     # Ensure that the obs networks are set up correctly - want more than just superobs for this test
     eval_config["obs_cfg"]["AERONET-Sun"]["only_superobs"] = False  # Ensure superobs is not set
-    eval_config["obs_cfg"]["AERONET-SDA"]["only_superobs"] = False  # Ensure superobs is not set
+    eval_config["obs_cfg"]["AERONET-SDA"]["only_superobs"] = False
     setup = EvalSetup(**eval_config)
     processor = ExperimentProcessor(setup)
     processor.run()  # Initial full run
