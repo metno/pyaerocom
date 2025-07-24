@@ -411,11 +411,11 @@ class ColocationSetup(BaseModel):
     model_name: str | None = None
     model_data_dir: Path | str | None = None
 
-    model_read_opts: dict | None = {}
+    model_read_opts: dict = {}
 
-    model_use_vars: dict[str, str] | None = {}
+    model_use_vars: dict[str, str] = {}
     model_rename_vars: dict[str, str] | None = {}
-    model_add_vars: dict[str, tuple[str, ...]] | None = {}
+    model_add_vars: dict[str, tuple[str, ...]] = {}
     model_to_stp: bool = False
 
     model_ts_type_read: str | dict | None = None
