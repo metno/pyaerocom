@@ -33,25 +33,31 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         try:
             obs_keys = self.cfg.obs_cfg.keylist()
             model_keys = self.cfg.model_cfg.keylist()
+            obs_vars = self.cfg.obs_cfg.get_all_vars()
 
-            summary = [
-                "ExperimentProcessor for AeroVal",
-                f"  ├─ Project ID         : {self.cfg.proj_info.proj_id}",
-                f"  ├─ Experiment ID      : {self.cfg.exp_info.exp_id}",
-                f"  ├─ Models             : {len(model_keys)} → {model_keys}",
-                f"  ├─ Observations       : {len(obs_keys)} → {obs_keys}",
-                f"  ├─ Variables          : {self.cfg.processing_opts.var_list if hasattr(self.cfg.processing_opts, 'var_list') else 'ALL'}",
-                f"  ├─ Only Model Maps    : {self.cfg.processing_opts.only_model_maps}",
-                f"  ├─ Only Colocation    : {self.cfg.processing_opts.only_colocation}",
-                f"  ├─ Only JSON          : {self.cfg.processing_opts.only_json}",
-                f"  ├─ Obs Only Mode      : {self.cfg.processing_opts.obs_only}",
-                f"  ├─ Web Interface Dir  : {getattr(self.cfg.path_manager, 'exp_output_dir', 'n/a')}",
-                f"  └─ Colocator Cache    : {list(self._colocators.keys()) if hasattr(self, '_colocators') else 'None'}",
+            entries = [
+                ("Project ID", self.cfg.proj_info.proj_id),
+                ("Experiment ID", self.cfg.exp_info.exp_id),
+                ("Models", f"{len(model_keys)} → {model_keys}"),
+                ("Observation Networks", f"{len(obs_keys)} → {obs_keys}"),
+                ("Observation Variables", f"{len(obs_vars)} → {obs_vars}"),
+                ("Only Model Maps", self.cfg.processing_opts.only_model_maps),
+                ("Only Colocation", self.cfg.processing_opts.only_colocation),
+                ("Only JSON", self.cfg.processing_opts.only_json),
+                ("Obs Only Mode", self.cfg.processing_opts.obs_only),
+                ("Web Interface Dir", self.cfg.path_manager.json_basedir),
             ]
-            breakpoint()
+
+            max_label_len = max(len(label) for label, _ in entries)
+
+            summary = ["ExperimentProcessor for AeroVal"]
+            for label, value in entries:
+                summary.append(f"  ├─ {label.ljust(max_label_len)} : {value}")
+            summary[-1] = summary[-1].replace("├─", "└─", 1)  # Make last bullet '└─'
             return "\n".join(summary)
-        except Exception:
-            return super().__str__()
+        except Exception as e:  # since the super class does not have a __str__ method, we catch any exception here
+            summary_lines = [f"EvalSetup Summary: ⚠️ Could not generate full summary ({e})"]
+        return "\n".join(summary_lines)
 
     def _run_single_entry(self, model_name, obs_name, var_list):
         if model_name == obs_name:
