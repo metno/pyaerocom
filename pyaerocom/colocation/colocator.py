@@ -91,6 +91,7 @@ class Colocator:
         self._obs_reader: Any | None = None
         self._obs_is_vertical_profile: bool = False
         self.obs_filters: dict = colocation_setup.obs_filters.copy()
+        self._original_obs_var_names: dict[str, str] = {}
 
     @property
     def model_vars(self):
@@ -713,6 +714,9 @@ class Colocator:
         for ovar in self.colocation_setup.obs_vars:
             mvar = muv.get(ovar, ovar)
 
+            # Keep track of original var name, such that it can be used in units harmonization.
+            self._original_obs_var_names[mvar] = ovar
+
             self._check_add_model_read_aux(mvar)
             if modreader.has_var(mvar):
                 var_matches[mvar] = ovar
@@ -1002,7 +1006,11 @@ class Colocator:
 
         if self.colocation_setup.harmonise_units:
             model_data, obs_data = harmonise_units(
-                model_data, obs_data, var=model_var, var_ref=obs_var, inplace=True
+                model_data,
+                obs_data,
+                var=model_var,
+                var_ref=self._original_obs_var_names.get(obs_var, obs_var),
+                inplace=True,
             )
 
         if getattr(obs_data, "is_vertical_profile", None):
