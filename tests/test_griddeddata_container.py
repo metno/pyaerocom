@@ -5,6 +5,12 @@ from pyaerocom.griddeddata_container import GriddedDataContainer, GriddedDataCon
 from pyaerocom import GriddedData
 
 
+def test___init__():
+    data_id = "test_id"
+    data = GriddedDataContainer(data_id)
+    assert data.data_id == data_id
+
+
 def test_fixture(cities_data):
     for model in ["uEMEP", "EMEP"]:
         data = cities_data[model]
@@ -20,7 +26,8 @@ def test_fixture(cities_data):
     ],
 )
 def test__initiate(cities_data, model):
-    mg = GriddedDataContainer()
+    data_id = "test_id"
+    mg = GriddedDataContainer(data_id)
 
     gd = cities_data[model][0]
     mg._initiate(gd)
@@ -37,7 +44,8 @@ def test__initiate(cities_data, model):
     ],
 )
 def test_add_griddeddata(cities_data, model):
-    mg = GriddedDataContainer()
+    data_id = "test_id"
+    mg = GriddedDataContainer(data_id)
 
     for gd in cities_data[model]:
         mg.add_griddeddata(gd)
@@ -48,8 +56,8 @@ def test_add_griddeddata(cities_data, model):
 def test_get_latlon_ranges(cities_data):
     correct_lats = [[51.05, 52.95], [51.05, 52.95]]
     correct_lons = [[4.05, 5.95], [12.05, 13.95]]
-
-    mg = GriddedDataContainer()
+    data_id = "test_id"
+    mg = GriddedDataContainer(data_id)
 
     for gd in cities_data["EMEP"]:
         mg.add_griddeddata(gd)
@@ -68,8 +76,8 @@ def test_get_latlon_ranges(cities_data):
 def test_get_xyranges(cities_data):
     correct_xs = [[3462625, 3495375], [3908625, 3935875]]
     correct_ys = [[2462125, 2486375], [2516625, 2541375]]
-
-    mg = GriddedDataContainer()
+    data_id = "test_id"
+    mg = GriddedDataContainer(data_id)
 
     for gd in cities_data["uEMEP"]:
         mg.add_griddeddata(gd)
@@ -89,7 +97,8 @@ def test_get_xyranges(cities_data):
 
 
 def test_add_griddeddata_different_model(cities_data):
-    mg = GriddedDataContainer()
+    data_id = "test_id"
+    mg = GriddedDataContainer(data_id)
 
     emep = cities_data["EMEP"][0]
     uemep = cities_data["uEMEP"][0]
@@ -112,7 +121,8 @@ def test_add_griddeddata_different_model(cities_data):
     ],
 )
 def test_add_griddeddata_errors(cities_data, attribute, attr_value):
-    mg = GriddedDataContainer()
+    data_id = "test_id"
+    mg = GriddedDataContainer(data_id)
 
     emep = cities_data["EMEP"][0]
     emep2 = deepcopy(cities_data["EMEP"][1])

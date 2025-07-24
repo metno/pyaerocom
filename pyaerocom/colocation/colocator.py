@@ -173,7 +173,7 @@ class Colocator:
         """
 
         if self._model_readers is not None:
-            if self._model_readers.data_id[0] == self.colocation_setup.model_id:
+            if self._model_readers[0].data_id == self.colocation_setup.model_id:
                 return self._model_readers
             logger.info(
                 f"Reloading outdated model readers. ID of current reader: "
@@ -186,7 +186,7 @@ class Colocator:
                 for folder in self.colocation_setup.model_data_dir
             ]
         else:
-            self.model_readers = [self.model_reader]
+            self._model_readers = [self.model_reader]
         return self._model_readers
 
     def _reload_model_reader_with_new_dir(self, model_dir=None) -> ReadGridded:

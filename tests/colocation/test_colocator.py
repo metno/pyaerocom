@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from pyaerocom import ColocatedData, GriddedData, UngriddedData, const
+from pyaerocom import ColocatedData, GriddedData, UngriddedData, const, GriddedDataContainer
 from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
@@ -387,7 +387,7 @@ def test_colocator_get_model_data(setup):
 
     col = Colocator(col_stp)
     data = col.get_model_data("od550aer")
-    assert isinstance(data, GriddedData)
+    assert isinstance(data, GriddedDataContainer)
 
 
 def test_colocator__find_var_matches(setup):
