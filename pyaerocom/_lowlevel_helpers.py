@@ -194,12 +194,9 @@ class BrowseDict(MutableMapping):
     assigned value is callable, it will be executed on demand).
     """
 
-    ADD_GLOB = []
     FORBIDDEN_KEYS = []
-    #: Keys to be ignored when converting to json
-    IGNORE_JSON = []
+
     MAXLEN_KEYS = 1e2
-    SETTER_CONVERT = {}
 
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
@@ -209,10 +206,7 @@ class BrowseDict(MutableMapping):
         return _class_name(self)
 
     def keys(self):
-        return list(self.__dict__) + self.ADD_GLOB
-
-    def _get_glob_vals(self):
-        return [getattr(self, x) for x in self.ADD_GLOB]
+        return list(self.__dict__)
 
     def values(self):
         return [getattr(self, x) for x in self.keys()]
@@ -222,26 +216,12 @@ class BrowseDict(MutableMapping):
             yield key, getattr(self, key)
 
     def __setitem__(self, key, val) -> None:
-        key, val, ok = self._setitem_checker(key, val)
-        if not ok:
-            return
-        if bool(self.SETTER_CONVERT):
-            for fromtp, totp in self.SETTER_CONVERT.items():
-                if isinstance(val, fromtp):
-                    if fromtp is dict:
-                        val = totp(**val)
-                    else:
-                        val = totp(val)
-
         if isinstance(key, str):
             if len(key) > self.MAXLEN_KEYS:
                 raise KeyError(f"key {key} exceeds max length of {self.MAXLEN_KEYS}")
             if key in self.FORBIDDEN_KEYS:
                 raise KeyError(f"invalid key {key}")
         setattr(self, key, val)
-
-    def _setitem_checker(self, key, val):
-        return key, val, True
 
     def __getitem__(self, key):
         try:
@@ -284,145 +264,13 @@ class BrowseDict(MutableMapping):
         """
         output = {}
         for key, val in self.items():
-            if key in self.IGNORE_JSON:
-                continue
             if hasattr(val, "json_repr"):
                 val = val.json_repr()
             output[key] = val
         return output
 
-    def import_from(self, other) -> None:
-        """
-        Import key value pairs from other object
-
-        Other than :func:`update` this method will silently ignore input
-        keys that are not contained in this object.
-
-        Parameters
-        ----------
-        other : dict or BrowseDict
-            other dict-like object containing content to be updated.
-
-        Raises
-        ------
-        ValueError
-            If input is invalid type.
-
-        Returns
-        -------
-        None
-
-        """
-        if not isinstance(other, dict | BrowseDict):
-            raise ValueError("need dict-like object")
-        for key, val in other.items():
-            if key in self:
-                self[key] = val
-            elif key in self.FORBIDDEN_KEYS:
-                raise KeyError(f"invalid key {key}")
-
-    def pretty_str(self):
-        return dict_to_str(self.to_dict())
-
     def __str__(self):
         return str(self.to_dict())
-
-
-class ConstrainedContainer(BrowseDict):
-    """Restrictive dict-like class with fixed keys
-
-    This class enables to create dict-like objects that have a fixed set of
-    keys and value types (once assigned). Optional values may be instantiated
-    as None, in which case the first time instantiation defines its type.
-
-    Note
-    ----
-    The limitations for assignments are only restricted to setitem operations
-    and attr assignment via "." works like in every other class.
-
-    Example
-    -------
-    >>> class MyContainer(ConstrainedContainer):
-    ...    def __init__(self):
-    ...        self.val1 = 1
-    ...        self.val2 = 2
-    ...        self.option = None
-    >>> mc = MyContainer()
-    >>> mc['option'] = 42
-    """
-
-    CRASH_ON_INVALID = True
-
-    def __setitem__(self, key, val):
-        super().__setitem__(key, val)
-
-    def _invoke_dtype(self, current_tp, val):
-        return current_tp(**val)
-
-    def _check_valtype(self, key, val):
-        current_tp = type(self[key])
-        if type(val) is not current_tp and isinstance(self[key], BrowseDict):
-            val = current_tp(**val)
-        return val
-
-    def _setitem_checker(self, key, val):
-        """make sure no new attr is added
-
-        Note
-        ----
-        Only used in __setitem__ not in __setattr__.
-        """
-        if key not in dir(self):
-            if self.CRASH_ON_INVALID:
-                raise ValueError(f"Invalid key {key}")
-            logger.warning(f"Invalid key {key} in {self._class_name}. Will be ignored.")
-            return key, val, False
-
-        current = getattr(self, key)
-        val = self._check_valtype(key, val)
-        current_tp = type(current)
-
-        if current is not None and not isinstance(val, current_tp):
-            raise ValueError(
-                f"Invalid type {type(val)} for key: {key}. Need {current_tp} "
-                f"(Current value: {current})"
-            )
-        return key, val, True
-
-
-class NestedContainer(BrowseDict):
-    def _occurs_in(self, key) -> list:
-        objs = []
-        if key in self:
-            objs.append(self)
-        for k, v in self.items():
-            if isinstance(v, dict | BrowseDict) and key in v:
-                objs.append(v)
-            if len(objs) > 1:
-                print(key, "is contained in multiple containers ", objs)
-        return objs
-
-    def keys_unnested(self) -> list:
-        keys = []
-        for key, val in self.items():
-            keys.append(key)
-            if isinstance(val, NestedContainer):
-                keys.extend(val.keys_unnested())
-            elif isinstance(val, ConstrainedContainer | dict):
-                for subkey, subval in val.items():
-                    keys.append(subkey)
-        return keys
-
-    def update(self, **settings):
-        for key, val in settings.items():
-            to_update = self._occurs_in(key)
-            if len(to_update) == 0:
-                raise AttributeError(f"invalid key {key}")
-            for obj in to_update:
-                obj[key] = val
-
-    def __str__(self):
-        return dict_to_str(self)
 
 
 def merge_dicts(dict1, dict2, discard_failing=True):
