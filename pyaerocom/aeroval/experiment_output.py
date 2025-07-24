@@ -8,9 +8,6 @@ import aerovaldb
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (
-    DirLoc,
-    StrType,
-    TypeValidator,
     sort_dict_by_name,
 )
 from pyaerocom.aeroval import EvalSetup
@@ -35,17 +32,18 @@ from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.utils import recursive_defaultdict
 from pyaerocom.variable_helpers import get_aliases
-
+from attrs import define, field
 
 logger = logging.getLogger(__name__)
 
 
+@define
 class ProjectOutput:
     """JSON output for project"""
 
-    proj_id = StrType()
-
-    json_basedir = DirLoc(assert_exists=True)
+    proj_id: str = field()
+    avdb: aerovaldb.AerovalDB = field()
+    json_basedir: str = field()
 
     def __init__(self, proj_id: str, resource: str | pathlib.Path | aerovaldb.AerovalDB):
         self.proj_id = proj_id
@@ -87,10 +85,12 @@ class ProjectOutput:
         return list(self.avdb.get_experiments(self.proj_id, default={}))
 
 
+@define
 class ExperimentOutput(ProjectOutput):
     """JSON output for experiment"""
 
-    cfg = TypeValidator(EvalSetup)
+    cfg: EvalSetup = field()
+    _invalid: dict[str, list] = field()
 
     def __init__(self, cfg: EvalSetup):
         self.cfg = cfg
