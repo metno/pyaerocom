@@ -1,6 +1,5 @@
 # import inspect
 from copy import deepcopy
-from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 from pyaerocom.aeroval.aux_io_helpers import check_aux_info

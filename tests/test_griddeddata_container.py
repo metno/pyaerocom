@@ -5,10 +5,6 @@ from pyaerocom.griddeddata_container import GriddedDataContainer, GriddedDataCon
 from pyaerocom import GriddedData
 
 
-def test___init__():
-    data = GriddedDataContainer()
-
-
 def test_fixture(cities_data):
     for model in ["uEMEP", "EMEP"]:
         data = cities_data[model]
