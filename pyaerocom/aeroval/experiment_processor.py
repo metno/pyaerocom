@@ -29,6 +29,30 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
     """
 
+    def __str__(self) -> str:
+        try:
+            obs_keys = self.cfg.obs_cfg.keylist()
+            model_keys = self.cfg.model_cfg.keylist()
+
+            summary = [
+                "ExperimentProcessor for AeroVal",
+                f"  ├─ Project ID         : {self.cfg.proj_info.proj_id}",
+                f"  ├─ Experiment ID      : {self.cfg.exp_info.exp_id}",
+                f"  ├─ Models             : {len(model_keys)} → {model_keys}",
+                f"  ├─ Observations       : {len(obs_keys)} → {obs_keys}",
+                f"  ├─ Variables          : {self.cfg.processing_opts.var_list if hasattr(self.cfg.processing_opts, 'var_list') else 'ALL'}",
+                f"  ├─ Only Model Maps    : {self.cfg.processing_opts.only_model_maps}",
+                f"  ├─ Only Colocation    : {self.cfg.processing_opts.only_colocation}",
+                f"  ├─ Only JSON          : {self.cfg.processing_opts.only_json}",
+                f"  ├─ Obs Only Mode      : {self.cfg.processing_opts.obs_only}",
+                f"  ├─ Web Interface Dir  : {getattr(self.cfg.path_manager, 'exp_output_dir', 'n/a')}",
+                f"  └─ Colocator Cache    : {list(self._colocators.keys()) if hasattr(self, '_colocators') else 'None'}",
+            ]
+            breakpoint()
+            return "\n".join(summary)
+        except Exception:
+            return super().__str__()
+
     def _run_single_entry(self, model_name, obs_name, var_list):
         if model_name == obs_name:
             msg = f"Cannot run same dataset against each other ({model_name} vs. {obs_name}) ➡️⬅️"
