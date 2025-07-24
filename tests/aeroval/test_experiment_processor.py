@@ -111,7 +111,7 @@ def test_rerun_by_variable(eval_config: dict):
 
 
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
-def test_rerun_by_model(eval_config: dict, pyaro_testconfig, fake_aod_MSCWCtm_data_monthly_2010):
+def test_rerun_by_model(eval_config: dict):
     setup = EvalSetup(**eval_config)
     processor = ExperimentProcessor(setup)
     processor.run()  # Initial full run
