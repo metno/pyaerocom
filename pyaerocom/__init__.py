@@ -58,6 +58,7 @@ from .region import Region
 from .vertical_profile import VerticalProfile
 from .stationdata import StationData
 from .griddeddata import GriddedData
+from .griddeddata_container import GriddedDataContainer
 from .multigriddeddata import MultiGriddedData
 from .ungriddeddata import UngriddedData
 from .ungriddeddata_structured import UngriddedDataStructured

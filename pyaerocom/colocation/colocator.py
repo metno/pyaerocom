@@ -24,7 +24,7 @@ from pyaerocom.exceptions import (
     DataCoverageError,
 )
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom import MultiGriddedData
+from pyaerocom import GriddedDataContainer
 from pyaerocom.helpers import start_stop, to_datestring_YYYYMMDD
 from pyaerocom.io import ReadCAMS2_83, ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
@@ -89,6 +89,9 @@ class Colocator:
         self.files_written: list[str] = []
 
         self._model_reader: ReadGridded | ReadMscwCtm | ReadCAMS2_83 | None = None
+        self._model_readers: list[ReadGridded] | list[ReadMscwCtm] | list[ReadCAMS2_83] | None = (
+            None
+        )
         self._obs_reader: Any | None = None
         self._obs_is_vertical_profile: bool = False
         self.obs_filters: dict = colocation_setup.obs_filters.copy()
@@ -162,6 +165,29 @@ class Colocator:
         self._model_reader = self._instantiate_gridded_reader(what="model")
         self._loaded_model_data = {}
         return self._model_reader
+
+    @property
+    def model_readers(self):
+        """
+        Model data readers
+        """
+
+        if self._model_readers is not None:
+            if self._model_readers.data_id[0] == self.colocation_setup.model_id:
+                return self._model_readers
+            logger.info(
+                f"Reloading outdated model readers. ID of current reader: "
+                f"{self._model_readers[0].data_id}. New ID: {self.colocation_setup.model_id} ♻️"
+            )
+        self._loaded_model_data = {}
+        if isinstance(self.colocation_setup.model_data_dir, list):
+            self._model_readers = [
+                self._reload_model_reader_with_new_dir(folder)
+                for folder in self.colocation_setup.model_data_dir
+            ]
+        else:
+            self.model_readers = [self.model_reader]
+        return self._model_readers
 
     def _reload_model_reader_with_new_dir(self, model_dir=None) -> ReadGridded:
         if self._model_reader is not None:
@@ -617,7 +643,10 @@ class Colocator:
         """
         if what == "model":
             data_id = self.colocation_setup.model_id
-            data_dir = self.colocation_setup.model_data_dir
+            if isinstance(self.colocation_setup.model_data_dir, list):
+                data_dir = self.colocation_setup.model_data_dir[0]
+            else:
+                data_dir = self.colocation_setup.model_data_dir
         else:
             data_id = self.colocation_setup.obs_id
             data_dir = self.colocation_setup.obs_data_dir
@@ -787,8 +816,9 @@ class Colocator:
         ts_type_read = self._get_ts_type_read(var_name, is_model)
         kwargs = {}
         if is_model:
-            reader = self.model_reader
+            readers = self.model_readers
             vert_which = self.colocation_setup.obs_vert_type
+            data_id = self.colocation_setup.model_id
 
             kwargs.update(**self.colocation_setup.model_kwargs)
             if self.colocation_setup.model_use_climatology:
@@ -797,56 +827,27 @@ class Colocator:
             if var_name in self.colocation_setup.model_read_opts:
                 kwargs.update(self.colocation_setup.model_read_opts[var_name])
         else:
-            reader = self.obs_reader
+            readers = [self.obs_reader]
+            data_id = self.colocation_setup.obs_id
             vert_which = None
             ts_type_read = self.colocation_setup.obs_ts_type_read
             kwargs.update(self._eval_obs_filters(var_name))
 
-        if self.colocation_setup.multigrid_use:
-            data = self._read_multigridded(
-                reader, var_name, start, stop, ts_type_read, vert_which, is_model, **kwargs
-            )
-        else:
-            data = self._read_single_gridded(
-                reader, var_name, start, stop, ts_type_read, vert_which, is_model, **kwargs
-            )
-
-        return data
-
-    def _read_multigridded(
-        self, reader, var_name, start, stop, ts_type_read, vert_which, is_model, **kwargs
-    ):
-        from tqdm import tqdm
-
-        model_id = self.colocation_setup.model_id
-        multi_data = MultiGriddedData(model_id)
-        folders = self.colocation_setup.multigrid_dirs
-        for folder in tqdm(folders):
-            reader = self._reload_model_reader_with_new_dir(folder)
-            # reader.data_dir = folder
-            data = self._read_single_gridded(
-                reader, var_name, start, stop, ts_type_read, vert_which, is_model, **kwargs
-            )
-            multi_data.add_griddeddata(data)
-
-        return multi_data
-
-    def _read_single_gridded(
-        self, reader, var_name, start, stop, ts_type_read, vert_which, is_model, **kwargs
-    ):
+        data = GriddedDataContainer(data_id)
         try:
-            data = reader.read_var(
+            data.read_data(
+                readers,
                 var_name,
-                start=start,
-                stop=stop,
-                ts_type=ts_type_read,
-                vert_which=vert_which,
-                flex_ts_type=self.colocation_setup.flex_ts_type,
+                start,
+                stop,
+                ts_type_read,
+                vert_which,
+                self.colocation_setup.flex_ts_type,
                 **kwargs,
             )
         except DataCoverageError:
             vert_which_alt = self._try_get_vert_which_alt(is_model, var_name)
-            data = reader.read_var(
+            data.read_data(
                 var_name,
                 start=start,
                 stop=stop,
@@ -856,6 +857,7 @@ class Colocator:
             )
 
         data = self._check_remove_outliers_gridded(data, var_name, is_model)
+
         return data
 
     def _try_get_vert_which_alt(self, is_model, var_name):

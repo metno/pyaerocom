@@ -24,7 +24,9 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.filter import Filter
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.multigriddeddata import MultiGriddedData
+from pyaerocom.griddeddata_container import GriddedDataContainer
+
+# from pyaerocom.multigriddeddata import MultiGriddedData
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
 from pyaerocom.helpers import (
@@ -594,7 +596,7 @@ def _colocate_site_data_helper_timecol(
 
 
 def colocate_gridded_ungridded(
-    data: GriddedData | MultiGriddedData,
+    data: GriddedDataContainer,
     data_ref: UngriddedDataContainer,
     ts_type=None,
     start=None,
@@ -765,36 +767,28 @@ def colocate_gridded_ungridded(
     col_tst = TsType(col_freq)
 
     if data.proj_info is None:
-        if isinstance(data, MultiGriddedData):
-            lat_range, lon_range = data.get_latlon_ranges()
+        lat_range, lon_range = data.get_latlon_ranges()
+        data_ref = data_ref.filter_by_latlon(lat_range, lon_range)
 
-            data_ref = data_ref.filter_by_latlon(lat_range, lon_range)
-        else:
-            latitude = data.latitude.points
-            longitude = data.longitude.points
-            lat_range = [np.min(latitude), np.max(latitude)]
-            lon_range = [np.min(longitude), np.max(longitude)]
-            # use only sites that are within model domain
+        # if isinstance(data, MultiGriddedData):
+        #     lat_range, lon_range = data.get_latlon_ranges()
 
-            # filter_by_meta wipes is_vertical_profile
-            data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
+        #     data_ref = data_ref.filter_by_latlon(lat_range, lon_range)
+        # else:
+        #     latitude = data.latitude.points
+        #     longitude = data.longitude.points
+        #     lat_range = [np.min(latitude), np.max(latitude)]
+        #     lon_range = [np.min(longitude), np.max(longitude)]
+        #     # use only sites that are within model domain
+
+        #     # filter_by_meta wipes is_vertical_profile
+        #     data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
     else:
         # gridded data with projection,
         # add x/y information to ungridded
-        if isinstance(data, MultiGriddedData):
-            xrange, yrange = data.get_xyranges()
-        else:
-            for coord in data.cube.dim_coords:
-                if coord.var_name == data.proj_info.x_axis:
-                    vals = coord.points
-                    xrange = (np.min(vals), np.max(vals))
-                if coord.var_name == data.proj_info.y_axis:
-                    vals = coord.points
-                    yrange = (np.min(vals), np.max(vals))
-            if xrange is None or yrange is None:
-                raise VariableDefinitionError(
-                    f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
-                )
+
+        xrange, yrange = data.get_xyranges()
+
         data_ref = data_ref.filter_by_projection(data.proj_info.to_proj, xrange, yrange)
 
     # get timeseries from all stations in provided time resolution
@@ -978,11 +972,12 @@ def colocate_gridded_ungridded(
     coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=var, attrs=meta)
 
     # add correct units for lat / lon dimensions
-    coldata.latitude.attrs["standard_name"] = data.latitude.standard_name
-    coldata.latitude.attrs["units"] = str(data.latitude.units)
+    latlon_info = data.latlon_info
+    coldata.latitude.attrs["standard_name"] = latlon_info["latitude"]["standard_name"]
+    coldata.latitude.attrs["units"] = latlon_info["latitude"]["units"]
 
-    coldata.longitude.attrs["standard_name"] = data.longitude.standard_name
-    coldata.longitude.attrs["units"] = str(data.longitude.units)
+    coldata.longitude.attrs["standard_name"] = latlon_info["longitude"]["standard_name"]
+    coldata.longitude.attrs["units"] = latlon_info["longitude"]["units"]
 
     return coldata
 

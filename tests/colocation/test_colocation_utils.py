@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 from cf_units import Unit
 
-from pyaerocom import GriddedData, const, helpers
+from pyaerocom import GriddedData, const, helpers, GriddedDataContainer
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.colocation.colocation_utils import (
     _colocate_site_data_helper,
@@ -145,7 +145,9 @@ def test__colocate_site_data_helper(aeronetsunv3lev2_subset):
 def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
     data = data_tm5.copy()
     data.var_name = "od550bc"
-    coldata = colocate_gridded_ungridded(data, aeronetsunv3lev2_subset, var_ref="od550aer")
+    mdata = GriddedDataContainer("test_id")
+    mdata.add_griddeddata(data)
+    coldata = colocate_gridded_ungridded(mdata, aeronetsunv3lev2_subset, var_ref="od550aer")
 
     assert coldata.metadata["var_name"] == ["od550aer", "od550bc"]
 
@@ -205,7 +207,9 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
 def test_colocate_gridded_ungridded(
     data_tm5, aeronetsunv3lev2_subset, addargs, ts_type, shape, obsmean, modmean
 ):
-    coldata = colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset, **addargs)
+    mdata = GriddedDataContainer("test_id")
+    mdata.add_griddeddata(data_tm5)
+    coldata = colocate_gridded_ungridded(mdata, aeronetsunv3lev2_subset, **addargs)
 
     assert isinstance(coldata, ColocatedData)
     assert coldata.ts_type == ts_type
@@ -217,10 +221,12 @@ def test_colocate_gridded_ungridded(
 
 def test_colocate_gridded_ungridded_wstationtype(data_tm5, aeronetsunv3lev2_subset):
     fake_type = ["faketype"] * len(aeronetsunv3lev2_subset.station_name)
+    mdata = GriddedDataContainer("test_id")
+    mdata.add_griddeddata(data_tm5)
     for i, n in enumerate(fake_type):
         aeronetsunv3lev2_subset.metadata[i].update({"station_type": n})
     coldata = colocate_gridded_ungridded(
-        data_tm5, aeronetsunv3lev2_subset, add_meta_keys=["station_type"]
+        mdata, aeronetsunv3lev2_subset, add_meta_keys=["station_type"]
     )
     assert all(typ == "faketype" for typ in coldata.coords["station_type"].values.tolist())
 
@@ -245,7 +251,9 @@ def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     gridded.var_name = "od550aer"
     gridded.units = Unit("1")
 
-    coldata = colocate_gridded_ungridded(gridded, aeronetsunv3lev2_subset, colocate_time=False)
+    mdata = GriddedDataContainer("test_id")
+    mdata.add_griddeddata(gridded)
+    coldata = colocate_gridded_ungridded(mdata, aeronetsunv3lev2_subset, colocate_time=False)
     assert isinstance(coldata, ColocatedData)
     assert coldata.shape == (2, 2, 2)
 

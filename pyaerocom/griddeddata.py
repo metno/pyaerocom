@@ -993,6 +993,69 @@ class GriddedData:
         """
         self.grid.transpose(new_order)
 
+    def get_xyranges(self) -> tuple[list[tuple[float, float]]]:
+        """
+        Finds the max/min ranges for x and y
+
+
+        Returns
+        -------
+        tuple[list[tuple[float, float]]]
+            Two list, one for xs and one for ys
+
+        Raises
+        --------
+        ValueError
+            If self  has no proj_info
+        VariableDefinitionError
+            If there is a child where x or y is not found
+
+        """
+        if self.proj_info is None:
+            raise ValueError("X and Y cannot be found, since proj_info is None")
+
+        xranges = []
+        yranges = []
+
+        xrange = None
+        yrange = None
+        for coord in self.cube.dim_coords:
+            if coord.var_name == self.proj_info.x_axis:
+                vals = coord.points
+                xrange = (np.min(vals), np.max(vals))
+            if coord.var_name == self.proj_info.y_axis:
+                vals = coord.points
+                yrange = (np.min(vals), np.max(vals))
+        if xrange is None or yrange is None:
+            raise VariableDefinitionError(
+                f"x/y axis not found in cube: {self.proj_info.x_axis}, {self.proj_info.y_axis}"
+            )
+        xranges.append(xrange)
+        yranges.append(yrange)
+        return xranges, yranges
+
+    def get_latlon_ranges(self) -> tuple[tuple[float, float]]:
+        """
+        Finds the max/min ranges for lat and lon
+
+
+        Returns
+        -------
+        tuple[list[tuple[float, float]]]
+            Two list, one for lats and one for lons
+
+        """
+
+        latitude = self.latitude.points
+        longitude = self.longitude.points
+        lat_range = (np.min(latitude), np.max(latitude))
+        lon_range = (np.min(longitude), np.max(longitude))
+
+        if len(lon_range) == 0 or len(lat_range) == 0:
+            raise ValueError("Failed to find lat or lon ranges")
+
+        return lat_range, lon_range
+
     def mean_at_coords(self, latitude=None, longitude=None, time_resample_kwargs=None, **kwargs):
         """Compute mean value at all input locations
 
