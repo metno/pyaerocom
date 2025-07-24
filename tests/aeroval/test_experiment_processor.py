@@ -64,3 +64,51 @@ def test_ExperimentProcessor_catch_wrong_var_list(
 ):
     processor.run(**kwargs)
     assert any([error in str(record) for record in caplog.records])
+
+
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+def test_rerun_by_variable(eval_config: dict):
+    setup = EvalSetup(**eval_config)
+    processor = ExperimentProcessor(setup)
+    processor.run()  # Initial full run
+    assert (
+        processor.exp_output.results_available
+    ), "Experiment data should be available after initial run"
+    processor.exp_output.delete_experiment_data(also_coldata=True)  # Clear previous data
+    assert not processor.exp_output.results_available, "Experiment data should be cleared"
+    processor.run(var_list="od550aer")
+    assert (
+        processor.exp_output.results_available
+    ), "Experiment data should be available after rerun"
+
+
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+def test_rerun_by_model(eval_config: dict):
+    setup = EvalSetup(**eval_config)
+    processor = ExperimentProcessor(setup)
+    processor.run()  # Initial full run
+    assert (
+        processor.exp_output.results_available
+    ), "Experiment data should be available after initial run"
+    processor.exp_output.delete_experiment_data(also_coldata=True)  # Clear previous data
+    assert not processor.exp_output.results_available, "Experiment data should be cleared"
+    processor.run(model_name="TM5-AP3-CTRL")
+    assert (
+        processor.exp_output.results_available
+    ), "Experiment data should be available after rerun"
+
+
+@pytest.mark.parametrize("cfg", ["cfgexp1"])
+def test_rerun_by_obs_network(eval_config: dict):
+    setup = EvalSetup(**eval_config)
+    processor = ExperimentProcessor(setup)
+    processor.run()  # Initial full run
+    assert (
+        processor.exp_output.results_available
+    ), "Experiment data should be available after initial run"
+    processor.exp_output.delete_experiment_data(also_coldata=True)  # Clear previous data
+    assert not processor.exp_output.results_available, "Experiment data should be cleared"
+    processor.run(obs_name="AERONET-Sun")
+    assert (
+        processor.exp_output.results_available
+    ), "Experiment data should be available after rerun"
