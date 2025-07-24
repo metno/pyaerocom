@@ -111,7 +111,7 @@ def test_rerun_by_variable(eval_config: dict):
 
 
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
-def test_rerun_by_model(eval_config: dict):
+def test_rerun_by_model(eval_config: dict, pyaro_testconfig, fake_aod_MSCWCtm_data_monthly_2010):
     setup = EvalSetup(**eval_config)
     processor = ExperimentProcessor(setup)
     processor.run()  # Initial full run
@@ -140,13 +140,13 @@ def test_rerun_by_obs_network(eval_config: dict):
     ), "Experiment data should be available after initial run"
     assert "AERONET-Sun" in str(
         processor.exp_output
-    ), "Observation network should be present in results after initial run"
+    ), "AERONET-Sun network should be present in results after initial run"
     assert "AERONET-SDA" in str(
         processor.exp_output
-    ), "Observation network should be present in results after initial run"
+    ), "AERONET-SDA network should be present in results after initial run"
     assert "SDA-and-Sun" in str(
         processor.exp_output
-    ), "Combined observation network should be present in results after initial run"
+    ), "SDA-and-Sun superobs network should be present in results after initial run"
     processor.exp_output.delete_experiment_data(also_coldata=True)  # Clear previous data
     assert not processor.exp_output.results_available, "Experiment data should be cleared"
 
@@ -154,41 +154,41 @@ def test_rerun_by_obs_network(eval_config: dict):
     processor.run(obs_name="AERONET-Sun")
     assert (
         processor.exp_output.results_available
-    ), "Experiment data should be available after rerun"
+    ), "Experiment data should be available after rerun of AERONET-Sun"
     assert "AERONET-Sun" in str(
         processor.exp_output
-    ), "Observation network should be present in results after rerun"
+    ), "AERONET-Sun network should be present in results after rerun of AERONET-Sun"
     assert "AERONET-SDA" not in str(
         processor.exp_output
-    ), "Observation network should not be present in results after rerun"
+    ), "AERONET-SDA network should not be present in results after rerun of AERONET-Sun"
     assert "SDA-and-Sun" not in str(
         processor.exp_output
-    ), "Combined observation network should not be present in results after rerun"
+    ), "SDA-and-Sun superobs network should not be present in results after rerun of AERONET-Sun"
     processor.run(obs_name="AERONET-SDA")
     # Test that once a network has already been processed, another can be processed without clearing previous results
     assert (
         processor.exp_output.results_available
-    ), "Experiment data should be available after rerun"
+    ), "Experiment data should be available after rerun of AERONET-SDA"
     assert "AERONET-Sun" in str(
         processor.exp_output
-    ), "Observation network should be present in results after rerun"
+    ), "AERONET-Sun network should be present in results after rerun of AERONET-SDA"
     assert "AERONET-SDA" in str(
         processor.exp_output
-    ), "Observation network should be present in results after rerun"
+    ), "AERONET-SDA network should be present in results after rerun of AERONET-SDA"
     assert "SDA-and-Sun" not in str(
         processor.exp_output
-    ), "Combined observation network should not be present in results after rerun"
+    ), "SDA-and-Sun superobs network should not be present in results after rerun of AERONET-SDA"
     # Now test that the superobs can be re-added and that all previously processed networks are still present
     processor.run(obs_name="SDA-and-Sun")
     assert (
         processor.exp_output.results_available
-    ), "Experiment data should be available after rerun"
+    ), "Experiment data should be available after rerun of superobs SDA-and-Sun"
     assert "AERONET-Sun" in str(
         processor.exp_output
-    ), "Observation network should be present in results after rerun"
+    ), "AERONET-Sun network should be present in results after rerun of superobs SDA-and-Sun"
     assert "AERONET-SDA" in str(
         processor.exp_output
-    ), "Observation network should be present in results after rerun"
-    assert "SDA-and-Sun" in str(
-        processor.exp_output
-    ), "Combined observation network should be present in results after rerun"
+    ), "AERONET-SDA network should be present in results after rerun of superobs SDA-and-Sun"
+    assert (
+        "SDA-and-Sun" in str(processor.exp_output)
+    ), "SDA-and-Sun superobs observation network should be present in results after rerun of superobs SDA-and-Sun"
