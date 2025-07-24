@@ -107,6 +107,28 @@ class ExperimentOutput(ProjectOutput):
         # invalid or outdated json files across different output directories
         self._invalid = dict(models=[], obs=[])
 
+    def __str__(self) -> str:
+        summary_lines = [
+            "ExperimentOutput Summary:",
+            f"  ├─ Project ID      : {self.proj_id}",
+            f"  ├─ Experiment ID   : {self.exp_id}",
+            f"  ├─ Directory       : {self.exp_dir}",
+            f"  ├─ Results Ready   : {'✅' if self.results_available else '❌'}",
+            f"  ├─ Public          : {'Yes' if self.cfg.exp_info.public else 'No'}",
+        ]
+
+        try:
+            result_summary = self._results_summary()
+            if result_summary:
+                summary_lines.append("  └─ Result Summary:")
+                for key, values in result_summary.items():
+                    values_preview = ", ".join(values[:3]) + ("..." if len(values) > 3 else "")
+                    summary_lines.append(f"     • {key:10}: {values_preview}")
+        except Exception as e:
+            summary_lines.append(f"  ⚠️ Could not summarize results: {e}")
+
+        return "\n".join(summary_lines)
+
     @property
     def exp_id(self) -> str:
         """Experiment ID"""
