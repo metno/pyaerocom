@@ -153,8 +153,6 @@ class BrowseDict(MutableMapping):
 
     FORBIDDEN_KEYS = []
 
-    MAXLEN_KEYS = 1e2
-
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
@@ -174,8 +172,6 @@ class BrowseDict(MutableMapping):
 
     def __setitem__(self, key, val) -> None:
         if isinstance(key, str):
-            if len(key) > self.MAXLEN_KEYS:
-                raise KeyError(f"key {key} exceeds max length of {self.MAXLEN_KEYS}")
             if key in self.FORBIDDEN_KEYS:
                 raise KeyError(f"invalid key {key}")
         setattr(self, key, val)
