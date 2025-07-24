@@ -79,6 +79,35 @@ class EvalSetup(BaseModel):
 
     _aux_funs: dict = {}
 
+    # Override BaseModel's __str__ method to provide a custom string representation
+    def __str__(self) -> str:
+        try:
+            summary_lines = [
+                "EvalSetup Summary:",
+                f"  ├─ Project ID       : {self.proj_info.proj_id}",
+                f"  ├─ Experiment ID    : {self.exp_info.exp_id}",
+                f"  ├─ JSON Filename    : {self.json_filename}",
+                f"  ├─ Public           : {'Yes' if self.exp_info.public else 'No'}",
+                f"  ├─ Models Defined   : {self.model_cfg.keylist()}",
+                f"  ├─ Observations     : {self.obs_cfg.keylist()}",
+                f"  ├─ Periods          : {self.time_cfg.periods}",
+                f"  ├─ Only Model Maps  : {self.processing_opts.only_model_maps}",
+                f"  ├─ Gridded Aux Funs    : {list(self.gridded_aux_funs.keys())[:3]}...",
+                f"  ├─ Var Info File       : {self.var_web_info_file}",
+                f"  ├─ Var Scale Col File   : {self.var_scale_colmap_file}",
+                f"  ├─ Path Manager          : {self.path_manager}",
+                f"  ├─ Web Display Settings : {self.webdisp_opts.model_dump()}",
+                f"  ├─ CAMS2-83 Enabled    : {self.cams2_83_cfg.use_cams2_83}",
+                f"  ├─ Weighted Stats      : {self.statistics_opts.weighted_stats}",
+                f"  ├─ Colocation Save     : {self.colocation_opts.save_coldata}",
+                f"  ├─ Units Defined       : {len(self.units_cfg.units)}",
+                f"  ├─ Model Maps Spec     : {self.modelmaps_opts.model_dump()}",
+                f"  └─ pip freeze count    : {len(self.pip_freeze)} packages",
+            ]
+            return "\n".join(summary_lines)
+        except Exception:
+            return super().__str__()
+
     @model_validator(mode="after")
     def model_validator(self) -> Self:
         # Add missing variables to var_order_menu.
