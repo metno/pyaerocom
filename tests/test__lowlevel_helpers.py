@@ -5,6 +5,7 @@ from pyaerocom._lowlevel_helpers import (
     invalid_input_err_str,
     sort_dict_by_name,
     str_underline,
+    BrowseDict,
 )
 
 
@@ -42,3 +43,24 @@ def test_check_dir_access(dir, val):
 def test_sort_dict_by_name(input, pref_list, output_keys):
     sorted = sort_dict_by_name(input, pref_list)
     assert list(sorted.keys()) == output_keys
+
+
+def test_BrowseDict():
+    bd = BrowseDict(key=42)
+    assert bd["key"] == bd.key == 42
+
+
+def test_BrowseDict_assign():
+    bd = BrowseDict()
+
+    bd.key = "test"
+
+    assert bd["key"] == bd.key == "test"
+
+
+def test_BrowseDict_forbidden_keys():
+    bd = BrowseDict()
+    bd.FORBIDDEN_KEYS.append("forbidden")
+
+    with pytest.raises(KeyError):
+        bd["forbidden"] = "test"

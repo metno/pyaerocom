@@ -115,7 +115,7 @@ def test_ExperimentOutput():
 
 
 def test_ExperimentOutput_error():
-    with pytest.raises(ValueError):
+    with pytest.raises(AttributeError):
         ExperimentOutput(None)
 
 

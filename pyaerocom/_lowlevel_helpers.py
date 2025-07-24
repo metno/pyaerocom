@@ -147,8 +147,17 @@ class AsciiFileLoc(Loc):
 class BrowseDict(MutableMapping):
     """Dictionary-like object with getattr and setattr options
 
-    Extended dictionary that supports dynamic value generation (i.e. if an
-    assigned value is callable, it will be executed on demand).
+    Dictionary that supports reading and writing values with . syntax.
+
+    For example:
+
+    d = BrowseDict()
+
+    d.a = 1
+    d["b"] = 2
+
+    print(d)
+    # BrowseDict: {'a': 1, 'b': 2}
     """
 
     FORBIDDEN_KEYS = []
@@ -168,22 +177,15 @@ class BrowseDict(MutableMapping):
 
     def items(self):
         for key in self.keys():
-            yield key, getattr(self, key)
+            yield key, self[key]
 
     def __setitem__(self, key, val) -> None:
-        if isinstance(key, str):
-            if key in self.FORBIDDEN_KEYS:
-                raise KeyError(f"invalid key {key}")
-        setattr(self, key, val)
+        if key in self.FORBIDDEN_KEYS:
+            raise KeyError(f"invalid key {key}")
+        self.__dict__[key] = val
 
     def __getitem__(self, key):
-        try:
-            return getattr(self, key)
-        except TypeError:
-            # if key is not str
-            return self.__dict__[key]
-        except AttributeError as e:
-            raise KeyError(e)
+        return self.__dict__[key]
 
     def __delitem__(self, key):
         del self.__dict__[key]
