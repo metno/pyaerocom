@@ -114,7 +114,7 @@ class ExperimentOutput(ProjectOutput):
             f"  ├─ Experiment ID   : {self.exp_id}",
             f"  ├─ Directory       : {self.exp_dir}",
             f"  ├─ Results Ready   : {'✅' if self.results_available else '❌'}",
-            f"  ├─ Public          : {'Yes' if self.cfg.exp_info.public else 'No'}",
+            f"  └─ Public          : {'Yes' if self.cfg.exp_info.public else 'No'}",
         ]
 
         try:
