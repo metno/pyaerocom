@@ -74,6 +74,7 @@ def test_rerun_by_variable(eval_config: dict):
         obs_vars=("abs550aer",),
         obs_vert_type="Column",
     )
+    eval_config["var_order_menu"] = ("od550aer", "abs550aer")
     setup = EvalSetup(**eval_config)
     processor = ExperimentProcessor(setup)
     processor.run()  # Initial full run
