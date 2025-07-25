@@ -309,8 +309,8 @@ def colocate_gridded_gridded(
         data_ref_np = data_ref_np.filled(np.nan)
     arr = np.asarray((data_ref_np, data_np))
     time = data.time_stamps().astype("datetime64[ns]")
-    lats = data.latitude.points
-    lons = data.longitude.points
+    lats = data.latitude_points
+    lons = data.longitude_points
 
     # create coordinates of DataArray
     coords = {
@@ -325,11 +325,12 @@ def colocate_gridded_gridded(
     coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=data.var_name, attrs=meta)
 
     # add correct units for lat / lon dimensions
-    coldata.latitude.attrs["standard_name"] = data.latitude.standard_name
-    coldata.latitude.attrs["units"] = str(data.latitude.units)
+    latlon_info = data.latlon_info
+    coldata.latitude.attrs["standard_name"] = latlon_info["latitude"]["standard_name"]
+    coldata.latitude.attrs["units"] = latlon_info["latitude"]["units"]
 
-    coldata.longitude.attrs["standard_name"] = data.longitude.standard_name
-    coldata.longitude.attrs["units"] = str(data.longitude.units)
+    coldata.longitude.attrs["standard_name"] = latlon_info["longitude"]["standard_name"]
+    coldata.longitude.attrs["units"] = latlon_info["longitude"]["units"]
 
     if data_ts_type != ts_type:
         coldata = coldata.resample_time(

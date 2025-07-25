@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from pyaerocom import GriddedData
+from pyaerocom import GriddedDataContainer, GriddedData
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.aeroval.utils import compute_model_average_and_diversity
 from tests.fixtures.aeroval import add_dummy_model_data

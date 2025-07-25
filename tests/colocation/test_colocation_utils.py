@@ -260,14 +260,18 @@ def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
 
 def test_colocate_gridded_gridded_same_new_var(data_tm5):
     data = data_tm5.copy()
+
     data.var_name = "Blaaa"
-    coldata = colocate_gridded_gridded(data, data_tm5)
+    mdata = GriddedDataContainer("test", data)
+    coldata = colocate_gridded_gridded(mdata, GriddedDataContainer("tast", data_tm5))
 
     assert coldata.metadata["var_name"] == ["od550aer", "Blaaa"]
 
 
 def test_colocate_gridded_gridded_same(data_tm5):
-    coldata = colocate_gridded_gridded(data_tm5, data_tm5)
+    coldata = colocate_gridded_gridded(
+        GriddedDataContainer("test1", data_tm5), GriddedDataContainer("test1", data_tm5)
+    )
 
     assert isinstance(coldata, ColocatedData)
     stats = coldata.calc_statistics()

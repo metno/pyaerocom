@@ -1,6 +1,7 @@
 import numpy as np
 import logging
 from copy import deepcopy
+import iris
 
 from .griddeddata import GriddedData
 from pyaerocom.stationdata import StationData
@@ -17,7 +18,7 @@ class GriddedDataContainerException(Exception):
 
 
 class GriddedDataContainer:
-    def __init__(self, data_id: str):
+    def __init__(self, data_id: str, data: GriddedData | None = None):
         """
         Class for holding and working with multiple GriddedData objects.
 
@@ -43,6 +44,15 @@ class GriddedDataContainer:
 
         self.latlon_info = {}
 
+        self._lon_res = None
+        self._lat_res = None
+
+        self._lat_points = None
+        self._lon_points = None
+
+        if data is not None:
+            self.add_griddeddata(data)
+
     def _initiate(self, data: GriddedData):
         """
         Starts the list of children, and defines all the important attributes for objects
@@ -63,6 +73,12 @@ class GriddedDataContainer:
         self.ndim = data.ndim
 
         self.latlon_info = self._create_latlon_info(data)
+
+        self._lat_res = data.lat_res
+        self._lon_res = data.lon_res
+
+        self._lat_points = data.latitude.points
+        self._lon_points = data.longitude.points
 
     def add_griddeddata(self, data: GriddedData):
         """
@@ -112,10 +128,15 @@ class GriddedDataContainer:
                 f"ndim of added griddeddata {data.ndim} is different from the existing ndim {self.ndim}"
             )
 
+        if self.lat_res != data.lat_res or self.lon_res != data.lon_res:
+            raise GriddedDataContainerException(
+                f"lat_res/lon_res of added griddeddata {data.lat_res}/{data.lon_res} is different from the existing lat_res/lon_res {self.lat_res}/{self.lon_res}"
+            )
+
         new_latlon_info = self._create_latlon_info(data)
         if new_latlon_info != self.latlon_info:
             raise GriddedDataContainerException(
-                f"information of lat and lon of added griddeddata {new_latlon_info} is different from the existing ndim {self.latlon_info}"
+                f"information of lat and lon of added griddeddata {new_latlon_info} is different from the existing lat and lon {self.latlon_info}"
             )
 
         self.start = min(self.start, data.start)
@@ -234,7 +255,109 @@ class GriddedDataContainer:
 
         return lats, lons
 
+    @property
+    def lat_res(self):
+        return self._lat_res
+
+    @property
+    def lon_res(self):
+        return self._lon_res
+
+    @property
+    def latitude_points(self):
+        if len(self.children) > 1:
+            raise NotImplementedError(
+                "Latitude points is not implemented for cases with more than one child GriddedData"
+            )
+        return self._lat_points
+
+    def longitude_points(self):
+        if len(self.children) > 1:
+            raise NotImplementedError(
+                "Longitude points is not implemented for cases with more than one child GriddedData"
+            )
+        return self._lon_points
+
+    @property
+    def longitude_circular(self):
+        return all([data.longitude.circular for data in self.children])
+
+    @property
+    def latitude_circular(self):
+        return all([data.latitude.circular for data in self.children])
+
+    def get_cube_data(self):
+        if len(self.children) > 1:
+            raise NotImplementedError(
+                "get_cube_data is not implemented for cases with more than one child GriddedData. Use get_cube_data_all instead"
+            )
+        return self.children[0].cube.data
+
+    def get_cube_data_all(self) -> list:
+        return [data.cube.data for data in self.children]
+
     # Methods which are simply applied to each of the children
+
+    # TODO: Make sure that in the children loop, obj.children[i] is updated in the loops below (eventhough the inplace should be working)
+
+    @property
+    def time(self):
+        if len(self.children) > 1:
+            logger.warning("Be careful with using this function with more than one child")
+            points = []
+            metadata = self.children[0].time.metadata
+            units = self.children[0].time.units
+            for data in self.children:
+                if metadata != data.time.metadata:
+                    raise GriddedDataContainerException(
+                        "Time from different children has different metadata"
+                    )
+                if units != data.time.units:
+                    raise GriddedDataContainerException(
+                        "Time from different children has different units"
+                    )
+                points += list(data.time.points)
+
+            return iris.coords.DimCoord(np.array(points), var_name="time", **units, **metadata)
+
+        return self.children[0].time
+
+    @property
+    def has_latlon_dims(self):
+        return all([data.has_latlon_dims for data in self.children])
+
+    @property
+    def grid(self):
+        if len(self.children) > 1:
+            raise NotImplementedError(
+                "Grid is not implemented for cases with more than one child GriddedData"
+            )
+        return self.children[0].grid
+
+    @property
+    def data_revision(self):
+        revision = ""
+        for i, data in enumerate(self.children):
+            revision += f"nr {i}: {data.data_revision}; "
+        return revision
+
+    def time_stamps(self):
+        time_stamps = []
+        for data in self.children:
+            time_stamps += list(data.time_stamps())
+
+        return np.sort(np.unique(np.array(time_stamps)))
+
+    def _check_lonlat_bounds(self):
+        for data in self.children:
+            data._check_lonlat_bounds()
+
+    def check_lon_circular(self):
+        return all([data.check_lon_circular() for data in self.children])
+
+    def extract_surface_level(self):
+        """Extract surface level from 4D field"""
+        return self.children[0].extract_surface_level()
 
     def to_time_series(
         self,
@@ -328,8 +451,8 @@ class GriddedDataContainer:
         See GriddedData for more info on this function
         """
         obj = self if inplace else self.copy()
-        for data in obj.children:
-            data.filter_region(region_id, inplace, **kwargs)
+        for i, data in enumerate(obj.children):
+            obj.children[i] = data.filter_region(region_id, inplace, **kwargs)
 
         return obj
 
@@ -361,8 +484,8 @@ class GriddedDataContainer:
         """
 
         obj = self if inplace else self.copy()
-        for data in obj.children:
-            data.convert_unit(
+        for i, data in enumerate(obj.children):
+            obj.children[i] = data.convert_unit(
                 new_unit,
             )
 
@@ -375,8 +498,8 @@ class GriddedDataContainer:
         See GriddedData for more info on this function
         """
         obj = self if inplace else self.copy()
-        for data in obj.children:
-            data.remove_outliers(low, high, inplace=True)
+        for i, data in enumerate(obj.children):
+            obj.children[i] = data.remove_outliers(low, high, inplace=True)
         return obj
 
     def reorder_dimensions_tseries(self):  # pragma: no cover
