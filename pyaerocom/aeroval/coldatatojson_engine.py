@@ -49,7 +49,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         """
         converted = []
         for file in files:
-            logger.info(f"Processing: {file} 🛠️")
+            logger.info(f"Processing: {file} ⚙️")
             coldata = ColocatedData(data=file)
             self.process_coldata(coldata)
             converted.append(file)
