@@ -70,7 +70,7 @@ def test_ExperimentProcessor_catch_wrong_var_list(
 def test_rerun_by_variable(eval_config: dict):
     # Add new obs network & var to the configuration for test
     eval_config["obs_cfg"]["AERONET-Inv"] = dict(
-        obs_id="AeronetInvV3Lev2.daily",
+        obs_id="AeronetInvV3L2Subset.daily",
         obs_vars=("abs550aer",),
         obs_vert_type="Column",
     )
