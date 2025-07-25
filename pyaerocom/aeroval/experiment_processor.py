@@ -29,6 +29,36 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
     """
 
+    def __str__(self) -> str:
+        try:
+            obs_keys = self.cfg.obs_cfg.keylist()
+            model_keys = self.cfg.model_cfg.keylist()
+            obs_vars = self.cfg.obs_cfg.get_all_vars()
+
+            entries = [
+                ("Project ID", self.cfg.proj_info.proj_id),
+                ("Experiment ID", self.cfg.exp_info.exp_id),
+                ("Models", f"{len(model_keys)} → {model_keys}"),
+                ("Observation Networks", f"{len(obs_keys)} → {obs_keys}"),
+                ("Observation Variables", f"{len(obs_vars)} → {obs_vars}"),
+                ("Only Model Maps", self.cfg.processing_opts.only_model_maps),
+                ("Only Colocation", self.cfg.processing_opts.only_colocation),
+                ("Only JSON", self.cfg.processing_opts.only_json),
+                ("Obs Only Mode", self.cfg.processing_opts.obs_only),
+                ("Web Interface Dir", self.cfg.path_manager.json_basedir),
+            ]
+
+            max_label_len = max(len(label) for label, _ in entries)
+
+            summary = ["ExperimentProcessor for AeroVal"]
+            for label, value in entries:
+                summary.append(f"  ├─ {label.ljust(max_label_len)} : {value}")
+            summary[-1] = summary[-1].replace("├─", "└─", 1)  # Make last bullet '└─'
+            return "\n".join(summary)
+        except Exception as e:  # since the super class does not have a __str__ method, we catch any exception here
+            summary_lines = [f"EvalSetup Summary: ⚠️ Could not generate full summary ({e})"]
+        return "\n".join(summary_lines)
+
     def _run_single_entry(self, model_name, obs_name, var_list):
         if model_name == obs_name:
             msg = f"Cannot run same dataset against each other ({model_name} vs. {obs_name}) ➡️⬅️"
