@@ -246,10 +246,10 @@ class ColdataToJsonEngine(ProcessingEngine):
                     use_meteorological_seasons=use_meteorological_seasons,
                 )
 
-            if coldata.ts_type == "hourly" and "hourly" in freqs and use_diurnal:
+            if coldata.ts_type == "hourly" and use_diurnal:
                 logger.info("Processing diurnal profiles...")
                 self._process_diurnal_profiles(
-                    coldata=data["hourly"],  # coldata,
+                    coldata=coldata["hourly"],  # coldata,
                     regions_how=regions_how,
                     regnames=regnames,
                     meta_glob=meta_glob,
