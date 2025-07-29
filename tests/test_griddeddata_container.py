@@ -136,3 +136,21 @@ def test_add_griddeddata_errors(cities_data, attribute, attr_value):
         match=f"{attribute} of added griddeddata*",
     ):
         mg.add_griddeddata(emep2)
+
+
+def test_only_one_child(cities_data):
+    data_id = "test_id"
+    mg = GriddedDataContainer(data_id)
+
+    mg.add_griddeddata(cities_data["uEMEP"][0])
+
+    lat_res = mg.lat_res
+
+    assert float(lat_res) == pytest.approx(0.00032, rel=0.01)
+
+    mg.add_griddeddata(cities_data["uEMEP"][1])
+    with pytest.raises(
+        NotImplementedError,
+        match="lat_res is not implemented for cases*",
+    ):
+        lat_res = mg.lat_res

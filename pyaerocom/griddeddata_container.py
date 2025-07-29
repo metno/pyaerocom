@@ -74,11 +74,22 @@ class GriddedDataContainer:
 
         self.latlon_info = self._create_latlon_info(data)
 
-        self._lat_res = data.lat_res
-        self._lon_res = data.lon_res
+        # self._lat_res = data.lat_res
+        # self._lon_res = data.lon_res
 
         self._lat_points = data.latitude.points
         self._lon_points = data.longitude.points
+
+    def only_one_child(func):
+        def check_child(self, *args, **kwargs):
+            if len(self.children) > 1:
+                raise NotImplementedError(
+                    f"{func.__name__} is not implemented for cases with more than one child GriddedData"
+                )
+            else:
+                return func(self, *args, **kwargs)
+
+        return check_child
 
     def add_griddeddata(self, data: GriddedData):
         """
@@ -128,10 +139,10 @@ class GriddedDataContainer:
                 f"ndim of added griddeddata {data.ndim} is different from the existing ndim {self.ndim}"
             )
 
-        if self.lat_res != data.lat_res or self.lon_res != data.lon_res:
-            raise GriddedDataContainerException(
-                f"lat_res/lon_res of added griddeddata {data.lat_res}/{data.lon_res} is different from the existing lat_res/lon_res {self.lat_res}/{self.lon_res}"
-            )
+        # if self.lat_res != data.lat_res or self.lon_res != data.lon_res:
+        #     raise GriddedDataContainerException(
+        #         f"lat_res/lon_res of added griddeddata {data.lat_res}/{data.lon_res} is different from the existing lat_res/lon_res {self.lat_res}/{self.lon_res}"
+        #     )
 
         new_latlon_info = self._create_latlon_info(data)
         if new_latlon_info != self.latlon_info:
@@ -256,26 +267,23 @@ class GriddedDataContainer:
         return lats, lons
 
     @property
+    @only_one_child
     def lat_res(self):
-        return self._lat_res
+        return self.children[0].lat_res
 
     @property
+    @only_one_child
     def lon_res(self):
-        return self._lon_res
+        return self.children[0].lon_res
 
     @property
+    @only_one_child
     def latitude_points(self):
-        if len(self.children) > 1:
-            raise NotImplementedError(
-                "Latitude points is not implemented for cases with more than one child GriddedData"
-            )
         return self._lat_points
 
+    @property
+    @only_one_child
     def longitude_points(self):
-        if len(self.children) > 1:
-            raise NotImplementedError(
-                "Longitude points is not implemented for cases with more than one child GriddedData"
-            )
         return self._lon_points
 
     @property
@@ -286,11 +294,8 @@ class GriddedDataContainer:
     def latitude_circular(self):
         return all([data.latitude.circular for data in self.children])
 
+    @only_one_child
     def get_cube_data(self):
-        if len(self.children) > 1:
-            raise NotImplementedError(
-                "get_cube_data is not implemented for cases with more than one child GriddedData. Use get_cube_data_all instead"
-            )
         return self.children[0].cube.data
 
     def get_cube_data_all(self) -> list:
@@ -327,11 +332,8 @@ class GriddedDataContainer:
         return all([data.has_latlon_dims for data in self.children])
 
     @property
+    @only_one_child
     def grid(self):
-        if len(self.children) > 1:
-            raise NotImplementedError(
-                "Grid is not implemented for cases with more than one child GriddedData"
-            )
         return self.children[0].grid
 
     @property

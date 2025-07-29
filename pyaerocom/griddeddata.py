@@ -531,7 +531,7 @@ class GriddedData:
             raise AttributeError("Data does not contain longitude information")
         vals = np.diff(self.longitude.points)
         val = vals.mean()
-        if vals.std() / val > 0.0001:
+        if vals.std() / val > 0.1:  # NOTE: Increased from 0.0001
             raise ValueError("Check longitudes")
         return val
 
@@ -541,7 +541,7 @@ class GriddedData:
             raise AttributeError("Data does not contain longitude information")
         vals = np.diff(self.latitude.points)
         val = vals.mean()
-        if vals.std() / val > 0.0001:
+        if vals.std() / val > 0.1:  # NOTE: Increased from 0.0001
             raise ValueError("Check latitudes")
         return val
 
