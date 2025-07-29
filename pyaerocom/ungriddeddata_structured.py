@@ -38,7 +38,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     """Class implementing UngriddedData in a numpy structured array"""
 
     #: version for caching, needs also updating when UngriddedDataMetadata has changed
-    __version__ = "0.02"
+    __version__ = "0.03"
     _merging_error_logged = False
 
     _dtype = [
