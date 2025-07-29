@@ -360,6 +360,9 @@ class RegionName(str):
         if str(self) == ALL_REGION_NAME:
             return True
 
+        if str(other) == ALL_REGION_NAME:
+            return False
+
         return str(self).lower() < str(other).lower()
 
     def __gt__(self, other) -> bool:
@@ -368,5 +371,8 @@ class RegionName(str):
 
         if str(self) == ALL_REGION_NAME:
             return False
+
+        if str(other) == ALL_REGION_NAME:
+            return True
 
         return str(self).lower() > str(other).lower()
