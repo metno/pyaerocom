@@ -243,7 +243,6 @@ class FairmodeStatistics:
 
         return beta * np.sqrt(
             np.nanmean(np.square(obsuncertainty(obsvals, var_name)), where=mask, axis=0)
-            # np.nanmean(np.square(obsuncertainty(obsvals, var_name), where=mask), axis=0)
         )
 
     @staticmethod
