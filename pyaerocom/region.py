@@ -364,15 +364,3 @@ class RegionName(str):
             return False
 
         return str(self).lower() < str(other).lower()
-
-    def __gt__(self, other) -> bool:
-        if str(self).lower() == str(other).lower():
-            return False
-
-        if str(self) == ALL_REGION_NAME:
-            return False
-
-        if str(other) == ALL_REGION_NAME:
-            return True
-
-        return str(self).lower() > str(other).lower()
