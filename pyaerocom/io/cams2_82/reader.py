@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Iterator
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from pathlib import Path
 
 import numpy as np
@@ -290,7 +290,7 @@ class ReadCAMS2_82(GriddedReader):
                     )
                 )
             if not paths:
-                raise ValueError(f"no files found")
+                raise ValueError("no files found")
 
             paths = sorted(list(set(paths)))
             self._filepaths = paths
