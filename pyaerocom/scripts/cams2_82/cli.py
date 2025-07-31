@@ -3,79 +3,32 @@ from __future__ import annotations
 import logging
 import multiprocessing as mp
 from copy import deepcopy
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
 import typer
 
 from pyaerocom import change_verbosity, const
-from pyaerocom.scripts.cams2_82.config import CFG
+from pyaerocom.scripts.cams2_82.config import CFG, make_Aeronet_entry, make_EEA_entry, make_model_entry, make_openAQ_entry
 from pyaerocom.io.cams2_82.reader import DATA_FOLDER_PATH
 from pyaerocom.scripts.cams2_82.evaluation import (
     date_range,
     runner,
 )
-from pyaerocom.scripts.cams2_82.config import obs_filters, species_list, EEA_FILTER
 
-from pyaerocom.io import PyaroConfig
+
+import pyaerocom.scripts.cams2_82.converter as converter
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
+app.add_typer(converter.app, name="convert")
 logger = logging.getLogger(__name__)
 
 
 DEFAULT_EEA_PATH = Path("/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download")
+DEFAULT_AERONET_PATH = Path("/lustre/storeB/users/danielh/cams282/src/")
+DEFAULT_OPENAQ_PATH = Path("/lustre/storeB/users/danielh/cams282/src/openaq/")
 DEFAULT_MODEL_PATH = DATA_FOLDER_PATH
-
-def make_model_entry(
-    start_date: datetime,
-    end_date: datetime,
-    model_path: Path,
-
-) -> dict:
-    return dict(
-        model_id = "IFS",
-        model_data_dir=str(model_path.resolve()),
-        gridded_reader_id={"model": "ReadCAMS2_82"},
-        model_kwargs=dict(
-            daterange=[f"{start_date:%F}", f"{end_date:%F}"],
-        ),
-    )
-
-def make_EEA_entry(
-    start_date: datetime,
-    end_date: datetime,
-    obs_path: Path,
-) -> dict:
-    filters={
-                "time_bounds": {
-                "startend_include": [[start_date.strftime("%Y-%m-%d %H:%M:%S"), end_date.strftime("%Y-%m-%d %H:%M:%S")]]
-            },
-
-        }
-    data_id = "eeareader"
-    config_eea = PyaroConfig(
-        name="eea",
-        reader_id=data_id,
-        filename_or_obj_or_url=obs_path,
-        filters=filters,
-        dataset= "unverified",
-        name_map={
-            "PM2.5": "concpm25",
-            "PM10": "concpm10",
-            
-        },
-    )
-
-    return  dict(
-        obs_id=config_eea.name,
-        pyaro_config=config_eea,
-        web_interface_name="EEA",
-        obs_vars=species_list,
-        obs_vert_type="Surface",
-        ts_type="hourly",
-        obs_filters=EEA_FILTER,   
-    )
 
 
 def make_period(start_date: date, end_date: date) -> list[str]:
@@ -90,7 +43,9 @@ def make_config(
     start_date: date,
     end_date: date,
     model_path: Path,
-    obs_path: Path,
+    eea_path: Path,
+    aeronet_path: Path,
+    openaq_path: Path,
     data_path: Path,
     coldata_path: Path,
     
@@ -116,7 +71,9 @@ def make_config(
 
 
     obs_dates = date_range(start_date, end_date)
-    cfg["obs_cfg"]["EEA"] = make_EEA_entry(start_date, end_date, obs_path)
+    #cfg["obs_cfg"]["openAQ"] = make_openAQ_entry(start_date, end_date, openaq_path)
+    cfg["obs_cfg"]["Aeronet"] = make_Aeronet_entry(start_date, end_date, aeronet_path)
+    cfg["obs_cfg"]["EEA"] = make_EEA_entry(start_date, end_date, eea_path)
     cfg["model_cfg"]["IFS"] = make_model_entry(start_date, end_date, model_path)
 
     
@@ -135,8 +92,7 @@ def make_config(
 
 
 @app.command()
-def main(
-    
+def run(
     start_date: datetime = typer.Argument(
         ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation start date"
     ),
@@ -149,6 +105,12 @@ def main(
     ),
     eea_obs_path: Path = typer.Option(
         DEFAULT_EEA_PATH, exists=True, readable=True, help="path to observation data"
+    ),
+    aeronet_obs_path: Path = typer.Option(
+        DEFAULT_AERONET_PATH, exists=True, readable=True, help="path to observation data"
+    ),
+    openaq_obs_path: Path = typer.Option(
+        DEFAULT_OPENAQ_PATH, exists=True, readable=True, help="path to observation data"
     ),
     data_path: Path = typer.Option(
         Path("../../data").resolve(),
@@ -205,6 +167,8 @@ def main(
         
         model_path,
         eea_obs_path,
+        aeronet_obs_path,
+        openaq_obs_path,
         data_path,
         coldata_path,
         
@@ -226,5 +190,7 @@ def main(
     runner(cfg, cache, dry_run=dry_run, pool=pool)
 
 
+
+
 if __name__ == "__main__":
-    main()
+    app()

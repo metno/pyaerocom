@@ -2,6 +2,8 @@
 #        The global configs
 ##################################################
 from pathlib import Path
+from datetime import datetime
+from pyaerocom.io import PyaroConfig
 
 GLOBAL_CONFIG = dict(
     # Description of the experiment
@@ -32,7 +34,7 @@ GLOBAL_CONFIG = dict(
     # colocation frequency (no statistics in higher resolution can be computed)
     ts_type="hourly",
     # The size of map used to display the results
-    map_zoom="Europe",
+    map_zoom="World",
     # Options for time
     freqs=["hourly", "daily"],  # Possible frequencies
     periods=[
@@ -50,7 +52,7 @@ GLOBAL_CONFIG = dict(
     # zeros_to_nan=False,
     zeros_to_nan=True,
     colocate_time=False,
-    obs_remove_outliers=False,
+    obs_remove_outliers=True,
     model_remove_outliers=False,
     harmonise_units=True,
     regions_how="country",
@@ -73,7 +75,7 @@ GLOBAL_CONFIG = dict(
     min_num_obs=dict(
         # yearly=dict(monthly=9),
         # monthly=dict(daily=21, weekly=3),
-        # daily=dict(hourly=18),
+        daily=dict(hourly=6),
     ),
 )
 
@@ -98,8 +100,8 @@ ignore_id_dict = dict(
 )
 
 BASE_FILTER = {
-    "latitude": [30, 82],
-    "longitude": [-30, 90],
+    # "latitude": [30, 82],
+    # "longitude": [-30, 90],
 }
 
 EEA_RURAL_FILTER = {
@@ -124,42 +126,41 @@ EEA_FILTER = {
     "altitude": [-20, 1000],
 }
 
-species_list = [
-    # "concno2",
+EEA_SPECIES = [
+    "concno2",
     # "concco",
-    # "conco3",
+    "conco3",
     # "concso2",
     "concpm10",
     "concpm25",
 ]
 
+AERONET_SPECIES = [
+    "od550aer"
+]
 
-def get_ignore_list(species):
-    return ignore_id_dict[species] if species in ignore_id_dict else ["NO0042*"]
+OPENAQ_SPECIES = [
+    "concpm10",
+    "concpm25",
+]
 
 
-obs_filters = {
-    key: dict(
-        **BASE_FILTER,
-        station_id=get_ignore_list(key),
-        negate="station_id",
-    )
-    for key in species_list
-}
+# def get_ignore_list(species):
+#     return ignore_id_dict[species] if species in ignore_id_dict else ["NO0042*"]
+
+
+# obs_filters = {
+#     key: dict(
+#         **BASE_FILTER,
+#         station_id=get_ignore_list(key),
+#         negate="station_id",
+#     )
+#     for key in species_list
+# }
 
 # Empty observation config
 OBS_CONFIG = {}
 
-# EEA observatio
-# OBS_CONFIG["EEA"] = dict(
-#     obs_id="CAMS2_83.NRT",
-#     # obs_id="EEAAQeRep.NRT",
-#     obs_vars=species_list,
-#     web_interface_name="EEA-UTD",
-#     obs_vert_type="Surface",
-#     read_opts_ungridded=dict(files=[], force_caching=True),
-#     obs_filters=obs_filters,
-# )
 
 ##################################################
 #        Putting it all together
@@ -169,3 +170,160 @@ CFG = dict(
     obs_cfg=OBS_CONFIG,
     **GLOBAL_CONFIG,
 )
+
+
+
+def make_model_entry(
+    start_date: datetime,
+    end_date: datetime,
+    model_path: Path,
+
+) -> dict:
+    return dict(
+        model_id = "IFS",
+        model_data_dir=str(model_path.resolve()),
+        gridded_reader_id={"model": "ReadCAMS2_82"},
+        model_kwargs=dict(
+            daterange=[f"{start_date:%F}", f"{end_date:%F}"],
+        ),
+    )
+
+
+def make_openAQ_entry(
+    start_date: datetime,
+    end_date: datetime,
+    obs_path: Path,
+) -> dict:
+    filters={
+                "time_bounds": {
+                "startend_include": [[start_date.strftime("%Y-%m-%d %H:%M:%S"), end_date.strftime("%Y-%m-%d %H:%M:%S")]]
+            },
+
+        }
+    data_id = "csv_timeseries"
+
+    new_columns = {
+        'variable': 7,
+        'station': 1,
+        'longitude': 2,
+        'latitude': 3,
+        'value': 4,
+        "units": "ug m**-3",
+        'end_time': 6,
+        'start_time': 5,
+        "altitude": "0",
+        "country": "Norway",
+        "station_type": "NaN",
+        "standard_deviation": "NaN",
+        "flag": "0",
+        }
+    config_eea = PyaroConfig(
+        name="openAQ",
+        reader_id=data_id,
+        filename_or_obj_or_url=str(obs_path),
+        filters=filters,
+        name_map={
+            
+        },
+        columns=new_columns,
+    )
+
+    return  dict(
+        obs_id=config_eea.name,
+        pyaro_config=config_eea,
+        web_interface_name="openAQ",
+        obs_vars=OPENAQ_SPECIES,
+        obs_vert_type="Surface",
+        ts_type="hourly",
+        min_num_obs=dict(),
+        
+        # obs_filters=EEA_FILTER,   
+    )
+    
+def make_EEA_entry(
+    start_date: datetime,
+    end_date: datetime,
+    obs_path: Path,
+) -> dict:
+    filters={
+                "time_bounds": {
+                "startend_include": [[start_date.strftime("%Y-%m-%d %H:%M:%S"), end_date.strftime("%Y-%m-%d %H:%M:%S")]]
+            },
+
+        }
+    data_id = "eeareader"
+    config_eea = PyaroConfig(
+        name="eea",
+        reader_id=data_id,
+        filename_or_obj_or_url=obs_path,
+        filters=filters,
+        dataset= "unverified",
+        name_map={
+            "PM2.5": "concpm25",
+            "PM10": "concpm10",
+            "NO2": "concno2",
+            "O3": "conco3",
+            
+        },
+    )
+
+    return  dict(
+        obs_id=config_eea.name,
+        pyaro_config=config_eea,
+        web_interface_name="EEA",
+        obs_vars=EEA_SPECIES,
+        obs_vert_type="Surface",
+        ts_type="hourly",
+        obs_filters=EEA_FILTER,   
+    )
+
+def make_Aeronet_entry(
+    start_date: datetime,
+    end_date: datetime,
+    obs_path: Path,
+) -> dict:
+    filters={
+                "time_bounds": {
+                "startend_include": [[start_date.strftime("%Y-%m-%d %H:%M:%S"), end_date.strftime("%Y-%m-%d %H:%M:%S")]]
+            },
+
+        }
+    data_id = "csv_timeseries"
+    columns = {
+        "variable": 13,
+        "station": 0,
+        "longitude": 7,
+        "latitude": 6,
+        "value": 12,
+        "units": 14,
+        "start_time": 15,
+        "end_time": 15,
+        "altitude": 8,
+        "country": "",
+        "station_type": 10,
+        "standard_deviation": "NaN",
+        "flag": "0",
+    }   
+    config_eea = PyaroConfig(
+        name="aeronet",
+        reader_id=data_id,
+        filename_or_obj_or_url=str(obs_path),
+        filters=filters,
+        name_map={
+            "AOD_550nm": "od550aer"
+            
+        },
+        columns=columns,
+    )
+
+    return  dict(
+        obs_id=config_eea.name,
+        pyaro_config=config_eea,
+        web_interface_name="Aeronet",
+        obs_vars=AERONET_SPECIES,
+        obs_vert_type="Surface",
+        ts_type="hourly",
+        # obs_filters=EEA_FILTER,   
+    )
+
+

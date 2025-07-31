@@ -1,0 +1,94 @@
+import typer
+from pathlib import Path
+from typing import Optional
+import polars as pl
+from datetime import datetime
+import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
+
+app = typer.Typer(add_completion=False, no_args_is_help=True)
+
+
+@app.command()
+def aeronet(
+    raw_data_path: Path = typer.Argument(
+        ...,
+        exists=True,
+        readable=True,
+        writable=False,
+        help="Location of original raw aeronet file",
+    ),
+    result_path: Path = typer.Argument(
+        ...,
+        help="Name and location of processed data file",
+    ),):
+   
+    FLAG = -999
+
+    def convert(aod500, lambda500, alpha):
+        # if aod500 == FLAG or lambda500 == FLAG or alpha == FLAG:
+        #     return np.nan
+        return aod500 * (0.55 / lambda500) ** (-alpha)
+
+
+    path = raw_data_path
+
+    opath = result_path
+
+    FIELDS = dict(
+        aod500="AOD_500nm",
+        lambda500="Exact_Wavelengths_of_AOD(um)_500nm",
+        alpha="500-870_Angstrom_Exponent",
+    )
+
+    KEEP = [
+        "AERONET_Site",
+        "Date(dd:mm:yyyy)",
+        "Time(hh:mm:ss)",
+        "Day_of_Year",
+        "Data_Quality_Level",
+        "AERONET_Site_Name",
+        "Site_Latitude(Degrees)",
+        "Site_Longitude(Degrees)",
+        "Site_Elevation(m)",
+    ] + list(FIELDS.values())
+
+    data = pl.read_csv(path, skip_lines=5, has_header=True)
+
+    new_data = data[KEEP].drop_nulls()
+    logger.info(f"Removed {len(data) - len(new_data)} rows due to them containing nulls")
+
+    new_data = new_data.with_columns(
+        (
+            pl.when(
+                pl.col(FIELDS["aod500"]) == FLAG
+            ).then(
+                pl.lit(np.nan)
+            ).otherwise(
+                convert(
+                    pl.col(FIELDS["aod500"]),
+                    pl.col(FIELDS["lambda500"]),
+                    pl.col(FIELDS["alpha"]),
+                )
+
+            )
+        ).alias("AOD_550nm")
+    )
+
+    new_data = new_data.with_columns(pl.lit("AOD_550nm").alias("variable_name"))
+    new_data = new_data.with_columns(pl.lit("1").alias("units"))
+    new_data = new_data.with_columns(
+        (pl.col("Date(dd:mm:yyyy)") + " " + pl.col("Time(hh:mm:ss)"))
+        .str.to_datetime("%d:%m:%Y %H:%M:%S")
+        .alias("Datetime")
+    )
+
+    logger.info(f"Before removing DRAGON {len(new_data)}")
+    new_data = new_data.remove(pl.col("AERONET_Site").str.contains("DRAGON"))
+    logger.info(f"After removing DRAGON {len(new_data)}")
+    new_data.write_csv(opath, include_header=False)
+
+    logger.info(f"Wrote processed aeronet file to {opath}")
+    
