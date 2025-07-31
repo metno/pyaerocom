@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import re
 from collections.abc import Iterator
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -13,46 +12,68 @@ from tqdm import tqdm
 
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.gridded_reader import GriddedReader
+from pyaerocom.aux_var_helpers import vmrx_to_concx
+from geonum.atmosphere import T0_STD, p0  # , temperature, pressure
+from pyaerocom.units.molecular_mass import get_molmass
 
-"""
-TODO:
 
-As it is now, with e.g. leap = 3 and start date 01.12, 01.12 might not be used, since the leap shifts the date three days forward
-This might have to be componsated for, with the filepath being for 3 days before 01.12 (the start date)(?)
-"""
+MODEL_LVL137_IN_METERS = 15003.5
 
 AEROCOM_NAMES = dict(
-    # no2_conc="concno2",
-    # o3_conc="conco3",
+    no2="concno2",
+    go3="conco3",
+    aod550="od550aer",
     pm10="concpm10",
     pm2p5="concpm25",
 )
 
-KEEP_FIELDS = ["longitude", "latitude", "time", "pm10", "pm2p5"]
+KEEP_FIELDS = ["longitude", "latitude", "time", "pm10", "pm2p5", "aod550", "no2", "go3"]
 
 FULL_NAMES = dict(
-    # no2="Nitrogen Dioxide",
-    # o3="Ozone",
+    no2="Nitrogen Dioxide",
+    go3="Ozone",
+    aod550="AOD 550nm",
     pm10="PM10 Aerosol",
     pm2p5="PM2.5 Aerosol",
 )
 
+CONVERT_UNITS = {
+    "no2": {
+        "molmass": get_molmass("no2"),
+        "fromunit": "kg kg**-1",
+    },
+    "go3": {
+        "molmass": get_molmass("o3"),
+        "fromunit": "kg kg**-1",
+    },
+}
+
+UNITS = dict(
+    no2="kg m**-3",
+    go3="kg m**-3",
+    aod550=1,
+    pm10="kg m**-3",
+    pm2p5="kg m**-3",
+)
+
 FILE_NAME = dict(
-    # no2="cIFS-12UTC_o-suite_lev137.nc",
-    # o3="cIFS-12UTC_o-suite_lev137.nc",
-    pm10="cIFS-12UTC_o-suite_surface.nc",
-    pm2p5="cIFS-12UTC_o-suite_surface.nc",
+    no2="cIFS-00UTC_o-suite_lev137.nc",
+    go3="cIFS-00UTC_o-suite_lev137.nc",
+    aod550="cIFS-00UTC_o-suite_surface.nc",
+    pm10="cIFS-00UTC_o-suite_surface.nc",
+    pm2p5="cIFS-00UTC_o-suite_surface.nc",
 )
 
 STANDARD_NAMES = dict(
-    # no2="mass_concentration_of_nitrogen_dioxide_in_air",
-    # o3="mass_concentration_of_ozone_in_air",
+    no2="mole_fraction_of_nitrogen_dioxide_in_air",
+    go3="mole_fraction_of_ozone_in_air",
+    aod550="atmosphere_optical_thickness_due_to_ambient_aerosol_particles",
     pm10="mass_concentration_of_pm10_ambient_aerosol_in_air",
     pm2p5="mass_concentration_of_pm2p5_ambient_aerosol_in_air",
 )
 
 
-DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_35b/cifs-model")
+DATA_FOLDER_PATH = Path("/lustre/storeB/project/fou/kl/CAMS2_82/cifs-models/o-suite/")
 
 
 DEBUG = True
@@ -70,7 +91,23 @@ def fix_names(ds: xr.Dataset) -> xr.Dataset:
     for var_name, aerocom_name in AEROCOM_NAMES.items():
         ds[var_name].attrs.update(long_name=aerocom_name)
         ds[var_name].attrs.update(standard_name=STANDARD_NAMES[var_name])
+        ds[var_name].attrs.update(units=UNITS[var_name])
     return ds.rename(AEROCOM_NAMES)
+
+
+def convert_units(ds: xr.Dataset) -> xr.Dataset:
+    for var_name, attrs in CONVERT_UNITS.items():
+        data = ds[var_name].data
+        ds[var_name].data = vmrx_to_concx(
+            data,
+            p_pascal=p0,  # pressure(MODEL_LVL137_IN_METERS),
+            T_kelvin=T0_STD,  # temperature(MODEL_LVL137_IN_METERS),
+            mmol_var=attrs["molmass"],
+            vmr_unit=attrs["fromunit"],
+            to_unit=UNITS[var_name],
+        )
+
+    return ds
 
 
 def fix_missing_vars(ds: xr.Dataset) -> xr.Dataset:
@@ -110,7 +147,7 @@ def read_dataset(paths: list[Path]) -> xr.Dataset:
         return ds.pipe(only_first_day).pipe(fix_missing_vars)
 
     ds = xr.open_mfdataset(paths, preprocess=preprocess, parallel=False)
-    return ds.pipe(fix_names)
+    return ds.pipe(convert_units).pipe(fix_names)
 
 
 def check_files(paths: list[Path]) -> list[Path]:
