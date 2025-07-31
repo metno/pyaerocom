@@ -734,7 +734,10 @@ class ExperimentOutput(ProjectOutput):
                 if not all_combinations:
                     break
 
-                src_name = uri.meta["source"]
+                try:
+                    src_name = uri.meta["source"]
+                except KeyError:
+                    src_name = uri.meta["model"]
                 var = uri.meta["variable"]
                 obs_var = var
                 mod_var = var
