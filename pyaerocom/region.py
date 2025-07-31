@@ -360,4 +360,7 @@ class RegionName(str):
         if str(self) == ALL_REGION_NAME:
             return True
 
+        if str(other) == ALL_REGION_NAME:
+            return False
+
         return str(self).lower() < str(other).lower()
