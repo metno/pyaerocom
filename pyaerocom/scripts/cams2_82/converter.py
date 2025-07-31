@@ -18,11 +18,17 @@ def aeronet(
         exists=True,
         readable=True,
         writable=False,
-        help="Location of original raw aeronet file",
+        help="Path of original raw aeronet files.",
     ),
     result_path: Path = typer.Argument(
         ...,
         help="Name and location of processed data file",
+    ),
+    start_date: datetime = typer.Argument(
+        ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation start date"
+    ),
+    end_date: datetime = typer.Argument(
+        ..., formats=["%Y-%m-%d", "%Y%m%d"], help="evaluation end date"
     ),):
    
     FLAG = -999
@@ -55,11 +61,35 @@ def aeronet(
         "Site_Elevation(m)",
     ] + list(FIELDS.values())
 
-    data = pl.read_csv(path, skip_lines=5, has_header=True)
 
+    start_yr = start_date.year
+    end_yr = end_date.year
+
+    data = pl.DataFrame()
+    for file in raw_data_path.glob("*.csv"):
+        if file.stem == str(start_yr) or file.stem == str(end_yr):
+            read_data = pl.read_csv(file, skip_lines=5, has_header=True)
+            data = pl.concat([data, read_data])
+
+
+
+
+    #Removes rows with any NULL data
     new_data = data[KEEP].drop_nulls()
     logger.info(f"Removed {len(data) - len(new_data)} rows due to them containing nulls")
 
+
+    # Create correct Datetime column
+    new_data = new_data.with_columns(
+        (pl.col("Date(dd:mm:yyyy)") + " " + pl.col("Time(hh:mm:ss)"))
+        .str.to_datetime("%d:%m:%Y %H:%M:%S")
+        .alias("Datetime")
+    )
+
+    # Filters on dates
+    new_data = new_data.filter(pl.col("Datetime").is_between(start_date, end_date))
+
+    # Creates values for AOD 550
     new_data = new_data.with_columns(
         (
             pl.when(
@@ -77,18 +107,18 @@ def aeronet(
         ).alias("AOD_550nm")
     )
 
+    #Adds extra needed columns
     new_data = new_data.with_columns(pl.lit("AOD_550nm").alias("variable_name"))
     new_data = new_data.with_columns(pl.lit("1").alias("units"))
-    new_data = new_data.with_columns(
-        (pl.col("Date(dd:mm:yyyy)") + " " + pl.col("Time(hh:mm:ss)"))
-        .str.to_datetime("%d:%m:%Y %H:%M:%S")
-        .alias("Datetime")
-    )
 
+
+    #Removes unwanted stations
     logger.info(f"Before removing DRAGON {len(new_data)}")
     new_data = new_data.remove(pl.col("AERONET_Site").str.contains("DRAGON"))
     logger.info(f"After removing DRAGON {len(new_data)}")
-    new_data.write_csv(opath, include_header=False)
 
+
+    # Saves file
+    new_data.write_csv(opath, include_header=False)
     logger.info(f"Wrote processed aeronet file to {opath}")
     
