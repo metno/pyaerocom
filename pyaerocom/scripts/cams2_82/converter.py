@@ -79,15 +79,6 @@ def aeronet(
     logger.info(f"Removed {len(data) - len(new_data)} rows due to them containing nulls")
 
 
-    # Create correct Datetime column
-    new_data = new_data.with_columns(
-        (pl.col("Date(dd:mm:yyyy)") + " " + pl.col("Time(hh:mm:ss)"))
-        .str.to_datetime("%d:%m:%Y %H:%M:%S")
-        .alias("Datetime")
-    )
-
-    # Filters on dates
-    new_data = new_data.filter(pl.col("Datetime").is_between(start_date, end_date))
 
     # Creates values for AOD 550
     new_data = new_data.with_columns(
@@ -112,6 +103,15 @@ def aeronet(
     new_data = new_data.with_columns(pl.lit("1").alias("units"))
 
 
+    # Create correct Datetime column
+    new_data = new_data.with_columns(
+        (pl.col("Date(dd:mm:yyyy)") + " " + pl.col("Time(hh:mm:ss)"))
+        .str.to_datetime("%d:%m:%Y %H:%M:%S")
+        .alias("Datetime")
+    )
+
+    # Filters on dates
+    new_data = new_data.filter(pl.col("Datetime").is_between(start_date, end_date))
     #Removes unwanted stations
     logger.info(f"Before removing DRAGON {len(new_data)}")
     new_data = new_data.remove(pl.col("AERONET_Site").str.contains("DRAGON"))
