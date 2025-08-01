@@ -734,11 +734,13 @@ class ExperimentOutput(ProjectOutput):
                 if not all_combinations:
                     break
 
-                try:
+                try:  # overlay case
                     src_name = uri.meta["source"]
-                except KeyError:
+                    var = uri.meta["variable"]
+                except KeyError:  # contour case
                     src_name = uri.meta["model"]
-                var = uri.meta["variable"]
+                    var = uri.meta["obsvar"]
+
                 obs_var = var
                 mod_var = var
 
