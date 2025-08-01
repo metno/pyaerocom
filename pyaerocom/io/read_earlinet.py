@@ -36,7 +36,7 @@ class ReadEarlinet(ReadUngriddedBase):
     _FILEMASK = "*.*"
 
     #: version log of this class (for caching)
-    __version__ = "0.18_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.19_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EARLINET_NAME
@@ -71,7 +71,8 @@ class ReadEarlinet(ReadUngriddedBase):
     VAR_PATTERNS_FILE = {
         "ec532aer": "_e0532",
         "ec355aer": "_e0355",
-        "bsc532aer": "_b0532",
+        # "bsc532aer": "_b0532",
+        "bsc532aer": "_e0532",  # as of 26.06.25 we will create aerosol backscatter derived from extinction using a lidar ratio of 50
         "bsc355aer": "_b0355",
         "bsc1064aer": "_b1064",
         # "zdust": "*.e*", # not sure if EARLINET has this anymore
@@ -83,7 +84,8 @@ class ReadEarlinet(ReadUngriddedBase):
         "ec532aer": "extinction",
         "ec355aer": "extinction",
         "ec1064aer": "extinction",
-        "bsc532aer": "backscatter",
+        # "bsc532aer": "backscatter",
+        "bsc532aer": "extinction",  # as of 26.06.25 we will create aerosol backscatter derived from extinction using a lidar ratio of 50
         "bsc355aer": "backscatter",
         "bsc1064aer": "backscatter",
         "zdust": "DustLayerHeight",  # not sure if EARLINET has this anymore
@@ -313,7 +315,9 @@ class ReadEarlinet(ReadUngriddedBase):
                 netcdf_var_name = self.VAR_NAMES_FILE[var]
                 # check if the desired variable is in the file
                 if netcdf_var_name not in data_in.variables:
-                    logger.warning(f"Variable {var} not found in file {filename}")
+                    logger.warning(
+                        f"ReadEarlinet: Variable {var} with NetCDF var name {netcdf_var_name} not found in file {filename}"
+                    )
                     continue
 
                 info = var_info[var]
@@ -321,6 +325,11 @@ class ReadEarlinet(ReadUngriddedBase):
                 arr = data_in.variables[netcdf_var_name]
                 # the actual data as numpy array (or float if 0-D data, e.g. zdust)
                 val = np.squeeze(np.float64(arr))  # squeeze to 1D array
+
+                if var == "bsc532aer":
+                    val = (
+                        val * 50
+                    )  # convert backscatter to extinction using a lidar ratio of 50 sr
 
                 # CONVERT UNIT
                 unit = None
@@ -716,6 +725,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 for path in paths:
                     file = os.path.basename(path)
                     if _pattern not in file:
+                        # if not fnmatch.fnmatch(file, _pattern):
                         continue
                     elif file in exclude:
                         self.excluded_files.append(path)
