@@ -84,8 +84,12 @@ logger = logging.getLogger(__name__)
 
 def fix_names(ds: xr.Dataset) -> xr.Dataset:
     ds = ds[KEEP_FIELDS]
-    ds["longitude"].attrs.update(standard_name="longitude")
-    ds["latitude"].attrs.update(standard_name="latitude")
+    ds["longitude"].attrs.update(
+        long_name="longitude", standard_name="longitude", units="degrees_east"
+    )
+    ds["latitude"].attrs.update(
+        long_name="latitude", standard_name="latitude", units="degrees_north"
+    )
     ds["time"].attrs.update(standard_name="time")
 
     for var_name, aerocom_name in AEROCOM_NAMES.items():
@@ -368,7 +372,7 @@ class ReadCAMS2_82(GriddedReader):
             raise ValueError(f"Only hourly or 3hourly ts_type is supported, not {ts_type}")
 
         cube = self.filedata[var_name].to_iris()
-
+        cube = cube.intersection(longitude=(-180, 180))
         gridded = GriddedData(
             cube,
             var_name=var_name,
