@@ -5,11 +5,10 @@ import pathlib
 import shutil
 
 import aerovaldb
+from attrs import define, field
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import (
-    sort_dict_by_name,
-)
+from pyaerocom._lowlevel_helpers import sort_dict_by_name
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.collections import ObsCollection
 from pyaerocom.aeroval.glob_defaults import (
@@ -32,7 +31,6 @@ from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.utils import recursive_defaultdict
 from pyaerocom.variable_helpers import get_aliases
-from attrs import define, field
 
 logger = logging.getLogger(__name__)
 
@@ -760,6 +758,7 @@ class ExperimentOutput(ProjectOutput):
                     mod_name = first_with_obs_name[1]
                     all_combinations.remove(first_with_obs_name)
                 elif src_name in self.cfg.model_cfg.keylist():
+                    mod_name = src_name
                     vert_code = None
                     for o in self.cfg.obs_cfg.keylist():
                         if var in self.cfg.obs_cfg.get_entry(o).obs_vars:
