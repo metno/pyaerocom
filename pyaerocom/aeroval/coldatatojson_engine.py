@@ -192,7 +192,7 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         use_country = True if regions_how == "country" else False
 
-        data = _init_data_default_frequencies(coldata, freqs)
+        data: dict[str, ColocatedData] = _init_data_default_frequencies(coldata, freqs)
 
         if annual_stats_constrained:
             data = _apply_annual_constraint(data)
@@ -246,7 +246,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     use_meteorological_seasons=use_meteorological_seasons,
                 )
 
-            if coldata.ts_type == "hourly" and use_diurnal:
+            if "hourly" in data and data["hourly"] is not None and use_diurnal:
                 logger.info("Processing diurnal profiles...")
                 self._process_diurnal_profiles(
                     coldata=data["hourly"],  # coldata,

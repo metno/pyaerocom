@@ -1518,7 +1518,7 @@ def _get_jsdate(nparr: np.ndarray):
     return (dt - offs).astype(int) * 1000
 
 
-def _init_data_default_frequencies(coldata, to_ts_types):
+def _init_data_default_frequencies(coldata: ColocatedData, to_ts_types):
     """
     Compute one colocated data object for each desired statistics frequency
 
