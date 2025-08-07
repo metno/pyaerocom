@@ -841,8 +841,8 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         ################
         #    EEA-rural
         ################
-        "EEA-d-rural": dict(
-            obs_id="EEA-d-rural",
+        "EEA-d-rural-background": dict(
+            obs_id="EEA-d-rural-background",
             obs_vars=[
                 "concpm10",
                 "concpm25",
@@ -852,7 +852,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 "vmro3max",
             ],
             pyaro_config={
-                "name": "EEA-d-rural",
+                "name": "EEA-d-rural-background",
                 "reader_id": "eeareader",
                 "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
                 "name_map": {
@@ -894,20 +894,20 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                     "background",
                 ],
             },
-            web_interface_name="EEA-rural",
+            web_interface_name="EEA-rural-background",
             obs_vert_type="Surface",
             obs_filters=EEA_FILTER,
             ts_type="daily",
         ),
-        "EEA-h-diurnal-rural": dict(
-            obs_id="EEA-h-diurnal-rural",
+        "EEA-h-diurnal-rural-background": dict(
+            obs_id="EEA-h-diurnal-rural-background",
             obs_vars=[
                 "concNno2",
                 "vmro3",
                 "vmrox",
             ],
             pyaro_config={
-                "name": "EEA-h-diurnal-rural",
+                "name": "EEA-h-diurnal-rural-background",
                 "reader_id": "eeareader",
                 "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
                 "name_map": {
