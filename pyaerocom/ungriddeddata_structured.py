@@ -107,6 +107,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     def _create_data_chunk(self, size):
         """create a datachunk of size and initialize it to _nan_type values"""
         data = DynamicRecArray(capacity=size, dtype=self._dtype)
+        for k, v in self._nan_types.items():
+            data._array[k] = v
         return data
 
     @override
