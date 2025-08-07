@@ -949,7 +949,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                     "background",
                 ],
             },
-            web_interface_name="EEA-h-rural",
+            web_interface_name="EEA-h-rural-background",
             obs_vert_type="Surface",
             obs_filters={**EEA_FILTER, "ts_type": "hourly"},
             resample_how="mean",
