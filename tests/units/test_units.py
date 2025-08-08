@@ -151,8 +151,9 @@ def test_species_and_element_detection(
     ),
 )
 def test_unit_conversion(from_unit: str, to_unit: str, species: str, conversion_fac: float):
-    u = Unit(from_unit, species=species)
-    fac = u.convert(1, to_unit, species=species)
+    u1 = Unit(from_unit, species=species)
+    u2 = Unit(to_unit, species=species)
+    fac = u1.convert(1, u2, species=species)
     assert fac == pytest.approx(conversion_fac)
 
 
