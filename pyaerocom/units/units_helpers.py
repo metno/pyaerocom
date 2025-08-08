@@ -66,6 +66,7 @@ def convert_unit(
     data
         data in new unit
     """
+    # assert from_unit == "ug m-3" and to_unit == "ug m-3"
     try:
         data = Unit(from_unit, aerocom_var=var_name, ts_type=ts_type).convert(
             data,

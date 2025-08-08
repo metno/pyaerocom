@@ -234,6 +234,7 @@ class Unit:
                 raise ValueError(
                     f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
                 )
+            return
 
         if not compatible_element:
             raise ValueError(
@@ -245,12 +246,16 @@ class Unit:
                 raise ValueError(
                     f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
                 )
+            return
 
-        if (self._element == other._element) and same_variable:
+        if (self._element == other._element) and same_variable and same_species:
             if not self._cfunit.is_convertible(other._cfunit):
                 raise ValueError(
                     f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
                 )
+            return
+
+        raise ValueError()
 
     def is_convertible(self, other: str | Unit) -> bool:
         """

@@ -70,6 +70,9 @@ def test_origin():
         (Unit("mg", species="SO4"), Unit("mg S", species="SO4"), True),
         (Unit("mg", aerocom_var="concso2"), Unit("mg S", aerocom_var="concso2"), True),
         (Unit("mg S", species="SO2"), Unit("mg N", species="SO2"), False),
+        (Unit("ug S/m3", aerocom_var="concso4t"), Unit("ug m-3", aerocom_var="concso4t"), False),
+        # u1 = Unit('ug S/m3', aerocom_var='concso4t')
+        # u2 = Unit('ug m-3',  aerocom_var='concso4t')
     ),
 )
 def test_is_convertible(from_unit: str | Unit, to_unit: str | Unit, is_convertible: bool):
