@@ -248,7 +248,7 @@ class Unit:
                 )
             return
 
-        if (self._element == other._element) and same_variable:
+        if ((self._element == other._element) and same_variable) or other._element is None:
             if not self._cfunit.is_convertible(other._cfunit):
                 raise ValueError(
                     f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
