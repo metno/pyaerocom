@@ -250,7 +250,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                     use_meteorological_seasons=use_meteorological_seasons,
                 )
 
-            if coldata.ts_type == "hourly" and use_diurnal:
+            if "hourly" in data and data["hourly"] is not None and use_diurnal:
                 logger.info("Processing diurnal profiles")
                 self._process_diurnal_profiles(
                     coldata=data["hourly"],  # coldata,
