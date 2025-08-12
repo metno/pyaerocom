@@ -248,10 +248,10 @@ class Unit:
                 raise ValueError(
                     f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
                 )
-
-        raise ValueError(
-            f"Units {self} not convertible to {other}. If you believe this to be a bug, please raise an issue at https://github.com/metno/pyaerocom"
-        )
+        else:
+            raise ValueError(
+                f"Units {self} not convertible to {other}. If you believe this to be a bug, please raise an issue at https://github.com/metno/pyaerocom"
+            )
 
     def is_convertible(self, other: str | Unit) -> bool:
         """
