@@ -234,26 +234,20 @@ class Unit:
                 raise ValueError(
                     f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
                 )
-            return
-
-        if not compatible_element:
+        elif not compatible_element:
             raise ValueError(
                 f"Element '{self._element}' is not compatible with '{other._element}'."
             )
-
-        if same_species and same_variable:
+        elif same_species and same_variable:
             if not self._cfunit.is_convertible(other._cfunit):
                 raise ValueError(
                     f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
                 )
-            return
-
-        if (self._element == other._element) and same_variable:
+        elif (self._element == other._element) and same_variable:
             if not self._cfunit.is_convertible(other._cfunit):
                 raise ValueError(
                     f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
                 )
-            return
 
         raise ValueError(
             f"Units {self} not convertible to {other}. If you believe this to be a bug, please raise an issue at https://github.com/metno/pyaerocom"
@@ -375,11 +369,12 @@ class Unit:
         :param kwargs: Will be passed as additional keyword args to PyaerocomUnit.__init__() for 'other'.
         :return: Unit converted data.
         """
-        if isinstance(other, str):
+        if isinstance(other, Unit):
+            to_unit = other
+        elif isinstance(other, str):
             to_unit = Unit(str(other), **kwargs)
         else:
-            assert isinstance(other, Unit)
-            to_unit = other
+            raise TypeError(f"'other' must be of type str | Unit. Got {other}.")
 
         self._validate_convertible(to_unit)
 
