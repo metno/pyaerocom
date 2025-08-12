@@ -248,7 +248,7 @@ class Unit:
                 )
             return
 
-        if ((self._element == other._element) and same_variable) or other._element is None:
+        if (self._element == other._element) and same_variable:
             if not self._cfunit.is_convertible(other._cfunit):
                 raise ValueError(
                     f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
@@ -381,7 +381,7 @@ class Unit:
             assert isinstance(other, Unit)
             to_unit = other
 
-        self._validate_convertible(other)
+        self._validate_convertible(to_unit)
 
         to_unit_cf = to_unit._cfunit
         factor = float(self._cfunit.convert(1, to_unit_cf, inplace=False))
