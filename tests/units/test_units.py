@@ -71,8 +71,6 @@ def test_origin():
         (Unit("mg", aerocom_var="concso2"), Unit("mg S", aerocom_var="concso2"), True),
         (Unit("mg S", species="SO2"), Unit("mg N", species="SO2"), False),
         (Unit("ug S/m3", aerocom_var="concso4t"), Unit("ug m-3", aerocom_var="concso4t"), False),
-        # u1 = Unit('ug S/m3', aerocom_var='concso4t')
-        # u2 = Unit('ug m-3',  aerocom_var='concso4t')
     ),
 )
 def test_is_convertible(from_unit: str | Unit, to_unit: str | Unit, is_convertible: bool):
@@ -151,9 +149,8 @@ def test_species_and_element_detection(
     ),
 )
 def test_unit_conversion(from_unit: str, to_unit: str, species: str, conversion_fac: float):
-    u1 = Unit(from_unit, species=species)
-    # u2 = Unit(to_unit, species=species)
-    fac = u1.convert(1, to_unit, species=species)
+    u = Unit(from_unit, species=species)
+    fac = u.convert(1, to_unit, species=species)
     assert fac == pytest.approx(conversion_fac)
 
 
