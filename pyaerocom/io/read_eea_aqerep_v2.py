@@ -2,7 +2,7 @@
 Interface for reading EEA AqERep files (formerly known as Airbase data).
 """
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.io.read_eea_aqerep_base import ReadEEAAQEREPBase
 
 

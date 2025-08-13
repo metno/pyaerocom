@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.io.cnemc.reader import ReadCNEMC
 
 STATION_NAMES = ("1478A", "2706A", "3377A")

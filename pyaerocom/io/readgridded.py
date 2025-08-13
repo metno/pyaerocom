@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataQueryError,

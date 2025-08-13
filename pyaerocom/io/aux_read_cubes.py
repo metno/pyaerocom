@@ -71,7 +71,7 @@ def _check_input_iscube(*data_objs):
 def _check_same_units(cube1, cube2):
     if cube1.units == cube2.units:
         return (cube1, cube2)
-    from pyaerocom import const
+    from pyaerocom import config as const
 
     var1 = cube1.var_name
     u1 = cube1.units
@@ -119,7 +119,7 @@ def apply_rh_thresh_cubes(cube, rh_cube, rh_max=None):
     """Method that applies a low RH filter to input cube"""
     cube, rh_cube = _check_input_iscube(cube, rh_cube)
     if rh_max is None:
-        from pyaerocom import const
+        from pyaerocom import config as const
 
         rh_max = const.VARS[cube.var_name]["dry_rh_max"]
     if not cube.shape == rh_cube.shape:

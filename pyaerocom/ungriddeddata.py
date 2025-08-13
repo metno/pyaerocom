@@ -9,7 +9,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import (

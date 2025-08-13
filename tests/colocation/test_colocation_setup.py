@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.config_reader import ALL_REGION_NAME
 

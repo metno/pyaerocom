@@ -9,7 +9,7 @@ import pickle
 from collections.abc import Iterator
 from pathlib import Path
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.exceptions import CacheReadError, CacheWriteError
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungriddeddata import UngriddedData

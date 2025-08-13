@@ -103,6 +103,6 @@ def get_variable(var_name: str):
     -------
     Variable
     """
-    from pyaerocom import const
+    from pyaerocom import config as const
 
     return const.VARS[var_name]

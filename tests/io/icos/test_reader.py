@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.io.icos.reader import ReadICOS
 
 if not const.has_access_lustre:

@@ -5,7 +5,7 @@ from pathlib import Path
 import aerovaldb
 import pytest
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.aeroval.experiment_output import ExperimentOutput, ProjectOutput
 from pyaerocom.aeroval.json_utils import read_json, write_json

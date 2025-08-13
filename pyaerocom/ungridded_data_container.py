@@ -3,7 +3,7 @@ import logging
 import os
 from collections.abc import Iterator
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.exceptions import (
     DataCoverageError,
     StationCoordinateError,

@@ -4,7 +4,7 @@ import os
 
 import pooch
 
-from pyaerocom import const
+from pyaerocom import config as const
 
 logger = logging.getLogger(__name__)
 

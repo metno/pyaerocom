@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import logging
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData

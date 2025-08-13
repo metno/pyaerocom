@@ -19,7 +19,7 @@ import requests
 import xarray as xr
 from iris import load_cube
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.helpers import numpy_to_cube
 

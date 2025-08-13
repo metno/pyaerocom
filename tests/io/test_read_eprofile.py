@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 
 from pyaerocom.io.read_eprofile import ReadEprofile
-from pyaerocom import const, VerticalProfile, UngriddedDataStructured
+from pyaerocom import config as const, VerticalProfile, UngriddedDataStructured
 
 
 ROOT: str = const.OBSLOCS_UNGRIDDED["Eprofile-test"]

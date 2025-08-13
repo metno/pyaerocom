@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.io.icpforests.metadata import MetadataReader, Station, SurveyYear
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase

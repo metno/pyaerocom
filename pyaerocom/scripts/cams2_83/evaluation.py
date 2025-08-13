@@ -7,7 +7,7 @@ from enum import Enum
 from pathlib import Path
 from pprint import pformat
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.io import ReadUngridded
 from pyaerocom.io.cachehandler_ungridded import list_cache_files

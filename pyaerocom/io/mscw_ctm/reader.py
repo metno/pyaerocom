@@ -7,7 +7,7 @@ import warnings
 
 import numpy as np
 import xarray as xr
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.gridded_reader import GriddedReader

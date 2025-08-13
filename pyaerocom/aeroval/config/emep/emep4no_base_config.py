@@ -31,7 +31,7 @@ def get_CFG(year: int, model_dir: str, *, file_pattern: str = r"^RERUN2022_{freq
     >>> if __name__ == "__main__":
     ...     import matplotlib.pyplot as plt
     ...     import pyaerocom as pya
-    ...     from pyaerocom import const
+    ...     from pyaerocom import config as const
     ...     from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
     ...
     ...     # Customize cache dir to avoid disk quota issues.

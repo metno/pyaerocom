@@ -3,7 +3,7 @@ from importlib import metadata
 import pytest
 from packaging.version import Version
 
-from pyaerocom import const
+from pyaerocom import config as const
 
 pytest_plugins = [
     "tests.fixtures.mscw_ctm",

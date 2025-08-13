@@ -9,7 +9,7 @@ import numpy.typing as npt
 import pandas as pd
 from pyaro.timeseries import Reader
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.dynamic_rec_array import DynamicRecArray
 from pyaerocom.exceptions import (
     DataCoverageError,

@@ -11,7 +11,7 @@ import xarray as xr
 from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom._lowlevel_helpers import RegridResDeg
 from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.exceptions import (

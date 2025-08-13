@@ -8,7 +8,7 @@ from typing import Any
 
 import numpy as np
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.exceptions import DataCoverageError, MetaDataError, StationNotFoundError
 from pyaerocom.helpers import isnumeric
 from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr

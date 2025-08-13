@@ -7,7 +7,7 @@ import xarray
 from glob import glob
 from tqdm import tqdm
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.units import convert_unit
 from collections.abc import Iterator
 from pyaerocom.exceptions import (

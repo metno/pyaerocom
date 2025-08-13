@@ -16,7 +16,7 @@ import warnings
 from pyaerocom.units import Unit
 
 from pyaerocom import __version__ as pya_ver
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom._lowlevel_helpers import LayerLimits, RegridResDeg
 from pyaerocom.exceptions import (

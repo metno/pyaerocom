@@ -6,7 +6,7 @@ from textwrap import dedent
 
 import pytest
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.io.cams2_83.obs import DEFAULT_METADATA_NAME, read_csv
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH, ReadCAMS2_83
 from pyaerocom.io.cams2_83.read_obs import obs_paths as find_obs_paths

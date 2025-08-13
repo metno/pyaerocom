@@ -1,6 +1,6 @@
 import pytest
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.io import ReadPyaro, ReadUngridded
 
 

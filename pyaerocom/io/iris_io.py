@@ -29,7 +29,7 @@ from traceback import format_exc
 
 import numpy as np
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.exceptions import (
     FileConventionError,
     NetcdfError,
@@ -219,7 +219,7 @@ def check_and_regrid_lons_cube(cube):
 
 
 def check_dim_coord_names_cube(cube):
-    from pyaerocom import const
+    from pyaerocom import config as const
 
     coords = dict(
         lon=const.COORDINFO["lon"],

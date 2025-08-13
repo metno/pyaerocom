@@ -108,7 +108,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
 
         import os
         import pyaerocom as pya
-        from pyaerocom import const
+        from pyaerocom import config as const
         from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 
         from pyaerocom.aeroval.config.emep.reporting_base import get_CFG
@@ -164,7 +164,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
 
         import os
         import pyaerocom as pya
-        from pyaerocom import const
+        from pyaerocom import config as const
         from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 
         from pyaerocom.aeroval.config.emep.reporting_base import get_CFG
@@ -246,7 +246,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
 
         import os
         import pyaerocom as pya
-        from pyaerocom import const
+        from pyaerocom import config as const
         from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 
         from pyaerocom.aeroval.config.emep.reporting_base import get_CFG

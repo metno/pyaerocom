@@ -4,7 +4,8 @@ import logging
 import aerovaldb
 import xarray as xr
 
-from pyaerocom import ColocatedData, GriddedData, TsType, __version__, const
+from pyaerocom import ColocatedData, GriddedData, TsType, __version__
+from pyaerocom import config as const
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelmaps_helpers import (

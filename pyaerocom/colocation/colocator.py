@@ -12,7 +12,7 @@ from typing import Any
 
 import pandas as pd
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.colocation.colocation_utils import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,

@@ -3,7 +3,8 @@ import os
 from numpy.typing import ArrayLike
 from time import time
 
-from pyaerocom import ColocatedData, TsType, const
+from pyaerocom import ColocatedData, TsType
+from pyaerocom import config as const
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
     _apply_annual_constraint,
