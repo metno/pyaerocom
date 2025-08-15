@@ -71,6 +71,8 @@ GLOBAL_CONFIG = dict(
         "concpm25",
         "concso2",
         "concco",
+        "od550aer",
+        "ec1064aer",
     ],
     min_num_obs=dict(
         # yearly=dict(monthly=9),
@@ -144,6 +146,8 @@ OPENAQ_SPECIES = [
     "concpm25",
 ]
 
+EPROFILE_SPECIES = ["ec1064aer"]
+
 
 # def get_ignore_list(species):
 #     return ignore_id_dict[species] if species in ignore_id_dict else ["NO0042*"]
@@ -158,8 +162,106 @@ OPENAQ_SPECIES = [
 #     for key in species_list
 # }
 
-# Empty observation config
-OBS_CONFIG = {}
+# Base observation config with EPROFILE only
+OBS_CONFIG = {
+    "EPROFILE": {
+      "obs_vars": EPROFILE_SPECIES,
+      "obs_id": "EPROFILE",
+      "obs_name": "EPROFILE",
+      "obs_ts_type_read": None,
+      "obs_vert_type": "Column",
+      "obs_aux_requires": {},
+      "instr_vert_loc": None,
+      "is_superobs": False,
+      "only_superobs": False,
+      "is_bulk": False,
+      "bulk_options": {},
+      "colocation_layer_limts": None,
+      "profile_layer_limits": [
+        {
+          "start": 1000,
+          "end": 2000
+        },
+        {
+          "start": 2000,
+          "end": 3000
+        },
+        {
+          "start": 3000,
+          "end": 4000
+        },
+        {
+          "start": 4000,
+          "end": 5000
+        },
+        {
+          "start": 5000,
+          "end": 6000
+        },
+        {
+          "start": 6000,
+          "end": 7000
+        },
+        {
+          "start": 7000,
+          "end": 8000
+        },
+        {
+          "start": 8000,
+          "end": 9000
+        },
+        {
+          "start": 9000,
+          "end": 10000
+        }
+      ],
+      "web_interface_name": "EPROFILE",
+      "diurnal_only": False,
+      "obs_type": None,
+      "read_opts_ungridded": {},
+      "only_json": False,
+      "coldata_dir": None,
+      "obs_use_climatology": False,
+      "colocate_time": False,
+      "min_num_obs": {
+        "yearly": {
+          "monthly": 1
+        },
+        "monthly": {
+          "daily": 1
+        },
+        "daily": {
+          "hourly": 1
+        }
+      },
+      "ts_type": "daily",
+      "ignore_station_ids": None,
+      "colocation_layer_limits": [
+        {
+          "start": 0,
+          "end": 2000
+        },
+        {
+          "start": 2000,
+          "end": 4000
+        },
+        {
+          "start": 4000,
+          "end": 6000
+        }
+      ],
+      "obs_filters": {
+        "latitude": [
+          -90,
+          90
+        ],
+        "longitude": [
+          -180,
+          180
+        ]
+      }
+    }
+}
 
 
 ##################################################

@@ -8,31 +8,124 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import xarray as xr
+from geonum.atmosphere import T0_STD, p0  # , temperature, pressure
 from tqdm import tqdm
 
+from pyaerocom.aux_var_helpers import vmrx_to_concx
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.gridded_reader import GriddedReader
-from pyaerocom.aux_var_helpers import vmrx_to_concx
-from geonum.atmosphere import T0_STD, p0  # , temperature, pressure
 from pyaerocom.units.molecular_mass import get_molmass
 
+MODEL_LVL137_IN_METERS = 10
 
-MODEL_LVL137_IN_METERS = 15003.5
+# array of geometric altitudes (in [m]) corresponding to levels 64 - 137, taken from this table https://confluence.ecmwf.int/display/UDOC/L137+model+level+definitions
+ALTITUDES_64_137 = np.array(
+    [
+        15003.50,
+        14680.44,
+        14360.05,
+        14042.30,
+        13727.18,
+        13414.65,
+        13104.70,
+        12797.30,
+        12492.44,
+        12190.10,
+        11890.24,
+        11592.86,
+        11297.93,
+        11005.69,
+        10714.22,
+        10422.64,
+        10130.98,
+        9839.26,
+        9547.49,
+        9255.70,
+        8963.90,
+        8672.11,
+        8380.36,
+        8088.67,
+        7797.04,
+        7505.51,
+        7214.09,
+        6922.80,
+        6631.66,
+        6340.68,
+        6049.89,
+        5759.30,
+        5469.30,
+        5180.98,
+        4896.02,
+        4615.92,
+        4341.73,
+        4074.41,
+        3814.82,
+        3563.69,
+        3321.67,
+        3089.25,
+        2866.83,
+        2654.69,
+        2452.99,
+        2261.80,
+        2081.09,
+        1910.76,
+        1750.63,
+        1600.44,
+        1459.91,
+        1328.70,
+        1206.44,
+        1092.73,
+        987.15,
+        889.29,
+        798.72,
+        715.02,
+        637.76,
+        566.54,
+        500.95,
+        440.61,
+        385.16,
+        334.24,
+        287.52,
+        244.69,
+        205.44,
+        169.51,
+        136.62,
+        106.54,
+        79.04,
+        53.92,
+        30.96,
+        10.00,
+    ]
+)
+
 
 AEROCOM_NAMES = dict(
     no2="concno2",
     go3="conco3",
     aod550="od550aer",
+    aerext1064="ec1064aer",
     pm10="concpm10",
     pm2p5="concpm25",
 )
 
-KEEP_FIELDS = ["longitude", "latitude", "time", "pm10", "pm2p5", "aod550", "no2", "go3"]
+KEEP_FIELDS = [
+    "longitude",
+    "latitude",
+    "time",
+    "pm10",
+    "pm2p5",
+    "aod550",
+    "aerext1064",
+    "no2",
+    "go3",
+    "level",
+]
 
 FULL_NAMES = dict(
     no2="Nitrogen Dioxide",
     go3="Ozone",
     aod550="AOD 550nm",
+    aerext1064="Aerosol extinction coefficient 1064nm",
     pm10="PM10 Aerosol",
     pm2p5="PM2.5 Aerosol",
 )
@@ -52,6 +145,7 @@ UNITS = dict(
     no2="kg m**-3",
     go3="kg m**-3",
     aod550=1,
+    aerext1064="m**-1",
     pm10="kg m**-3",
     pm2p5="kg m**-3",
 )
@@ -60,6 +154,7 @@ FILE_NAME = dict(
     no2="cIFS-00UTC_o-suite_lev137.nc",
     go3="cIFS-00UTC_o-suite_lev137.nc",
     aod550="cIFS-00UTC_o-suite_surface.nc",
+    aerext1064="cIFS-00UTC_o-suite_multilev.nc",
     pm10="cIFS-00UTC_o-suite_surface.nc",
     pm2p5="cIFS-00UTC_o-suite_surface.nc",
 )
@@ -68,6 +163,7 @@ STANDARD_NAMES = dict(
     no2="mole_fraction_of_nitrogen_dioxide_in_air",
     go3="mole_fraction_of_ozone_in_air",
     aod550="atmosphere_optical_thickness_due_to_ambient_aerosol_particles",
+    aerext1064="volume_extinction_coefficient_in_air_due_to_ambient_aerosol_particles",
     pm10="mass_concentration_of_pm10_ambient_aerosol_in_air",
     pm2p5="mass_concentration_of_pm2p5_ambient_aerosol_in_air",
 )
@@ -91,6 +187,10 @@ def fix_names(ds: xr.Dataset) -> xr.Dataset:
         long_name="latitude", standard_name="latitude", units="degrees_north"
     )
     ds["time"].attrs.update(standard_name="time")
+    if "level" in ds.coords:
+        ds = ds.rename({"level": "altitude"})
+        ds = ds.assign_coords(altitude=ALTITUDES_64_137)  # / 1000.0)
+        ds["altitude"] = ds["altitude"].assign_attrs(units="m")  # "km")
 
     for var_name, aerocom_name in AEROCOM_NAMES.items():
         ds[var_name].attrs.update(long_name=aerocom_name)
@@ -106,8 +206,9 @@ def convert_units(ds: xr.Dataset) -> xr.Dataset:
             data,
             p_pascal=p0,  # pressure(MODEL_LVL137_IN_METERS),
             T_kelvin=T0_STD,  # temperature(MODEL_LVL137_IN_METERS),
-            mmol_var=attrs["molmass"],
+            mmol_var=1,
             vmr_unit=attrs["fromunit"],
+            mmol_air=1,
             to_unit=UNITS[var_name],
         )
 
@@ -368,10 +469,17 @@ class ReadCAMS2_82(GriddedReader):
         if self._daterange is None:
             raise ValueError(f"No 'daterange' in kwargs={kwargs}")
 
-        if ts_type != "3hourly" and ts_type != "hourly":
-            raise ValueError(f"Only hourly or 3hourly ts_type is supported, not {ts_type}")
+        if ts_type != "3hourly" and ts_type != "hourly" and ts_type != "daily":
+            raise ValueError(
+                f"Only hourly or 3hourly or daily ts_type is supported, not {ts_type}"
+            )
 
-        cube = self.filedata[var_name].to_iris()
+        filedata = self.filedata[var_name]
+
+        if ts_type == "daily":
+            filedata = filedata.resample(time="D").mean()
+
+        cube = filedata.to_iris()
         cube = cube.intersection(longitude=(-180, 180))
         gridded = GriddedData(
             cube,

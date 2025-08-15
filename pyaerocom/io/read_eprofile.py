@@ -1,28 +1,24 @@
 import logging
 import os
 import sys
+from collections.abc import Iterator
+from glob import glob
+from pathlib import Path
 
 import numpy as np
 import xarray
-from glob import glob
 from tqdm import tqdm
 
 from pyaerocom import const
-from pyaerocom.units import convert_unit
-from collections.abc import Iterator
-from pyaerocom.exceptions import (
-    DataUnitError,
-    DataDimensionError,
-    EprofileFileError,
-)
+from pyaerocom.exceptions import DataDimensionError, DataUnitError, EprofileFileError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
+from pyaerocom.units import convert_unit
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
-from pathlib import Path
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -379,7 +375,7 @@ class ReadEprofile(ReadUngriddedBase):
 
         if files is None:
             if len(self.files) == 0:
-                self.get_file_list(vars_to_retrieve, pattern=pattern)
+                self.get_file_list()
             files = self.files
 
         if isinstance(files, str):
