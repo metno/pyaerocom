@@ -215,6 +215,14 @@ def convert_units(ds: xr.Dataset) -> xr.Dataset:
     return ds
 
 
+def drop_vars(ds: xr.Dataset) -> xr.Dataset:
+    """
+    Drop variables not used in the evaluation
+    """
+    ds = ds.drop_vars([var for var in ds.data_vars if var not in KEEP_FIELDS])
+    return ds
+
+
 def fix_missing_vars(ds: xr.Dataset) -> xr.Dataset:
     """
     TODO: Check if all variables are there. If not:
@@ -249,10 +257,10 @@ def read_dataset(paths: list[Path]) -> xr.Dataset:
     # paths = check_files(paths)
 
     def preprocess(ds: xr.Dataset) -> xr.Dataset:
-        return ds.pipe(only_first_day).pipe(fix_missing_vars)
+        return ds.pipe(only_first_day).pipe(drop_vars)
 
     ds = xr.open_mfdataset(paths, preprocess=preprocess, parallel=False)
-    return ds.pipe(convert_units).pipe(fix_names)
+    return ds.pipe(fix_missing_vars).pipe(convert_units).pipe(fix_names)
 
 
 def check_files(paths: list[Path]) -> list[Path]:
