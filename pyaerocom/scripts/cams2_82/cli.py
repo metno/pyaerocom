@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_EEA_PATH = Path("/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download")
 DEFAULT_AERONET_PATH = Path("/lustre/storeB/users/danielh/cams282/src/")
 DEFAULT_OPENAQ_PATH = Path("/lustre/storeB/users/danielh/cams282/src/openaq/")
+DEFAULT_VPROFILES_PATH = const.OBSLOCS_UNGRIDDED["EPROFILE"]
 DEFAULT_MODEL_PATH = DATA_FOLDER_PATH
 
 
@@ -112,6 +113,9 @@ def run(
     openaq_obs_path: Path = typer.Option(
         DEFAULT_OPENAQ_PATH, exists=True, readable=True, help="path to observation data"
     ),
+    vprofiles_path: Path = typer.Option(
+        DEFAULT_VPROFILES_PATH, exists=True, readable=True, help="path to v-profiles data"
+    ),
     data_path: Path = typer.Option(
         Path("../../data").resolve(),
         exists=True,
@@ -184,6 +188,9 @@ def run(
 
     # we do not want the cache produced in previous runs to be silently cleared
     const.RM_CACHE_OUTDATED = False
+
+
+    const.OBSLOCS_UNGRIDDED["EPROFILE"] = str(vprofiles_path)
 
    
     logger.info("Standard run")
