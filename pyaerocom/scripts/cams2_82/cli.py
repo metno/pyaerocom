@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_EEA_PATH = Path("/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download")
 DEFAULT_AERONET_PATH = Path("/lustre/storeB/users/danielh/cams282/src/")
 DEFAULT_OPENAQ_PATH = Path("/lustre/storeB/users/danielh/cams282/src/openaq/")
-DEFAULT_VPROFILES_PATH = const.OBSLOCS_UNGRIDDED["EPROFILE"]
+DEFAULT_VPROFILES_PATH = Path("/lustre/storeB/project/fou/kl/v-profiles/climato_daily")
 DEFAULT_MODEL_PATH = DATA_FOLDER_PATH
 
 
