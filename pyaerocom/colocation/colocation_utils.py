@@ -762,9 +762,9 @@ def colocate_gridded_ungridded(
     # colocation frequency
     col_tst = TsType(col_freq)
 
-    latitude = data.latitude.points
-    longitude = data.longitude.points
     if data.proj_info is None:
+        latitude = data.latitude.points
+        longitude = data.longitude.points
         lat_range = [np.min(latitude), np.max(latitude)]
         lon_range = [np.min(longitude), np.max(longitude)]
         # use only sites that are within model domain
