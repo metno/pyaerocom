@@ -375,7 +375,7 @@ class ReadEprofile(ReadUngriddedBase):
 
         if files is None:
             if len(self.files) == 0:
-                self.get_file_list()
+                self.get_file_list(vars_to_retrieve, pattern=pattern)
             files = self.files
 
         if isinstance(files, str):

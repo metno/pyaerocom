@@ -10,7 +10,7 @@ from typing import Optional
 import typer
 
 from pyaerocom import change_verbosity, const
-from pyaerocom.scripts.cams2_82.config import CFG, make_Aeronet_entry, make_EEA_entry, make_model_entry, make_openAQ_entry
+from pyaerocom.scripts.cams2_82.config import CFG, make_Aeronet_entry, make_EEA_entry, make_model_entry, make_EPROFILE_entry, make_openAQ_entry
 from pyaerocom.io.cams2_82.reader import DATA_FOLDER_PATH
 from pyaerocom.scripts.cams2_82.evaluation import (
     date_range,
@@ -47,6 +47,7 @@ def make_config(
     eea_path: Path,
     aeronet_path: Path,
     openaq_path: Path,
+    vprofiles_path: Path,
     data_path: Path,
     coldata_path: Path,
     
@@ -72,6 +73,7 @@ def make_config(
 
 
     obs_dates = date_range(start_date, end_date)
+    cfg["obs_cfg"]["EPROFILE"] = make_EPROFILE_entry(start_date, end_date, vprofiles_path)
     #cfg["obs_cfg"]["openAQ"] = make_openAQ_entry(start_date, end_date, openaq_path)
     cfg["obs_cfg"]["Aeronet"] = make_Aeronet_entry(start_date, end_date, aeronet_path)
     cfg["obs_cfg"]["EEA"] = make_EEA_entry(start_date, end_date, eea_path)
@@ -173,6 +175,7 @@ def run(
         eea_obs_path,
         aeronet_obs_path,
         openaq_obs_path,
+        vprofiles_path,
         data_path,
         coldata_path,
         
