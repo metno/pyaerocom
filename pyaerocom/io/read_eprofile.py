@@ -185,6 +185,11 @@ class ReadEprofile(ReadUngriddedBase):
         logger.debug(f"Reading file {filename}")
 
         with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
+            if not xarray.infer_freq(data_in["time"]) == "D":
+                try:
+                    data_in = data_in.resample(time="D").mean()
+                except (Exception, ValueError) as e:
+                    raise EprofileFileError(f"Daily resample failed, {e}")
             for var in vars_to_read:
                 if self.VAR_TO_WAVELENGTH[var] != data_in.attrs["l0_wavelength"]:
                     raise EprofileFileError("Wavelength of variable does not match in file")

@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import multiprocessing as mp
 from copy import deepcopy
+from collections.abc import Iterator
 from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
@@ -28,7 +29,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_EEA_PATH = Path("/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download")
 DEFAULT_AERONET_PATH = Path("/lustre/storeB/users/danielh/cams282/src/")
 DEFAULT_OPENAQ_PATH = Path("/lustre/storeB/users/danielh/cams282/src/openaq/")
-DEFAULT_VPROFILES_PATH = Path("/lustre/storeB/project/fou/kl/v-profiles/climato_daily")
+DEFAULT_VPROFILES_PATH = Path("/lustre/storeB/project/fou/kl/v-profiles")
 DEFAULT_MODEL_PATH = DATA_FOLDER_PATH
 
 
@@ -39,6 +40,23 @@ def make_period(start_date: date, end_date: date) -> list[str]:
 
     return periods
 
+def vpro_subpaths(
+    *dates: datetime | date | str,
+    root_path: Path | str = DEFAULT_VPROFILES_PATH,
+) -> Iterator[Path]:
+    for date in dates:  # noqa: F402
+        if isinstance(date, str):
+            date = datetime.strptime(date, "%Y%m%d").date()
+        if isinstance(date, datetime):
+            date = date.date()
+        if isinstance(root_path, str):
+            root_path = Path(root_path)
+        subpath = "%Y/%m/%d/"
+        pattern = "AP*-%Y-%m-%d.nc"
+        path = root_path / date.strftime(subpath)
+        fpaths = path.glob(date.strftime(pattern))
+        for p in fpaths: 
+            yield p.resolve()
 
 def make_config(
     start_date: date,
@@ -78,6 +96,12 @@ def make_config(
     cfg["obs_cfg"]["Aeronet"] = make_Aeronet_entry(start_date, end_date, aeronet_path)
     cfg["obs_cfg"]["EEA"] = make_EEA_entry(start_date, end_date, eea_path)
     cfg["model_cfg"]["IFS"] = make_model_entry(start_date, end_date, model_path)
+    cfg["obs_cfg"]["EPROFILE"]["read_opts_ungridded"]["files"] = [  # type:ignore[index]
+        str(p)
+        for p in vpro_subpaths(
+            *obs_dates, root_path=vprofiles_path,
+        )
+    ]
 
     
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
