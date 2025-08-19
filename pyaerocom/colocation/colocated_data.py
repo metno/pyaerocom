@@ -12,7 +12,7 @@ import pandas as pd
 import xarray as xr
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.exceptions import (
     CoordinateError,
     DataCoverageError,

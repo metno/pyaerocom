@@ -201,7 +201,7 @@ class ReadAasEtal(ReadUngriddedBase):
             #                                                           lon=s.longitude)
             #             except ValueError as e:
             #                 s['altitude'] = np.nan
-            #                 from pyaerocom import const
+            #                 from pyaerocom import config as const
             #                 logger.warning(f'Failed to access altitude for {name}')
             # =============================================================================
             # Added the created station to the station list.

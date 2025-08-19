@@ -14,7 +14,7 @@ import logging
 
 import numpy as np
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.exceptions import (
     CoordinateNameError,
     VariableDefinitionError,

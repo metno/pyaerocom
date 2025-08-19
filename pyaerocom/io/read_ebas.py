@@ -8,7 +8,7 @@ import numpy as np
 from geonum.atmosphere import T0_STD, p0
 from tqdm import tqdm
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.aux_var_helpers import (
     calc_vmro3max,

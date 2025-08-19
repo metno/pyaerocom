@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.io.icpforests.metadata import MetadataReader as ReadICPForestMeta
 from pyaerocom.io.icpforests.reader import ReadICPForest
 from tests.fixtures.data_access import TEST_DATA, DataForTests

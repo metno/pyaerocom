@@ -13,7 +13,7 @@ from time import time
 
 import simplejson as json
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.data import resources
 from pyaerocom.exceptions import VariableDefinitionError, VarNotAvailableError
 from pyaerocom.io import AerocomBrowser

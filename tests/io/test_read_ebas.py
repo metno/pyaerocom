@@ -6,7 +6,7 @@ from typing import Literal
 import numpy as np
 import pytest
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.aux_var_helpers import (
     compute_ac550dryaer,
     compute_ang4470dryaer_from_dry_scat,

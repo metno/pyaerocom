@@ -4,7 +4,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units.datetime import get_highest_resolution, to_pandas_timestamp

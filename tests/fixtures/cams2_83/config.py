@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from pyaerocom import const
+from pyaerocom import config as const
 
 from . import cfg_test, cfg_test_mos
 

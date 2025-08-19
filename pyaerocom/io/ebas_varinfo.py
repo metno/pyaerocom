@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from configparser import ConfigParser
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.data import resources
 from pyaerocom.exceptions import VarNotAvailableError

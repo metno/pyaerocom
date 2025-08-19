@@ -8,7 +8,7 @@ import tempfile
 import numpy as np
 import pandas as pd
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer, calc_od550lt1ang
 from pyaerocom.exceptions import AeronetReadError
 from pyaerocom.io.readaeronetbase import ReadAeronetBase

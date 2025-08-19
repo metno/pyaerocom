@@ -3,7 +3,7 @@ import logging
 import os
 import re
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.exceptions import DataSearchError
 

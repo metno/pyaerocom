@@ -14,7 +14,7 @@ import pathlib
 
 import numpy as np
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom._lowlevel_helpers import dict_to_str, str_underline
 from pyaerocom.exceptions import NasaAmesReadError, TimeZoneError
 

@@ -9,7 +9,7 @@ from pathlib import Path
 
 import xarray as xr
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData

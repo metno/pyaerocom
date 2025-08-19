@@ -1,5 +1,5 @@
 from copy import deepcopy
-from pyaerocom import const
+from pyaerocom import config as const
 
 _UNIT_OVERRIDES: None | dict[str, str] = None
 

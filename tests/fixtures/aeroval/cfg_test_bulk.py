@@ -1,6 +1,6 @@
 import os
 from pyaerocom.variable import Variable
-from pyaerocom import const
+from pyaerocom import config as const
 
 ### Register dummy fraction
 variables = {

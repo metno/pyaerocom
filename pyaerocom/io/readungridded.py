@@ -4,7 +4,7 @@ import warnings
 from copy import deepcopy
 from pathlib import Path
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import (
     DataRetrievalError,
@@ -786,7 +786,7 @@ class ReadUngridded:
         Example
         -------
         >>> import pyaerocom.io.readungridded as pio # doctest: +SKIP
-        >>> from pyaerocom import const # doctest: +SKIP
+        >>> from pyaerocom import config as const # doctest: +SKIP
         >>> obj = pio.ReadUngridded(data_ids=const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME) # doctest: +SKIP
         >>> obj.read() # doctest: +SKIP
         >>> print(obj) # doctest: +SKIP

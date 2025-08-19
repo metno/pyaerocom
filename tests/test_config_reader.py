@@ -9,7 +9,7 @@ import pytest
 
 import pyaerocom
 import pyaerocom.config_reader as testmod
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.config_reader import ALL_REGION_NAME, ConfigReader
 from pyaerocom.data import resources
 from pyaerocom.grid_io import GridIO

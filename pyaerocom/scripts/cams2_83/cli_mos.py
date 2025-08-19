@@ -9,7 +9,7 @@ from typing import Optional
 
 import typer
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.scripts.cams2_83.config import CFG
 from pyaerocom.scripts.cams2_83.evaluation import (
     EvalType,

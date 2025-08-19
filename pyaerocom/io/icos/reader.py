@@ -7,7 +7,7 @@ from pathlib import Path
 
 import xarray as xr
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.io.cnemc.reader import ReadCNEMC
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData

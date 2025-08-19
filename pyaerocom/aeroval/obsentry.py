@@ -10,7 +10,7 @@ from pydantic import (
     model_validator,
 )
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom._lowlevel_helpers import LayerLimits
 from pyaerocom.exceptions import InitialisationError

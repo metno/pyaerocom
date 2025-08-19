@@ -17,7 +17,7 @@ from pydantic import (
 )
 from pydantic_core import PydanticCustomError
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom._lowlevel_helpers import LayerLimits, RegridResDeg
 from pyaerocom.config_reader import ALL_REGION_NAME

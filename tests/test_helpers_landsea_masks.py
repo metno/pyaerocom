@@ -4,7 +4,7 @@ import iris
 import xarray as xr
 
 import pyaerocom.helpers_landsea_masks as lsm
-from pyaerocom import const
+from pyaerocom import config as const
 from tests.conftest import lustre_avail
 
 TEST_REGIONS = const.HTAP_REGIONS[:2]

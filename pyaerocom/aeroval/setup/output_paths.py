@@ -10,7 +10,7 @@ from pydantic import (
 )
 
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.aeroval.modelmaps_helpers import CONTOUR, OVERLAY
 
 PLOT_TYPE_OPTIONS = ({OVERLAY}, {CONTOUR}, {OVERLAY, CONTOUR})

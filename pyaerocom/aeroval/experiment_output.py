@@ -7,7 +7,7 @@ import shutil
 import aerovaldb
 from attrs import define, field
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom._lowlevel_helpers import sort_dict_by_name
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.collections import ObsCollection

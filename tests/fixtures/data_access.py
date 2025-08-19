@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 
-from pyaerocom import const, io
+from pyaerocom import config as const, io
 from pyaerocom.io.ghost.reader import ReadGhost
 from pyaerocom.io.icpforests.reader import ReadICPForest
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase

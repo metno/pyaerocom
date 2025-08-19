@@ -3,7 +3,7 @@ import logging
 import numpy as np
 from tqdm import tqdm
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.exceptions import (
     AeronetReadError,
     MetaDataError,

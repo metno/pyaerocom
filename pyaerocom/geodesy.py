@@ -13,7 +13,7 @@ import geonum
 import numpy as np
 from geocoder_reverse_natural_earth import Geocoder_Reverse_Exception, Geocoder_Reverse_NE
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom.helpers import isnumeric
 
 logger = logging.getLogger(__name__)

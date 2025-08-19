@@ -12,7 +12,7 @@ import xarray as xr
 from iris.analysis import MEAN
 from iris.analysis.cartography import area_weights
 
-from pyaerocom import const
+from pyaerocom import config as const
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.exceptions import (
     CoordinateError,
