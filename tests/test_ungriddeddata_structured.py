@@ -122,6 +122,19 @@ def test_filter_by_meta(aeronetsunv3lev2_subset_uds, args, sitenames):
     assert sorted(sitenames) == stats
 
 
+def test_filter_by_projection(aeronetsunv3lev2_subset_uds):
+    data = aeronetsunv3lev2_subset_uds
+
+    def latlon_proj(lat, lon):
+        # unity projection for lat-lon, mapping lat to y and lon to y
+        return (lon, lat)
+
+    subset = data.filter_by_projection(latlon_proj, xrange=(0, 20), yrange=(40, 70))
+    sites = [x["station_name"] for x in subset.metadata.values()]
+    stats = sorted(list(dict.fromkeys(sites)))
+    assert sorted(["AAOT", "Avignon", "The_Hague", "Thornton_C-power"]) == stats
+
+
 def test_ebas_revision(data_scat_jungfraujoch: UngriddedDataContainer):
     assert isinstance(data_scat_jungfraujoch, UngriddedDataStructured)
     assert data_scat_jungfraujoch.get_data_revision("EBASSubset") == "20220101"
