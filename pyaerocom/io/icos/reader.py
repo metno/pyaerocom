@@ -172,6 +172,8 @@ class ReadICOS(ReadCNEMC):
             parallel=True,
             decode_cf=True,
             decode_timedelta=True,
+            data_vars="all",
+            compat="no_conflicts",
         )
 
     @classmethod

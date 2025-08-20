@@ -9,6 +9,7 @@ __version__ = metadata.version(__package__)
 import iris
 import logging
 
+import xarray
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,14 @@ except AttributeError:
     pass
 
 from .config_reader import ConfigReader
+
+try:
+    # Opt in to new defaults introduced by xarray 2025.08.0
+    # https://docs.xarray.dev/en/stable/whats-new.html#v2025-08-0-august-14-2025
+    xarray.set_options(use_new_combine_kwarg_defaults=True)
+except ValueError:
+    # xarray < 2025.08.0 so doesn't apply.
+    pass
 
 _has_warned_const_deprecation = False
 

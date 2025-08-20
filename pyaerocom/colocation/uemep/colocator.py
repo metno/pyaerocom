@@ -123,12 +123,21 @@ class UEMEPColocator:
         uemep_name = UEMEPColocator.VAR_LOOKUP[var]
         logger.info("Using uemep variable '%s' for aerocom variable '%s'", uemep_name, var)
 
-        uemep_data = self.uemep_station_data[uemep_name].swap_dims({"station_id": "station_name"})
+        try:
+            uemep_data = self.uemep_station_data[uemep_name].swap_dims(
+                {"station_id": "station_name"}
+            )
+        except KeyError:
+            logger.info(f"Variable '{uemep_name}' ({var}) not in file.")
+            return
+
         model_unit = Unit(uemep_data.attrs["units"])
         uemep_data = uemep_data.assign_coords(
             {"station_name": uemep_data.station_name.astype(str)}
         ).assign_coords({"time": uemep_data.time + pd.Timedelta(minutes=30)})
         station_ids = uemep_data["station_name"].values.astype(str)
+
+        logger.info(station_ids)
 
         for obs_id, obs_reader in self._obs.items():
             logger.info("Running colocation against obs_id '%s'.", obs_id)
@@ -193,14 +202,14 @@ class UEMEPColocator:
                 logger.error("No stations with data for the given time range.")
                 return
 
-            combined = xr.concat(darrays, dim=pd.Index(sids, name="station_name"))
+            combined = xr.concat(darrays, dim=pd.Index(sids, name="station_name"), join="outer")
             uemep_data = uemep_data.expand_dims(data_source=["uemep"])
             combined = combined.expand_dims(data_source=[obs_id])
             combined = combined.assign_coords(
                 {"station_name": [x for x in combined.station_name.values]}
             )
 
-            coldataarray = xr.concat([combined, uemep_data], dim="data_source")
+            coldataarray = xr.concat([combined, uemep_data], dim="data_source", join="outer")
 
             coldataarray = coldataarray.transpose("data_source", "time", "station_name").rename(
                 {"lat": "latitude", "lon": "longitude"}

@@ -187,6 +187,8 @@ class ReadCNEMC(ReadUngriddedBase):
             parallel=True,
             decode_cf=True,
             decode_timedelta=True,
+            data_vars="all",
+            compat="no_conflicts",
         )
         ds = ds.rename({v: k for k, v in self.VAR_MAPPING.items()})
         ds = ds.assign(
