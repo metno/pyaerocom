@@ -121,6 +121,7 @@ filterwarnings = [
     'ignore::PendingDeprecationWarning:^(?!pyaerocom|tests).*:',
     'ignore::DeprecationWarning:^(?!pyaerocom|tests).*:',
     'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
+    'ignore::FutureWarning:^(?!xarray).*:',
     # and not on this list
     "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:", # Issue #1394
 ]

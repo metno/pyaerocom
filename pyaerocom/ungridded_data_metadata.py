@@ -688,6 +688,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         :param yrange: y range (min/max included) in the projection plane
         """
         meta_matches = []
+        var_matches = []
         totnum = 0
         for meta_idx, meta in self.metadata.items():
             lon = meta["longitude"]
@@ -702,17 +703,11 @@ class UngriddedDataMetadata(UngriddedDataContainer):
                 for var in meta["var_info"]:
                     if var in self.ALLOWED_COORD_TYPES:
                         continue  # altitude is not actually a variable but is stored in var_info like one
-                    try:
-                        totnum += len(self.meta_idx[meta_idx][var])
-                    except KeyError:
-                        logger.debug(
-                            f"Ignoring variable {var} in meta block {meta_idx} "
-                            f"since no data could be found"
-                        )
-
+                    var_matches.append(var)
         if len(meta_matches) == len(self.metadata):
             logger.info("filter_by_projection result in unchanged data object")
             return self
+        totnum = self._len_datapoints(meta_idx, var_matches)
         new = self._new_from_meta_blocks(meta_matches, totnum)
         return new
 

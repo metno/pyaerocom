@@ -545,7 +545,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
     @override
     def _len_datapoints(self, meta_idx, var):
-        if isinstance(meta_idx, float):
+        if isinstance(meta_idx, float | int):
             meta_idx = [meta_idx]
         if isinstance(var, str):
             var = [var]
