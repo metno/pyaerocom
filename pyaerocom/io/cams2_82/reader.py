@@ -406,7 +406,6 @@ class ReadCAMS2_82(GriddedReader):
                 )
             if not paths:
                 raise ValueError("no files found")
-
             paths = sorted(list(set(paths)))
             self._filepaths = paths
         return self._filepaths
@@ -515,7 +514,7 @@ if __name__ == "__main__":
         )
     )
     print(reader.filepaths)
-    data = reader.read_var("concpm25", "3hourly")
+    # data = reader.read_var("concpm25", "3hourly")
     # dates = ("2021-12-01", "2021-12-04")
 
     # seconds = -perf_counter()

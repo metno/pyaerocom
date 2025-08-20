@@ -1,20 +1,25 @@
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
 
+from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.cams2_82.reader import (
     AEROCOM_NAMES,
     UNITS,
+    ReadCAMS2_82,
     drop_vars,
+    model_paths,
     only_first_day,
     read_dataset,
 )
 
 times3h = pd.date_range(start="2025-07-01", freq="3h", periods=12)
 levels = np.arange(64, 138)
-latitudes = np.arange(90.0, -90.5, -0.5)
-longitudes = np.arange(0.0, 360.0, 0.5)
+latitudes = np.arange(20.0, -20.5, -0.5)
+longitudes = np.arange(0.0, 20.0, 0.5)
 
 
 @pytest.fixture()
@@ -47,6 +52,14 @@ def dummy_model_data():
     )
 
 
+@pytest.fixture()
+def dummy_model_path(tmp_path, dummy_model_data):
+    path = tmp_path / "2025/20250701_cIFS-00UTC_o-suite_multilev.nc"
+    path.parent.mkdir(exist_ok=True, parents=True)
+    dummy_model_data.to_netcdf(path)
+    return path
+
+
 def test_drop_vars(dummy_model_data):
     assert "aerext532" in dummy_model_data.data_vars
     ds = drop_vars(dummy_model_data)
@@ -59,10 +72,8 @@ def test_only_first_day(dummy_model_data):
     assert len(ds.time) == 8
 
 
-def test_read_dataset(tmp_path, dummy_model_data):
-    path = tmp_path / "dummy_model_data.nc"
-    dummy_model_data.to_netcdf(path)
-    ds = read_dataset([path])
+def test_read_dataset(dummy_model_path):
+    ds = read_dataset([dummy_model_path])
     assert "altitude" in ds.dims
     assert len(ds.altitude) == len(levels)
     assert set(list(AEROCOM_NAMES.values())) == set(list(ds.keys()))
@@ -71,3 +82,25 @@ def test_read_dataset(tmp_path, dummy_model_data):
             ds[var].units
             == UNITS[list(AEROCOM_NAMES.keys())[list(AEROCOM_NAMES.values()).index(var)]]
         )
+
+
+def test_model_paths(dummy_model_path):
+    paths = model_paths("aerext1064", datetime(2025, 7, 1), root_path=dummy_model_path.parent)
+    assert list(paths) == [dummy_model_path]
+
+
+FILE_NAME_MOD = dict(
+    aerext1064="cIFS-00UTC_o-suite_multilev.nc",
+)
+
+
+def test_ReadCAMS2_82(dummy_model_path, monkeypatch):
+    with monkeypatch.context() as mp:
+        mp.setattr("pyaerocom.io.cams2_82.reader.FILE_NAME", FILE_NAME_MOD)
+        reader = ReadCAMS2_82(data_dir=dummy_model_path.parent, data_id="IFS")
+        reader.daterange = ("2025-07-01", "2025-07-01")
+        assert reader.daterange.values[0] == np.datetime64("2025-07-01T00:00:00.000000000")
+        assert reader.filepaths == [dummy_model_path]
+        data = reader.read_var("ec1064aer", "3hourly")
+        assert isinstance(data, GriddedData)
+        assert data.altitude.shape[0] == len(levels)
