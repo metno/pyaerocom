@@ -1157,7 +1157,7 @@ class UngriddedData(UngriddedDataMetadata):
 
     def _len_datapoints(self, meta_idx, var):
         """Get the number of datapoints for meta_idx and var."""
-        if isinstance(meta_idx, float):
+        if isinstance(meta_idx, float | int):
             meta_idx = [meta_idx]
         if isinstance(var, str):
             var = [var]

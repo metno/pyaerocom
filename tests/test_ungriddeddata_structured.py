@@ -126,7 +126,7 @@ def test_filter_by_projection(aeronetsunv3lev2_subset_uds):
     data = aeronetsunv3lev2_subset_uds
 
     def latlon_proj(lat, lon):
-        # unity projection for lat-lon, mapping lat to y and lon to y
+        """unity projection for lat-lon, mapping lat to y and lon to x"""
         return (lon, lat)
 
     subset = data.filter_by_projection(latlon_proj, xrange=(0, 20), yrange=(40, 70))
