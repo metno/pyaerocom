@@ -89,18 +89,29 @@ def test_model_paths(dummy_model_path):
     assert list(paths) == [dummy_model_path]
 
 
-FILE_NAME_MOD = dict(
-    aerext1064="cIFS-00UTC_o-suite_multilev.nc",
-)
+def test_ReadCAMS2_82(dummy_model_path, caplog):
+    reader = ReadCAMS2_82(data_dir=dummy_model_path.parent, data_id="IFS")
+    reader.daterange = ("2025-07-01", "2025-07-01")
+    assert reader.daterange.values[0] == np.datetime64("2025-07-01T00:00:00.000000000")
+    assert reader.filepaths == [dummy_model_path]
+    data = reader.read_var("ec1064aer", "3hourly")
+    assert isinstance(data, GriddedData)
+    assert data.altitude.shape[0] == len(levels)
+    for species in ["no2", "go3", "aod550", "pm10", "pm2p5"]:
+        assert f"Could not find any files for {species}" in caplog.text
 
 
-def test_ReadCAMS2_82(dummy_model_path, monkeypatch):
-    with monkeypatch.context() as mp:
-        mp.setattr("pyaerocom.io.cams2_82.reader.FILE_NAME", FILE_NAME_MOD)
-        reader = ReadCAMS2_82(data_dir=dummy_model_path.parent, data_id="IFS")
+def test_ReadCAMS2_82_nodata(tmp_path):
+    with pytest.raises(ValueError) as e:
+        reader = ReadCAMS2_82(data_dir=tmp_path, data_id="IFS")
         reader.daterange = ("2025-07-01", "2025-07-01")
-        assert reader.daterange.values[0] == np.datetime64("2025-07-01T00:00:00.000000000")
-        assert reader.filepaths == [dummy_model_path]
-        data = reader.read_var("ec1064aer", "3hourly")
-        assert isinstance(data, GriddedData)
-        assert data.altitude.shape[0] == len(levels)
+        reader.read_var("ec1064aer", "3hourly")
+        assert e == "No files found"
+
+
+def test_ReadCAMS2_82_no_data_dir():
+    with pytest.raises(AttributeError) as e:
+        reader = ReadCAMS2_82(data_id="IFS")
+        reader.daterange = ("2025-07-01", "2025-07-01")
+        reader.read_var("ec1064aer", "3hourly")
+        assert "data_dir needs to be set before accessing" in e

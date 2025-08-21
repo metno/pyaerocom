@@ -397,15 +397,19 @@ class ReadCAMS2_82(GriddedReader):
         if self._filepaths is None:
             paths = []
             for species in FILE_NAME:
-                paths += list(
-                    model_paths(
-                        species,
-                        *self.daterange,
-                        root_path=self.data_dir,
+                try:
+                    paths += list(
+                        model_paths(
+                            species,
+                            *self.daterange,
+                            root_path=self.data_dir,
+                        )
                     )
-                )
+                except (IndexError, Exception) as e:
+                    logger.warning(f"Could not find any files for {species}, {e}")
+                    continue
             if not paths:
-                raise ValueError("no files found")
+                raise ValueError("No files found")
             paths = sorted(list(set(paths)))
             self._filepaths = paths
         return self._filepaths
