@@ -110,3 +110,15 @@ class ProjectionInformation:
             raise ProjectionInformationException(f"no x or y axis found for variable '{var}'")
         pi._units = da.coords[pi._y_axis].units
         return pi
+
+    def __eq__(self, value):
+        if value._crs != self._crs:
+            return False
+
+        if value._x_axis != self._x_axis:
+            return False
+        if value._y_axis != self._y_axis:
+            return False
+        if value._units != self._units:
+            return False
+        return True

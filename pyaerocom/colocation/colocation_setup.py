@@ -409,7 +409,7 @@ class ColocationSetup(BaseModel):
 
     # Attributes related to model data
     model_name: str | None = None
-    model_data_dir: Path | str | None = None
+    model_data_dir: Path | str | list[str] | list[Path] | None = None
 
     model_read_opts: dict = {}
 
@@ -427,6 +427,10 @@ class ColocationSetup(BaseModel):
     gridded_reader_id: dict[str, str] = {"model": "ReadGridded", "obs": "ReadGridded"}
 
     flex_ts_type: bool = True
+
+    # # Multigrid model options
+    # multigrid_use: bool = False
+    # multigrid_dirs: list[Path | str] = []
 
     # Options related to time resampling
     min_num_obs: dict | int | None = None
