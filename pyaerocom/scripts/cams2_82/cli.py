@@ -82,17 +82,12 @@ def make_config(
 ) -> dict:
     logger.info("Making the configuration")
 
-    
-
     cfg = deepcopy(CFG)
     cfg.update(
         periods=make_period(start_date, end_date),
         json_basedir=str(data_path),
         coldata_basedir=str(coldata_path),
     )
-
-
-
 
     obs_dates = date_range(start_date, end_date)
     cfg["obs_cfg"]["EPROFILE"] = make_EPROFILE_entry(start_date, end_date, vprofiles_path)
@@ -107,7 +102,6 @@ def make_config(
         )
     ]
 
-    
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
 
     if add_map:
