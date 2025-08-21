@@ -4,7 +4,7 @@ import logging
 import multiprocessing as mp
 from copy import deepcopy
 from collections.abc import Iterator
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -14,7 +14,6 @@ from pyaerocom import change_verbosity, const
 from pyaerocom.scripts.cams2_82.config import CFG, make_Aeronet_entry, make_EEA_entry, make_model_entry, make_EPROFILE_entry, make_openAQ_entry
 from pyaerocom.io.cams2_82.reader import DATA_FOLDER_PATH
 from pyaerocom.scripts.cams2_82.evaluation import (
-    date_range,
     runner,
 )
 
@@ -32,6 +31,11 @@ DEFAULT_OPENAQ_PATH = Path("/lustre/storeB/users/danielh/cams282/src/openaq/")
 DEFAULT_VPROFILES_PATH = Path("/lustre/storeB/project/fou/kl/v-profiles")
 DEFAULT_MODEL_PATH = DATA_FOLDER_PATH
 
+
+def date_range(start_date: date, end_date: date) -> tuple[date, ...]:
+    days = (end_date - start_date) // timedelta(days=1)
+    assert days >= 0
+    return tuple(start_date + timedelta(days=day) for day in range(days + 1))
 
 def make_period(start_date: date, end_date: date) -> list[str]:
     if start_date == end_date:
