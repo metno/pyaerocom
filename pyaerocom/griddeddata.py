@@ -1901,25 +1901,30 @@ class GriddedData:
                     time_range[0] <= self.time_stamps(), self.time_stamps() < time_range[1]
                 )
                 dates = self.time_stamps()[mask]
+
+                old_cube = data
                 data = data.extract(time_constraint)
                 if len(dates) == 1:
+                    data = iris.common.resolve.Resolve(old_cube, data).cube(
+                        np.reshape(data.core_data(), (1,) + data.shape)
+                    )
                     # Working around iris 'squeezing' the cube when extract is length 1 along the date
                     # dimension by readding the dimension with the appropriate value.
-                    time_coord = data.coord("time")
-                    data.remove_coord("time")
-                    new_shape = (1,) + data.shape
-                    nd_data = np.reshape(data.data, new_shape)
-                    data = iris.cube.Cube(
-                        nd_data,
-                        dim_coords_and_dims=[(time_coord, 0)]
-                        + [(coord, i + 1) for i, coord in enumerate(data.dim_coords)],
-                        aux_coords_and_dims=[
-                            (coord, i) for i, coord in enumerate(data.aux_coords)
-                        ],
-                        var_name=data.var_name,
-                        long_name=data.long_name,
-                        units=data.units,
-                    )
+                    # time_coord = data.coord("time")
+                    # data.remove_coord("time")
+                    # new_shape = (1,) + data.shape
+                    # nd_data = np.reshape(data.data, new_shape)
+                    # data = iris.cube.Cube(
+                    #    nd_data,
+                    #    dim_coords_and_dims=[(time_coord, 0)]
+                    #    + [(coord, i + 1) for i, coord in enumerate(data.dim_coords)],
+                    #    aux_coords_and_dims=[
+                    #        (coord, i) for i, coord in enumerate(data.aux_coords)
+                    #    ],
+                    #    var_name=data.var_name,
+                    #    long_name=data.long_name,
+                    #    units=data.units,
+                    # )
 
             elif all(isinstance(x, int) for x in time_range):
                 logger.info("Cropping along time axis based on indices")
