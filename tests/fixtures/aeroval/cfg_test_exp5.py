@@ -62,8 +62,6 @@ def fake_obs_data(tmp_path: str | Path) -> dict:
 CFG = dict(
     model_cfg=dir(),  # fake_model_data("PATH_TO_MODEL_DATA"),
     obs_cfg=dir(),  # fake_obs_data("PATH_TO_MODEL_DATA"),
-    json_basedir="PATH_TO_AEROVAL_OUT/data",
-    coldata_basedir="PATH_TO_AEROVAL_OUT/coldata",
     # if True, existing colocated data files will be deleted
     reanalyse_existing=True,
     raise_exceptions=True,

@@ -43,8 +43,6 @@ OBS_GROUNDBASED = {"EBAS": dict(obs_id="EBASSubset", obs_vars=("vmro3",), obs_ve
 CFG = dict(
     model_cfg=dict(),  # fake_model_data("PATH_TO_MODEL_DATA"),
     obs_cfg=OBS_GROUNDBASED,
-    json_basedir="PATH_TO_AEROVAL_OUT/data",
-    coldata_basedir="PATH_TO_AEROVAL_OUT/coldata",
     # if True, existing colocated data files will be deleted
     reanalyse_existing=True,
     raise_exceptions=True,
