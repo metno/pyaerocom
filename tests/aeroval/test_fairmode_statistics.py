@@ -235,7 +235,7 @@ def test_save_fairmode_stats(
 
     fileout = (
         tmp_path
-        / f"{fairmode_exp_output.cfg.proj_id}/{fairmode_exp_output.cfg.exp_id}/fairmode/{list(fairmode_stats_example.keys())[0]}_{obs_name}_{var_name_web}_{vert_code}.json"
+        / f"{fairmode_exp_output.cfg.proj_id}/{fairmode_exp_output.cfg.exp_id}/fairmode/{list(fairmode_stats_example.keys())[0]}_{obs_name}_{var_name_web}_{vert_code}_{modelname}.json"
     )
     assert fileout.is_file()
 

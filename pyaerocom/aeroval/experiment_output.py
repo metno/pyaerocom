@@ -1008,7 +1008,14 @@ class ExperimentOutput(ProjectOutput):
 
         with self.avdb.lock():
             glob_stats = self.avdb.get_fairmode(
-                project, experiment, region, network, obsvar, layer, default={}
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+                modelname,
+                default={},
             )
             glob_stats = recursive_defaultdict(glob_stats)
             glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
@@ -1020,6 +1027,7 @@ class ExperimentOutput(ProjectOutput):
                 network,
                 obsvar,
                 layer,
+                modelname,
             )
 
     def add_heatmap_entry(
