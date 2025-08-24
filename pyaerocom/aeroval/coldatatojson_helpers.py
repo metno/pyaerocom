@@ -5,9 +5,9 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 import logging
 from collections.abc import Callable
 from copy import deepcopy
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Literal
-from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
@@ -16,6 +16,8 @@ import xarray as xr
 from pyaerocom import ColocatedData
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
+
+# from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import (
     _get_min_max_year_periods,
@@ -1827,6 +1829,12 @@ def _process_statistics_timeseries_single_region(
 def _calculate_fairmode(
     coldata: ColocatedData,
     fairmode_statistics,  #: FairmodeStatistics,
+    exp_output,  #: ExperimentOutput,
+    obs_name: str,
+    var_name_web: str,
+    vert_code: str,
+    model_name: str,
+    model_var: str,
     map_meta: list[dict],
     obs_var: str = None,
     periods: tuple[str, ...] | None = None,
@@ -1860,4 +1868,14 @@ def _calculate_fairmode(
 
                 results[region][perstr][station_name] = fm_stats[station_name]
                 results["ALL"][perstr][station_name] = fm_stats[station_name]
-    return results
+
+        fairmode_statistics.save_fairmode_stats(
+            exp_output,
+            results,
+            obs_name,
+            var_name_web,
+            vert_code,
+            model_name,
+            model_var,
+            per,
+        )

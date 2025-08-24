@@ -993,6 +993,7 @@ class ExperimentOutput(ProjectOutput):
         layer: str,
         modelname: str,
         modvar: str,
+        period: str,
     ):
         """Adds a fairmode entry to fairmode
 
@@ -1015,6 +1016,7 @@ class ExperimentOutput(ProjectOutput):
                 obsvar,
                 layer,
                 modelname,
+                period.replace("/", ""),  # Remove slashes in CAMS2_83 period,
                 default={},
             )
             glob_stats = recursive_defaultdict(glob_stats)
@@ -1028,6 +1030,7 @@ class ExperimentOutput(ProjectOutput):
                 obsvar,
                 layer,
                 modelname,
+                period.replace("/", ""),  # Remove slashes in CAMS2_83 period,
             )
 
     def add_heatmap_entry(

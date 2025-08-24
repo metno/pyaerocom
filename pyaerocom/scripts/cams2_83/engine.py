@@ -52,7 +52,9 @@ class CAMS2_83_Engine(ProcessingEngine):
                     f"No variables found in colocated data var_list={var_list}, found_vars={found_vars}"
                 )
                 return
-        elif var_list == ["conco3"] or (len(var_list) > 1 and "conco3" in var_list and "conco3mda8" not in var_list):
+        elif var_list == ["conco3"] or (
+            len(var_list) > 1 and "conco3" in var_list and "conco3mda8" not in var_list
+        ):
             var_list_2 = list(var_list)
             var_list_2.append("conco3mda8")
         else:
@@ -262,6 +264,22 @@ class CAMS2_83_Engine(ProcessingEngine):
 
                     results[f"{regname}"][f"{perstr}"] = stats_list
 
+                if use_fairmode and var_name in SPECIES:
+                    fairmode_statistics.save_fairmode_stats(
+                        self.exp_output,
+                        results_fairmode,
+                        obs_name,
+                        var_name_web,
+                        vert_code,
+                        (
+                            modelname
+                            if (modelname == "ENS" or modelname == "MOS")
+                            else model.webname
+                        ),  # MOS/ENS evaluation special case
+                        model_var,
+                        per,
+                    )
+
             if calc_medianscores:
                 self.exp_output.add_forecast_entry(
                     results[regname],
@@ -276,21 +294,6 @@ class CAMS2_83_Engine(ProcessingEngine):
                     ),  # MOS/ENS evaluation special case
                     model_var,
                 )
-
-        if use_fairmode and var_name in SPECIES:
-            fairmode_statistics.save_fairmode_stats(
-                self.exp_output,
-                results_fairmode,
-                obs_name,
-                var_name_web,
-                vert_code,
-                (
-                    modelname
-                    if (modelname == "ENS" or modelname == "MOS")
-                    else model.webname
-                ),  # MOS/ENS evaluation special case
-                model_var,
-            )
 
     def _get_median_stats_point(
         self, data: xr.DataArray, use_weights: bool
