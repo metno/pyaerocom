@@ -1841,8 +1841,8 @@ def _calculate_fairmode(
     seasons: tuple[str, ...] | None = None,
     use_meteorological_seasons: bool = False,
 ):
-    results = {"ALL": {}}
     for per in periods:
+        results = {"ALL": {}}
         for season in seasons:
             try:
                 subset = _select_period_season_coldata(
@@ -1869,13 +1869,15 @@ def _calculate_fairmode(
                 results[region][perstr][station_name] = fm_stats[station_name]
                 results["ALL"][perstr][station_name] = fm_stats[station_name]
 
-        fairmode_statistics.save_fairmode_stats(
-            exp_output,
-            results,
-            obs_name,
-            var_name_web,
-            vert_code,
-            model_name,
-            model_var,
-            per,
-        )
+        for reg in results:
+            fairmode_statistics.save_fairmode_stats(
+                exp_output,
+                results[reg],
+                obs_name,
+                var_name_web,
+                vert_code,
+                model_name,
+                model_var,
+                per,
+                reg,
+            )

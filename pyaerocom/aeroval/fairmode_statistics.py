@@ -86,18 +86,18 @@ class FairmodeStatistics:
         modelname: str,
         model_var: str,
         period: str,
+        regname: str,
     ):
-        for regname in fairmode_stats:
-            exp_output.add_fairmode_entry(
-                fairmode_stats[regname],
-                regname,
-                obs_name,
-                var_name_web,
-                vert_code,
-                modelname,
-                model_var,
-                period,
-            )
+        exp_output.add_fairmode_entry(
+            fairmode_stats[regname],
+            regname,
+            obs_name,
+            var_name_web,
+            vert_code,
+            modelname,
+            model_var,
+            period,
+        )
 
     def fairmode_statistics(self, coldata: ColocatedData, var_name: str):
         return self._get_stats(coldata.data, var_name, False)

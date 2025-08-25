@@ -224,6 +224,7 @@ def test_save_fairmode_stats(
     modelname = "modelname"
     model_var = "modelvar"
     period = "2015"
+    region = "ALL"
     fairmode_statistics.save_fairmode_stats(
         fairmode_exp_output,
         fairmode_stats_example,
@@ -233,6 +234,7 @@ def test_save_fairmode_stats(
         modelname,
         model_var,
         period,
+        region,
     )
 
     fileout = (

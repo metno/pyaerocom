@@ -144,7 +144,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         for regid, regname in regnames.items():
             results[regname] = {}
-            results_fairmode[regname] = {}
+            #results_fairmode[regname] = {}
             logger.info(f"Creating subset for {regname}")
             try:
                 subset_region = [
@@ -162,6 +162,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                 )
                 continue
             for per in periods:
+                results_fairmode[regname] = {}
                 for season in seasons:
                     perstr = f"{per}-{season}"
 
@@ -265,6 +266,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                     results[f"{regname}"][f"{perstr}"] = stats_list
 
                 if use_fairmode and var_name in SPECIES:
+
                     fairmode_statistics.save_fairmode_stats(
                         self.exp_output,
                         results_fairmode,
@@ -278,6 +280,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                         ),  # MOS/ENS evaluation special case
                         model_var,
                         per,
+                        regname,
                     )
 
             if calc_medianscores:
