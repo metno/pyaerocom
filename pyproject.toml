@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pyaerocom"
-version = "0.33.dev0"
+version = "0.34.dev0"
 authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
@@ -25,7 +25,7 @@ dependencies = [
     # NOTE: Please also update dependency versions in pyaerocom_env.yml,
     # and minimum versions in the tox config at the bottom of this file!
     "aerovaldb>=0.4.6, <0.5.0",
-    "scitools-iris>=3.11.0",
+    "scitools-iris>=3.11.0, < 3.13.0",
     "xarray>=2022.12.0",
     "cartopy>=0.21.1",
     "matplotlib>=3.7.1",
@@ -82,9 +82,10 @@ test = [
     "pytest-cov",
     "packaging",
     "pytest-xdist",
+    "pytest-mock"
 ]
 lint = ["mypy>=1.5.1", "types-requests", "types-setuptools", "types-simplejson"]
-dev = ["pytest-sugar", "pytest-xdist", "pre-commit"]
+dev = ["pytest-sugar", "pytest-xdist", "pre-commit", "pytest-mock"]
 
 [project.scripts]
 pya = "pyaerocom.scripts.cli:main"
@@ -120,6 +121,7 @@ filterwarnings = [
     'ignore::PendingDeprecationWarning:^(?!pyaerocom|tests).*:',
     'ignore::DeprecationWarning:^(?!pyaerocom|tests).*:',
     'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
+    'ignore::FutureWarning:^(?!xarray).*:',
     # and not on this list
     "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:", # Issue #1394
 ]

@@ -100,6 +100,7 @@ class TestReadGhost:
             ("ghost_eea_daily", "vmro3", "*201810.nc", 1, "sconco3_201810.nc"),
         ],
     )
+    @pytest.mark.dependency()
     def test_get_file_list(self, fixture_name, vars_to_read, pattern, filenum, lastfilename):
         files = self.get_reader(fixture_name).get_file_list(
             vars_to_read=vars_to_read, pattern=pattern
@@ -112,7 +113,8 @@ class TestReadGhost:
         assert self.get_reader("ghost_eea_daily")._ts_type_from_data_dir() == "daily"
 
     @pytest.mark.parametrize(
-        "fixture_name,val", [("ghost_eea_daily", "daily"), ("ghost_eea_hourly", "hourly")]
+        "fixture_name,val",
+        [("ghost_eea_daily", "daily"), ("ghost_eea_hourly", "hourly")],
     )
     def test_TS_TYPE(self, fixture_name, val):
         assert self.get_reader(fixture_name).TS_TYPE == val
@@ -126,6 +128,7 @@ class TestReadGhost:
         for key, val in meta.items():
             assert desired[key] == val
 
+    @pytest.mark.dependency(depends=["test_get_file_list"])
     def test__eval_flags_slice(self):
         import xarray as xr
 
@@ -162,6 +165,7 @@ class TestReadGhost:
             ("ghost_eea_daily", 1, "Bleak House"),
         ],
     )
+    @pytest.mark.dependency(depends=["test_get_file_list"])
     def test_read_file(self, fixture_name, statnum, first_stat_name):
         reader = self.get_reader(fixture_name)
         data = reader.read_file(reader.files[-1])

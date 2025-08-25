@@ -5,14 +5,10 @@ import pathlib
 import shutil
 
 import aerovaldb
+from attrs import define, field
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import (
-    DirLoc,
-    StrType,
-    TypeValidator,
-    sort_dict_by_name,
-)
+from pyaerocom._lowlevel_helpers import sort_dict_by_name
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.collections import ObsCollection
 from pyaerocom.aeroval.glob_defaults import (
@@ -36,16 +32,16 @@ from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.utils import recursive_defaultdict
 from pyaerocom.variable_helpers import get_aliases
 
-
 logger = logging.getLogger(__name__)
 
 
+@define
 class ProjectOutput:
     """JSON output for project"""
 
-    proj_id = StrType()
-
-    json_basedir = DirLoc(assert_exists=True)
+    proj_id: str = field()
+    avdb: aerovaldb.AerovalDB = field()
+    json_basedir: str = field()
 
     def __init__(self, proj_id: str, resource: str | pathlib.Path | aerovaldb.AerovalDB):
         self.proj_id = proj_id
@@ -87,10 +83,12 @@ class ProjectOutput:
         return list(self.avdb.get_experiments(self.proj_id, default={}))
 
 
+@define
 class ExperimentOutput(ProjectOutput):
     """JSON output for experiment"""
 
-    cfg = TypeValidator(EvalSetup)
+    cfg: EvalSetup = field()
+    _invalid: dict[str, list] = field()
 
     def __init__(self, cfg: EvalSetup):
         self.cfg = cfg
@@ -106,6 +104,28 @@ class ExperimentOutput(ProjectOutput):
         # dictionary that will be filled by json cleanup methods to check for
         # invalid or outdated json files across different output directories
         self._invalid = dict(models=[], obs=[])
+
+    def __str__(self) -> str:
+        summary_lines = [
+            "ExperimentOutput Summary:",
+            f"  ├─ Project ID      : {self.proj_id}",
+            f"  ├─ Experiment ID   : {self.exp_id}",
+            f"  ├─ Directory       : {self.exp_dir}",
+            f"  ├─ Results Ready   : {'✅' if self.results_available else '❌'}",
+            f"  ├─ Public          : {'Yes' if self.cfg.exp_info.public else 'No'}",
+        ]
+
+        try:
+            result_summary = self._results_summary()
+            if result_summary:
+                summary_lines.append("  └─ Result Summary:")
+                for key, values in result_summary.items():
+                    values_preview = ", ".join(values[:3]) + ("..." if len(values) > 3 else "")
+                    summary_lines.append(f"     • {key:10}: {values_preview}")
+        except Exception as e:
+            summary_lines.append(f"  ⚠️ Could not summarize results: {e}")
+
+        return "\n".join(summary_lines)
 
     @property
     def exp_id(self) -> str:
@@ -712,8 +732,13 @@ class ExperimentOutput(ProjectOutput):
                 if not all_combinations:
                     break
 
-                src_name = uri.meta["source"]
-                var = uri.meta["variable"]
+                try:  # overlay case
+                    src_name = uri.meta["source"]
+                    var = uri.meta["variable"]
+                except KeyError:  # contour case
+                    src_name = uri.meta["model"]
+                    var = uri.meta["obsvar"]
+
                 obs_var = var
                 mod_var = var
 
@@ -733,6 +758,7 @@ class ExperimentOutput(ProjectOutput):
                     mod_name = first_with_obs_name[1]
                     all_combinations.remove(first_with_obs_name)
                 elif src_name in self.cfg.model_cfg.keylist():
+                    mod_name = src_name
                     vert_code = None
                     for o in self.cfg.obs_cfg.keylist():
                         if var in self.cfg.obs_cfg.get_entry(o).obs_vars:

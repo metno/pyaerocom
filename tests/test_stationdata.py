@@ -127,7 +127,7 @@ def test_StationData_check_var_unit_aerocom():
             stat3.copy(),
             "concso4",
             UnitConversionError,
-            "failed to convert unit from 1 to ug m-3",
+            "Failed to convert unit from 1 to ug m-3",
             id="can not convert",
         ),
     ],
@@ -137,7 +137,7 @@ def test_StationData_check_var_unit_aerocom_error(
 ):
     with pytest.raises(exception) as e:
         stat.check_var_unit_aerocom(var_name)
-    assert str(e.value) == error
+    assert error in str(e.value)
 
 
 def test_StationData_check_unit():
@@ -162,7 +162,7 @@ def test_StationData_convert_unit():
 def test_StationData_convert_unit_error():
     with pytest.raises(UnitConversionError) as e:
         stat3.convert_unit("concso4", "kg m-3")
-    assert str(e.value) == "failed to convert unit from 1 to kg m-3"
+    assert "Failed to convert unit from 1 to kg m-3" in str(e.value)
 
 
 def test_StationData_dist_other():

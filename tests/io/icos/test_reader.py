@@ -9,7 +9,7 @@ from pyaerocom.io.icos.reader import ReadICOS
 
 if not const.has_access_lustre:
     pytestmark = pytest.skip(
-        reason="Skipping tests that require access to AEROCOM database on METNo servers",
+        reason="Skipping tests that require access to AEROCOM database on MET Norway servers",
         allow_module_level=True,
     )
 

@@ -9,7 +9,7 @@ from pyaerocom import ColocatedData, GriddedData, UngriddedData, const, GriddedD
 from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io.aux_read_cubes import add_cubes
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm

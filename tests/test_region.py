@@ -1,6 +1,6 @@
 import pytest
 
-from pyaerocom.region import Region, get_regions_coord
+from pyaerocom.region import Region, get_regions_coord, RegionName
 
 
 @pytest.mark.parametrize(
@@ -61,3 +61,23 @@ def test_get_regions_coord_with_supplied_regions_dict(region_name, lat, lon):
     candidate_regions = {"OCN": oceans, "SAM": sam, "ASIA": asia}
     reg = Region(region_name)
     assert reg.region_id in get_regions_coord(lat, lon, candidate_regions)
+
+
+def test_Region_name():
+    world = RegionName("ALL")
+    alg = RegionName("Algeria")
+    bel = RegionName("Belgium")
+
+    correct = ["ALL", "Algeria", "Belgium"]
+    mix = ["Belgium", "Algeria", "ALL"]
+
+    assert sorted(mix, key=lambda x: RegionName(x)) == correct
+
+    assert world < alg
+    assert alg > world
+
+    assert not world > alg
+    assert not alg < world
+
+    assert alg < bel
+    assert bel > world

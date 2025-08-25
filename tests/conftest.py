@@ -25,7 +25,7 @@ TEST_RTOL = 1e-4
 # (some tests are skipped in this case)
 lustre_unavail = pytest.mark.skipif(
     not const.has_access_lustre,
-    reason="Skipping tests that require access to AEROCOM database on METNo servers",
+    reason="Skipping tests that require access to AEROCOM database on MET Norway servers",
 )
 
 lustre_avail = pytest.mark.skipif(

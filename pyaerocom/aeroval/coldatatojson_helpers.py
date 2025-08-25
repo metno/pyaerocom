@@ -21,7 +21,7 @@ from pyaerocom.aeroval.helpers import (
     _get_min_max_year_periods,
     _period_str_to_timeslice,
 )
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
 from pyaerocom.region import (
     Region,
@@ -105,7 +105,7 @@ def init_regions_web(coldata, regions_how):
     elif regions_how == "country":
         regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
         regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
-        coldata.check_set_countries(True)
+        coldata.check_set_countries()
         regborders.update(coldata.get_country_codes())
         add_regs = _prepare_country_regions(coldata.get_country_codes().keys())
         regs.update(add_regs)
@@ -1528,7 +1528,7 @@ def _get_jsdate(nparr: np.ndarray):
     return (dt - offs).astype(int) * 1000
 
 
-def _init_data_default_frequencies(coldata, to_ts_types):
+def _init_data_default_frequencies(coldata: ColocatedData, to_ts_types):
     """
     Compute one colocated data object for each desired statistics frequency
 

@@ -13,7 +13,7 @@ from pyaerocom.colocation.colocation_utils import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
 )
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.exceptions import UnresolvableTimeDefinitionError
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from tests.conftest import TEST_RTOL, need_iris_32

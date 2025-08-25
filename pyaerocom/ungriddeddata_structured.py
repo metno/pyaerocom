@@ -38,7 +38,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     """Class implementing UngriddedData in a numpy structured array"""
 
     #: version for caching, needs also updating when UngriddedDataMetadata has changed
-    __version__ = "0.02"
+    __version__ = "0.03"
     _merging_error_logged = False
 
     _dtype = [
@@ -107,6 +107,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     def _create_data_chunk(self, size):
         """create a datachunk of size and initialize it to _nan_type values"""
         data = DynamicRecArray(capacity=size, dtype=self._dtype)
+        for k, v in self._nan_types.items():
+            data._array[k] = v
         return data
 
     @override
@@ -418,8 +420,9 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 if (
                     "altitude" in vi[var]
                 ):  # vertical profile altitude stored in var_info, crop to match series
-                    sd.var_info[var]["altitude"] = vi[var]["altitude"][tmask]
-                    assert len(sd.var_info[var]["altitude"]) == len(series)
+                    if np.ndim(vi[var]["altitude"]) >= 1:
+                        sd.var_info[var]["altitude"] = vi[var]["altitude"][tmask]
+                        assert len(sd.var_info[var]["altitude"]) == len(series)
             if len(series.index) == len(series.index.unique()):
                 sd.var_info[var]["overlap"] = False
             else:
@@ -542,7 +545,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
     @override
     def _len_datapoints(self, meta_idx, var):
-        if isinstance(meta_idx, float):
+        if isinstance(meta_idx, float | int):
             meta_idx = [meta_idx]
         if isinstance(var, str):
             var = [var]

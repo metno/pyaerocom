@@ -75,7 +75,7 @@ def test_merge_station_data(
 @pytest.mark.parametrize(
     "use,exception,error",
     [
-        ("concpm10_X2", UnitConversionError, "failed to convert unit from mole mole-1 to ug m-3"),
+        ("concpm10_X2", UnitConversionError, "Failed to convert unit from mole mole-1 to ug m-3"),
         ("concpm10_X", TemporalResolutionError, "Invalid input for ts_type daily"),
         ("od550aer", DataCoverageError, "All input stations must contain concpm10 data"),
     ],

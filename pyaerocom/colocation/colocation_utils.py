@@ -767,7 +767,17 @@ def colocate_gridded_ungridded(
     # colocation frequency
     col_tst = TsType(col_freq)
 
+    # use only sites that are within model domain
+    # find projection and axes-ranges
     if data.proj_info is None:
+        # lat-lon data, define unity-projection
+        def latlon_proj(lat, lon):
+            """unity projection for lat-lon, mapping lat to y and lon to x"""
+            return (lon, lat)
+
+        proj = latlon_proj
+        # xrange = [np.min(longitude), np.max(longitude)]
+        # yrange = [np.min(latitude), np.max(latitude)]
         lat_range, lon_range = data.get_latlon_ranges()
         data_ref = data_ref.filter_by_latlon(lat_range, lon_range)
 
@@ -786,11 +796,22 @@ def colocate_gridded_ungridded(
         #     data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
     else:
         # gridded data with projection,
+        proj = data.proj_info.to_proj
         # add x/y information to ungridded
+        # for coord in data.cube.dim_coords:
+        #    if coord.var_name == data.proj_info.x_axis:
+        #        vals = coord.points
+        #        xrange = (np.min(vals), np.max(vals))
+        #    if coord.var_name == data.proj_info.y_axis:
+        #        vals = coord.points
+        #        yrange = (np.min(vals), np.max(vals))
+        # if xrange is None or yrange is None:
+        #    raise VariableDefinitionError(
+        #        f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
+        #    )
 
         xrange, yrange = data.get_xyranges()
-
-        data_ref = data_ref.filter_by_projection(data.proj_info.to_proj, xrange, yrange)
+        data_ref = data_ref.filter_by_projection(proj, xrange, yrange)
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)

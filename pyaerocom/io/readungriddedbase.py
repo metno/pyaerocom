@@ -55,6 +55,10 @@ class ReadUngriddedBase(abc.ABC):
 
     _FILEMASK = "*.*"
 
+    DATA_ID: str = ""
+    PROVIDES_VARIABLES: list[str] = []
+    SUPPORTED_DATASETS: list[str] = []
+
     def __str__(self):
         return (
             f"Dataset name: {self.data_id}\n"
@@ -116,44 +120,6 @@ class ReadUngriddedBase(abc.ABC):
 
         Keeps track of changes in derived reading class (e.g. to assess whether
         potential cache-files are outdated).
-
-        Note
-        ----
-        May be implemented as global constant in header
-        """
-        pass
-
-    @property
-    @abc.abstractmethod
-    def DATA_ID(self):
-        """Name of dataset (OBS_ID)
-
-        Note
-        ----
-
-        - May be implemented as global constant in header of derived class
-        - May be multiple that can be specified on init (see example below)
-
-        """
-        pass
-
-    @property
-    @abc.abstractmethod
-    def SUPPORTED_DATASETS(self):
-        """List of all datasets supported by this interface
-
-        Note
-        ----
-
-        - best practice to specify in header of class definition
-        - needless to mention that :attr:`DATA_ID` needs to be in this list
-        """
-        pass
-
-    @property
-    @abc.abstractmethod
-    def PROVIDES_VARIABLES(self):
-        """List of variables that are provided by this dataset
 
         Note
         ----

@@ -20,7 +20,7 @@ from pydantic_core import PydanticCustomError
 from pyaerocom import const
 from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom._lowlevel_helpers import LayerLimits, RegridResDeg
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.helpers import start_stop
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 
@@ -411,11 +411,11 @@ class ColocationSetup(BaseModel):
     model_name: str | None = None
     model_data_dir: Path | str | list[str] | list[Path] | None = None
 
-    model_read_opts: dict | None = {}
+    model_read_opts: dict = {}
 
-    model_use_vars: dict[str, str] | None = {}
+    model_use_vars: dict[str, str] = {}
     model_rename_vars: dict[str, str] | None = {}
-    model_add_vars: dict[str, tuple[str, ...]] | None = {}
+    model_add_vars: dict[str, tuple[str, ...]] = {}
     model_to_stp: bool = False
 
     model_ts_type_read: str | dict | None = None

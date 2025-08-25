@@ -1,16 +1,18 @@
 import abc
 import logging
 
-from pyaerocom._lowlevel_helpers import TypeValidator
+import aerovaldb
+
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
-
+from attrs import define, field
 
 logger = logging.getLogger(__name__)
 
 
+@define
 class HasConfig:
     """
     Base class that ensures that evaluation configuration is available
@@ -24,8 +26,9 @@ class HasConfig:
 
     """
 
-    cfg = TypeValidator(EvalSetup)
-    exp_output = TypeValidator(ExperimentOutput)
+    cfg: EvalSetup = field()
+    exp_output: ExperimentOutput = field()
+    avdb: aerovaldb.AerovalDB = field()
 
     def __init__(self, cfg: EvalSetup):
         self.cfg = cfg

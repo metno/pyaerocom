@@ -6,7 +6,7 @@ from __future__ import annotations
 from functools import cached_property, total_ordering
 
 from pyaerocom._lowlevel_helpers import BrowseDict
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.geodesy import calc_distance
 from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
@@ -359,5 +359,8 @@ class RegionName(str):
 
         if str(self) == ALL_REGION_NAME:
             return True
+
+        if str(other) == ALL_REGION_NAME:
+            return False
 
         return str(self).lower() < str(other).lower()
