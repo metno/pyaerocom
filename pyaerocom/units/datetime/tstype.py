@@ -437,7 +437,7 @@ def sort_ts_types(ts_types: list[str | TsType]) -> list[str]:
     TemporalResolutionError
         if one of the input ts_types is not supported
     """
-    ls = [TsType(x) for x in ts_types]
+    ls = [TsType(x) for x in ts_types if x is not None]
     return [str(tstype) for tstype in sorted(ls, reverse=True)]
 
 
