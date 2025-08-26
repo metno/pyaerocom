@@ -1964,25 +1964,29 @@ class GriddedData:
                     time_range[0] <= self.time_stamps(), self.time_stamps() < time_range[1]
                 )
                 dates = self.time_stamps()[mask]
+                old_cube = data
                 data = data.extract(time_constraint)
                 if len(dates) == 1:
+                    data = iris.common.resolve.Resolve(old_cube, data).cube(
+                        np.reshape(data.core_data(), (1,) + data.shape)
+                    )
                     # Working around iris 'squeezing' the cube when extract is length 1 along the date
                     # dimension by readding the dimension with the appropriate value.
-                    time_coord = data.coord("time")
-                    data.remove_coord("time")
-                    new_shape = (1,) + data.shape
-                    nd_data = np.reshape(data.data, new_shape)
-                    data = iris.cube.Cube(
-                        nd_data,
-                        dim_coords_and_dims=[(time_coord, 0)]
-                        + [(coord, i + 1) for i, coord in enumerate(data.dim_coords)],
-                        aux_coords_and_dims=[
-                            (coord, i) for i, coord in enumerate(data.aux_coords)
-                        ],
-                        var_name=data.var_name,
-                        long_name=data.long_name,
-                        units=data.units,
-                    )
+                    # time_coord = data.coord("time")
+                    # data.remove_coord("time")
+                    # new_shape = (1,) + data.shape
+                    # nd_data = np.reshape(data.data, new_shape)
+                    # data = iris.cube.Cube(
+                    #    nd_data,
+                    #    dim_coords_and_dims=[(time_coord, 0)]
+                    #    + [(coord, i + 1) for i, coord in enumerate(data.dim_coords)],
+                    #    aux_coords_and_dims=[
+                    #        (coord, i) for i, coord in enumerate(data.aux_coords)
+                    #    ],
+                    #    var_name=data.var_name,
+                    #    long_name=data.long_name,
+                    #    units=data.units,
+                    # )
 
             elif all(isinstance(x, int) for x in time_range):
                 logger.info("Cropping along time axis based on indices")
@@ -2752,9 +2756,13 @@ class GriddedData:
                 return self.__dict__[indices_or_attr]
             try:
                 which = self._check_coordinate_access(indices_or_attr)
-                return self.grid.coord(**which)
-            except Exception:
-                raise AttributeError(f"GriddedData object has no attribute {indices_or_attr}")
+                # dim_coords=None is to look at both aux_coords and dim_coords — time won't be an aux_coord if the number of values is 1,
+                # therefore we allow for both.
+                return self.grid.coord(**which, dim_coords=None)
+            except Exception as e:
+                raise AttributeError(
+                    f"GriddedData object has no attribute {indices_or_attr}"
+                ) from e
 
         sub = self.grid.__getitem__(indices_or_attr)
         return GriddedData(sub, **self.metadata)

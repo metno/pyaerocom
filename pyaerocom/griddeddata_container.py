@@ -77,8 +77,8 @@ class GriddedDataContainer:
         # self._lat_res = data.lat_res
         # self._lon_res = data.lon_res
 
-        self._lat_points = data.latitude.points
-        self._lon_points = data.longitude.points
+        self._lat_points = data.lat.points
+        self._lon_points = data.lon.points
 
     def only_one_child(func):
         def check_child(self, *args, **kwargs):
@@ -187,12 +187,16 @@ class GriddedDataContainer:
     def _create_latlon_info(self, data: GriddedData) -> dict:
         return {
             "latitude": {
-                "standard_name": data.latitude.standard_name,
-                "units": str(data.latitude.units),
+                "standard_name": data.lat.standard_name
+                if data.lat.standard_name is not None
+                else "latitude",
+                "units": str(data.lat.units),
             },
             "longitude": {
-                "standard_name": data.longitude.standard_name,
-                "units": str(data.longitude.units),
+                "standard_name": data.lon.standard_name
+                if data.lon.standard_name is not None
+                else "longitude",
+                "units": str(data.lon.units),
             },
         }
 
