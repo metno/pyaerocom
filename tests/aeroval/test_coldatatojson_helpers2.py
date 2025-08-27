@@ -1,6 +1,9 @@
 # ToDo: merge with test_coldatatojson_helpers.py
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import numpy as np
 import pytest
 import xarray
@@ -416,14 +419,14 @@ def test_calculate_fairmode(eval_config: dict, caplog):
 
     period = "2010"
     season = "DJF"
-    model_name = "DUMMY"
-    obs_name = obs_var = var_name_web = model_var = "concno2"
+    model_name = obs_name = "DUMMY"
+    obs_var = var_name_web = model_var = "concno2"
     vert_code = "Surface"
 
     # we ignore here the fact that the data is monthly and for od550aer, the data is basically to be considered dummy
     # since we bypass the guards on frequency and variable, _calculate_fairmode will not question the data at this point
     # and treat it as if it's concno2 hourly
-    results = _calculate_fairmode(
+    _calculate_fairmode(
         data["monthly"],
         fairmode_statistics,
         exp_output,  #: ExperimentOutput,
@@ -439,19 +442,68 @@ def test_calculate_fairmode(eval_config: dict, caplog):
         use_meteorological_seasons=False,
     )
 
-    assert results["ALL"][f"{period}-{season}"]["Agoufou"]["station_type"] == np.str_(fake_type)
-    assert all(
-        results["ALL"][f"{period}-{season}"]["Agoufou"][item] == SPECIES["concno2"][item]
-        for item in ["freq", "alpha", "percentile", "RV", "UrRV"]
+    base_path = Path(
+        f"{eval_config['json_basedir']}/{eval_config['proj_id']}/{eval_config['exp_id']}/fairmode"
     )
-    assert all(
-        item in results["ALL"][f"{period}-{season}"]["Agoufou"]
-        for item in ["RMSU", "sign", "beta_mqi", "MPI_Hperc", "crms", "rms"]
-    )
+    f1 = base_path / f"ALL_{obs_name}_{model_var}_{vert_code}_{model_name}_{period}.json"
+    assert f1.is_file()
+    f2 = base_path / f"SAMERICA_{obs_name}_{model_var}_{vert_code}_{model_name}_{period}.json"
+    assert f2.is_file()
+    f3 = base_path / f"EUROPE_{obs_name}_{model_var}_{vert_code}_{model_name}_{period}.json"
+    assert f3.is_file()
+    f4 = base_path / f"CHINA_{obs_name}_{model_var}_{vert_code}_{model_name}_{period}.json"
+    assert f4.is_file()
+
+    with open(f1, encoding="utf-8") as infile:
+        results = json.load(infile)
+        assert results[obs_var][obs_name][vert_code][model_name][model_var][f"{period}-{season}"][
+            "Agoufou"
+        ]["station_type"] == np.str_(fake_type)
+        assert all(
+            results[obs_var][obs_name][vert_code][model_name][model_var][f"{period}-{season}"][
+                "Agoufou"
+            ][item]
+            == SPECIES["concno2"][item]
+            for item in ["freq", "alpha", "percentile", "RV", "UrRV"]
+        )
+        assert list(
+            results[obs_var][obs_name][vert_code][model_name][model_var][f"{period}-{season}"][
+                "Agoufou"
+            ].keys()
+        ) == [
+            "exceedances_obs",
+            "MPI_mean",
+            "MPI_R_t",
+            "MPI_bias_t",
+            "MPI_std_t",
+            "MPI_R_s",
+            "MPI_std_s",
+            "MPI_Hperc",
+            "fa",
+            "ma",
+            "gan",
+            "gap",
+            "bias",
+            "NMB",
+            "RMSU",
+            "sign",
+            "crms",
+            "rms",
+            "beta_mqi",
+            "persistence_model",
+            "station_type",
+            "UrRV",
+            "RV",
+            "alpha",
+            "freq",
+            "percentile",
+            "Np",
+            "Nnp",
+        ]
 
     wrongperiod = "2025"
     # here we pass the wrong period to test the case when the coldata subset fails
-    resultsempty = _calculate_fairmode(
+    _calculate_fairmode(
         data["monthly"],
         fairmode_statistics,
         exp_output,  #: ExperimentOutput,
@@ -461,13 +513,12 @@ def test_calculate_fairmode(eval_config: dict, caplog):
         model_name,
         model_var,
         map_meta,
-        "concno2",
+        obs_var,
         [wrongperiod],
         [season],
         use_meteorological_seasons=False,
     )
 
-    assert resultsempty == {"ALL": {}}
     assert (
         f"Failed to access subset coldata: No data available in period {wrongperiod}"
         in caplog.text

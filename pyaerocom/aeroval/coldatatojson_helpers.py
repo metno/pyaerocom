@@ -1881,5 +1881,3 @@ def _calculate_fairmode(
                 per,
                 reg,
             )
-
-    return results
