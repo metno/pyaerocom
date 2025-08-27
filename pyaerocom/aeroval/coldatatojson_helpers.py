@@ -1872,7 +1872,7 @@ def _calculate_fairmode(
         for reg in results:
             fairmode_statistics.save_fairmode_stats(
                 exp_output,
-                results[reg],
+                results,
                 obs_name,
                 var_name_web,
                 vert_code,
@@ -1881,3 +1881,5 @@ def _calculate_fairmode(
                 per,
                 reg,
             )
+
+    return results

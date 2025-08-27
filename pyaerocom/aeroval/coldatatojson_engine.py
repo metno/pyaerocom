@@ -583,13 +583,3 @@ class ColdataToJsonEngine(ProcessingEngine):
             seasons,
             use_meteorological_seasons,
         )
-        # fairmode_statistics.save_fairmode_stats(
-        #    self.exp_output,
-        #    stats,
-        #    obs_name,
-        #    var_name_web,
-        #    vert_code,
-        #    model_name,
-        #    model_var,
-        # )
-        # )

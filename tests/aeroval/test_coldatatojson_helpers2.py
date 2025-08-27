@@ -6,6 +6,7 @@ import pytest
 import xarray
 
 from pyaerocom import ColocatedData, TsType
+from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.coldatatojson_helpers import (
     _calculate_fairmode,
     _create_diurnal_weekly_data_object,
@@ -21,6 +22,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     _select_period_season_coldata,
 )
 from pyaerocom.aeroval.exceptions import TrendsError
+from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.fairmode_statistics import SPECIES, FairmodeStatistics
 from pyaerocom.exceptions import TemporalResolutionError, UnknownRegion
 from tests.fixtures.collocated_data import COLDATA
@@ -406,12 +408,17 @@ def test_calculate_fairmode(eval_config: dict, caplog):
     (ts_objs, map_meta, site_indices) = _process_sites(data, None, "default", meta_glob)
 
     fairmode_statistics = FairmodeStatistics()
+    setup = EvalSetup(**eval_config)
+    exp_output = ExperimentOutput(setup)
 
     # fill nans
     np.nan_to_num(data["monthly"].data, copy=False, nan=1)
 
     period = "2010"
     season = "DJF"
+    model_name = "DUMMY"
+    obs_name = obs_var = var_name_web = model_var = "concno2"
+    vert_code = "Surface"
 
     # we ignore here the fact that the data is monthly and for od550aer, the data is basically to be considered dummy
     # since we bypass the guards on frequency and variable, _calculate_fairmode will not question the data at this point
@@ -419,8 +426,14 @@ def test_calculate_fairmode(eval_config: dict, caplog):
     results = _calculate_fairmode(
         data["monthly"],
         fairmode_statistics,
+        exp_output,  #: ExperimentOutput,
+        obs_name,
+        var_name_web,
+        vert_code,
+        model_name,
+        model_var,
         map_meta,
-        "concno2",
+        obs_var,
         [period],
         [season],
         use_meteorological_seasons=False,
@@ -441,6 +454,12 @@ def test_calculate_fairmode(eval_config: dict, caplog):
     resultsempty = _calculate_fairmode(
         data["monthly"],
         fairmode_statistics,
+        exp_output,  #: ExperimentOutput,
+        obs_name,
+        var_name_web,
+        vert_code,
+        model_name,
+        model_var,
         map_meta,
         "concno2",
         [wrongperiod],
