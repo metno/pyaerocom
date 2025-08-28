@@ -169,18 +169,18 @@ class GriddedDataContainer:
         **kwargs,
     ) -> None:
         for reader in readers:
-            try:
-                data = reader.read_var(
-                    var_name,
-                    start=start,
-                    stop=stop,
-                    ts_type=ts_type,
-                    vert_which=vert_which,
-                    flex_ts_type=flex_ts_type,
-                    **kwargs,
-                )
-            except Exception:
-                continue
+            # try:
+            data = reader.read_var(
+                var_name,
+                start=start,
+                stop=stop,
+                ts_type=ts_type,
+                vert_which=vert_which,
+                flex_ts_type=flex_ts_type,
+                **kwargs,
+            )
+            # except Exception:
+            #    continue
 
             self.add_griddeddata(data)
 
