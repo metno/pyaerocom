@@ -968,14 +968,6 @@ def colocate_gridded_ungridded(
     dims = ["data_source", "time", "station_name"]
     coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=var, attrs=meta)
 
-    # add correct units for lat / lon dimensions
-    # latlon_info = data.latlon_info
-    # coldata.latitude.attrs["standard_name"] = latlon_info["latitude"]["standard_name"]
-    # coldata.latitude.attrs["units"] = latlon_info["latitude"]["units"]
-    #
-    # coldata.longitude.attrs["standard_name"] = latlon_info["longitude"]["standard_name"]
-    # coldata.longitude.attrs["units"] = latlon_info["longitude"]["units"]
-
     return coldata
 
 
