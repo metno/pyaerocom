@@ -42,7 +42,7 @@ class GriddedDataContainer:
         self.var_name = None
         self.ts_type = None
 
-        self.latlon_info = {}
+        # self.latlon_info = {}
 
         self._lon_res = None
         self._lat_res = None

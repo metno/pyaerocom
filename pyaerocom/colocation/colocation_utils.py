@@ -325,12 +325,12 @@ def colocate_gridded_gridded(
     coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=data.var_name, attrs=meta)
 
     # add correct units for lat / lon dimensions
-    latlon_info = data.latlon_info
-    coldata.latitude.attrs["standard_name"] = latlon_info["latitude"]["standard_name"]
-    coldata.latitude.attrs["units"] = latlon_info["latitude"]["units"]
+    # latlon_info = data.latlon_info
+    # coldata.latitude.attrs["standard_name"] = latlon_info["latitude"]["standard_name"]
+    # coldata.latitude.attrs["units"] = latlon_info["latitude"]["units"]
 
-    coldata.longitude.attrs["standard_name"] = latlon_info["longitude"]["standard_name"]
-    coldata.longitude.attrs["units"] = latlon_info["longitude"]["units"]
+    # coldata.longitude.attrs["standard_name"] = latlon_info["longitude"]["standard_name"]
+    # coldata.longitude.attrs["units"] = latlon_info["longitude"]["units"]
 
     if data_ts_type != ts_type:
         coldata = coldata.resample_time(
@@ -779,7 +779,18 @@ def colocate_gridded_ungridded(
         # xrange = [np.min(longitude), np.max(longitude)]
         # yrange = [np.min(latitude), np.max(latitude)]
 
-        xrange, yrange = data.get_latlon_ranges()
+        if isinstance(data, GriddedData):
+            latitude = data.latitude.points
+            longitude = data.longitude.points
+            xrange = [np.min(longitude), np.max(longitude)]
+            yrange = [np.min(latitude), np.max(latitude)]
+        elif isinstance(data, GriddedDataContainer):
+            xrange = []
+            yrange = []
+            for c in data.children:
+                xrange.append((np.min(c.longitude.points), np.max(c.longitude.points)))
+                yrange.append((np.min(c.latitude.points), np.max(c.latitude.points)))
+
         # data_ref = data_ref.filter_by_latlon(lat_range, lon_range)
 
         # if isinstance(data, MultiGriddedData):
@@ -996,12 +1007,12 @@ def colocate_gridded_ungridded(
     coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=var, attrs=meta)
 
     # add correct units for lat / lon dimensions
-    latlon_info = data.latlon_info
-    coldata.latitude.attrs["standard_name"] = latlon_info["latitude"]["standard_name"]
-    coldata.latitude.attrs["units"] = latlon_info["latitude"]["units"]
-
-    coldata.longitude.attrs["standard_name"] = latlon_info["longitude"]["standard_name"]
-    coldata.longitude.attrs["units"] = latlon_info["longitude"]["units"]
+    # latlon_info = data.latlon_info
+    # coldata.latitude.attrs["standard_name"] = latlon_info["latitude"]["standard_name"]
+    # coldata.latitude.attrs["units"] = latlon_info["latitude"]["units"]
+    #
+    # coldata.longitude.attrs["standard_name"] = latlon_info["longitude"]["standard_name"]
+    # coldata.longitude.attrs["units"] = latlon_info["longitude"]["units"]
 
     return coldata
 

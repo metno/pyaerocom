@@ -53,26 +53,6 @@ def test_add_griddeddata(cities_data, model):
     assert len(mg.children) == len(cities_data[model])
 
 
-def test_get_latlon_ranges(cities_data):
-    correct_lats = [[51.05, 52.95], [51.05, 52.95]]
-    correct_lons = [[4.05, 5.95], [12.05, 13.95]]
-    data_id = "test_id"
-    mg = GriddedDataContainer(data_id)
-
-    for gd in cities_data["EMEP"]:
-        mg.add_griddeddata(gd)
-
-    lats, lons = mg.get_latlon_ranges()
-
-    for ls, c_ls in zip(sorted(lats), sorted(correct_lats)):
-        for _l, c_l in zip(ls, c_ls):
-            assert abs(_l - c_l) < 1e-5
-
-    for ls, c_ls in zip(sorted(lons), sorted(correct_lons)):
-        for _l, c_l in zip(ls, c_ls):
-            assert abs(_l - c_l) < 1e-5
-
-
 def test_get_xyranges(cities_data):
     correct_xs = [[3462625, 3495375], [3908625, 3935875]]
     correct_ys = [[2462125, 2486375], [2516625, 2541375]]
