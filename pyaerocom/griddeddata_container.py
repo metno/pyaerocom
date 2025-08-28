@@ -72,13 +72,13 @@ class GriddedDataContainer:
 
         self.ndim = data.ndim
 
-        self.latlon_info = self._create_latlon_info(data)
+        # self.latlon_info = self._get_latlon_info(data)
 
         # self._lat_res = data.lat_res
         # self._lon_res = data.lon_res
 
-        self._lat_points = data.latitude.points
-        self._lon_points = data.longitude.points
+        # self._lat_points = data.latitude.points
+        # self._lon_points = data.longitude.points
 
     def only_one_child(func):
         def check_child(self, *args, **kwargs):
@@ -144,11 +144,11 @@ class GriddedDataContainer:
         #         f"lat_res/lon_res of added griddeddata {data.lat_res}/{data.lon_res} is different from the existing lat_res/lon_res {self.lat_res}/{self.lon_res}"
         #     )
 
-        new_latlon_info = self._create_latlon_info(data)
-        if new_latlon_info != self.latlon_info:
-            raise GriddedDataContainerException(
-                f"information of lat and lon of added griddeddata {new_latlon_info} is different from the existing lat and lon {self.latlon_info}"
-            )
+        # new_latlon_info = self._get_latlon_info(data)
+        # if new_latlon_info != self.latlon_info:
+        #    raise GriddedDataContainerException(
+        #        f"information of lat and lon of added griddeddata {new_latlon_info} is different from the existing lat and lon {self.latlon_info}"
+        #    )
 
         self.start = min(self.start, data.start)
         self.stop = max(self.stop, data.stop)
@@ -184,21 +184,21 @@ class GriddedDataContainer:
 
             self.add_griddeddata(data)
 
-    def _create_latlon_info(self, data: GriddedData) -> dict:
-        return {
-            "latitude": {
-                "standard_name": data.latitude.standard_name
-                if data.latitude.standard_name is not None
-                else "latitude",
-                "units": str(data.latatitude.units),
-            },
-            "longitude": {
-                "standard_name": data.longitude.standard_name
-                if data.longitude.standard_name is not None
-                else "longitude",
-                "units": str(data.longitude.units),
-            },
-        }
+    # def _get_latlon_info(self, data: GriddedData) -> dict:
+    #    return {
+    #        "latitude": {
+    #            "standard_name": data.latitude.standard_name
+    #            if data.latitude.standard_name is not None
+    #            else "latitude",
+    #            "units": str(data.latatitude.units),
+    #        },
+    #        "longitude": {
+    #            "standard_name": data.longitude.standard_name
+    #            if data.longitude.standard_name is not None
+    #            else "longitude",
+    #            "units": str(data.longitude.units),
+    #        },
+    #    }
 
     def get_xyranges(self) -> tuple[list[tuple[float, float]]]:
         """
@@ -241,37 +241,37 @@ class GriddedDataContainer:
             yranges.append(yrange)
         return xranges, yranges
 
-    def get_latlon_ranges(self) -> tuple[list[tuple[float, float]]]:
-        """
-        Finds the max/min ranges for lat and lon of all children
-
-
-        Returns
-        -------
-        tuple[list[tuple[float, float]]]
-            Two list, one for lats and one for lons
-
-        Raises
-        --------
-        GriddedDataContainerException
-            If no lats or no lons are found
-        """
-        lats = []
-        lons = []
-
-        for data in self.children:
-            latitude = data.latitude.points
-            longitude = data.longitude.points
-            lat_range = (np.min(latitude), np.max(latitude))
-            lon_range = (np.min(longitude), np.max(longitude))
-
-            lats.append(lat_range)
-            lons.append(lon_range)
-
-        if len(lats) == 0 or len(lons) == 0:
-            raise GriddedDataContainerException("Failed to find lat or lon ranges")
-
-        return lats, lons
+    # def get_latlon_ranges(self) -> tuple[list[tuple[float, float]]]:
+    #    """
+    #    Finds the max/min ranges for lat and lon of all children
+    #
+    #
+    #    Returns
+    #    -------
+    #    tuple[list[tuple[float, float]]]
+    #        Two list, one for lats and one for lons
+    #
+    #    Raises
+    #    --------
+    #    GriddedDataContainerException
+    #        If no lats or no lons are found
+    #    """
+    #    lats = []
+    #    lons = []
+    #
+    #    for data in self.children:
+    #        latitude = data.latitude.points
+    #        longitude = data.longitude.points
+    #        lat_range = (np.min(latitude), np.max(latitude))
+    #        lon_range = (np.min(longitude), np.max(longitude))
+    #
+    #        lats.append(lat_range)
+    #        lons.append(lon_range)
+    #
+    #    if len(lats) == 0 or len(lons) == 0:
+    #        raise GriddedDataContainerException("Failed to find lat or lon ranges")
+    #
+    #    return lats, lons
 
     @property
     @only_one_child

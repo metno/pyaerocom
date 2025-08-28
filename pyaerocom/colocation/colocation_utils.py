@@ -778,8 +778,9 @@ def colocate_gridded_ungridded(
         proj = latlon_proj
         # xrange = [np.min(longitude), np.max(longitude)]
         # yrange = [np.min(latitude), np.max(latitude)]
-        lat_range, lon_range = data.get_latlon_ranges()
-        data_ref = data_ref.filter_by_latlon(lat_range, lon_range)
+
+        xrange, yrange = data.get_latlon_ranges()
+        # data_ref = data_ref.filter_by_latlon(lat_range, lon_range)
 
         # if isinstance(data, MultiGriddedData):
         #     lat_range, lon_range = data.get_latlon_ranges()
@@ -798,20 +799,21 @@ def colocate_gridded_ungridded(
         # gridded data with projection,
         proj = data.proj_info.to_proj
         # add x/y information to ungridded
-        # for coord in data.cube.dim_coords:
-        #    if coord.var_name == data.proj_info.x_axis:
-        #        vals = coord.points
-        #        xrange = (np.min(vals), np.max(vals))
-        #    if coord.var_name == data.proj_info.y_axis:
-        #        vals = coord.points
-        #        yrange = (np.min(vals), np.max(vals))
+        # for coord in data.grid.dim_coords:
+        #   if coord.var_name == data.proj_info.x_axis:
+        #       vals = coord.points
+        #       xrange = (np.min(vals), np.max(vals))
+        #   if coord.var_name == data.proj_info.y_axis:
+        #       vals = coord.points
+        #       yrange = (np.min(vals), np.max(vals))
         # if xrange is None or yrange is None:
-        #    raise VariableDefinitionError(
-        #        f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
-        #    )
+        #   raise VariableDefinitionError(
+        #       f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
+        #   )
 
         xrange, yrange = data.get_xyranges()
-        data_ref = data_ref.filter_by_projection(proj, xrange, yrange)
+
+    data_ref = data_ref.filter_by_projection(proj, xrange, yrange)
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
