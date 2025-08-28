@@ -204,9 +204,7 @@ class ReadEprofile(ReadUngriddedBase):
             )  # data_in.station_longitude.values
             data_out["station_coords"]["latitude"] = data_in.station_latitude_t0
             data_out["latitude"] = data_in.station_latitude_t0  # data_in.station_latitude.values
-            data_out["altitude"] = (
-                data_in.station_altitude_t0 + data_in.altitude.values
-            )  # Note altitude is an array for the data, station altitude is different. Moreover, EPROFILE as of 21.05.2025 gives altitude in altitude above ground level, so add the station altitude to get the altitude above sea level
+            data_out["altitude"] = data_in.altitude.values
             data_out["station_coords"]["altitude"] = data_in.station_altitude_t0
             data_out["altitude_attrs"] = (
                 data_in.altitude.attrs
