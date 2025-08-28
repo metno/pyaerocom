@@ -144,7 +144,6 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         for regid, regname in regnames.items():
             results[regname] = {}
-            #results_fairmode[regname] = {}
             logger.info(f"Creating subset for {regname}")
             try:
                 subset_region = [
