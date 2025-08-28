@@ -187,6 +187,9 @@ class ReadEprofile(ReadUngriddedBase):
         with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
             if not xarray.infer_freq(data_in["time"]) == "D":
                 try:
+                    data_in = data_in.where(
+                        (data_in.retrieval_scene <= 1) & (data_in.cloud_amount == 0)
+                    )
                     data_in = data_in.resample(time="D").mean()
                 except (Exception, ValueError) as e:
                     raise EprofileFileError(f"Daily resample failed, {e}")
