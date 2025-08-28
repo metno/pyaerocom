@@ -77,8 +77,17 @@ class GriddedDataContainer:
         # self._lat_res = data.lat_res
         # self._lon_res = data.lon_res
 
-        self._lat_points = data.latitude.points
-        self._lon_points = data.longitude.points
+        try:
+            self._lat_points = data.latitude.points
+        except Exception:
+            self._lat_points = None
+            assert self.proj_info is not None
+
+        try:
+            self._lon_points = data.longitude.points
+        except Exception:
+            self._lon_points = None
+            assert self.proj_info is not None
 
     def only_one_child(func):
         def check_child(self, *args, **kwargs):
