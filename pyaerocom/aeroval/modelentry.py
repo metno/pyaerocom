@@ -61,10 +61,6 @@ class ModelEntry(BaseModel):
     gridded_reader_id: dict[str, str] = {"model": "ReadGridded", "obs": "ReadGridded"}
     model_kwargs: dict = {}
 
-    # # For the use of multigrid
-    # multigrid_use: bool = False
-    # multigrid_dirs: list[Path | str] = []
-
     @property
     def aux_funs_required(self):
         """

@@ -26,7 +26,6 @@ from pyaerocom.filter import Filter
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.griddeddata_container import GriddedDataContainer
 
-# from pyaerocom.multigriddeddata import MultiGriddedData
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
 from pyaerocom.helpers import (
@@ -323,14 +322,6 @@ def colocate_gridded_gridded(
     dims = ["data_source", "time", "latitude", "longitude"]
 
     coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=data.var_name, attrs=meta)
-
-    # add correct units for lat / lon dimensions
-    # latlon_info = data.latlon_info
-    # coldata.latitude.attrs["standard_name"] = latlon_info["latitude"]["standard_name"]
-    # coldata.latitude.attrs["units"] = latlon_info["latitude"]["units"]
-
-    # coldata.longitude.attrs["standard_name"] = latlon_info["longitude"]["standard_name"]
-    # coldata.longitude.attrs["units"] = latlon_info["longitude"]["units"]
 
     if data_ts_type != ts_type:
         coldata = coldata.resample_time(
@@ -776,8 +767,6 @@ def colocate_gridded_ungridded(
             return (lon, lat)
 
         proj = latlon_proj
-        # xrange = [np.min(longitude), np.max(longitude)]
-        # yrange = [np.min(latitude), np.max(latitude)]
 
         if isinstance(data, GriddedData):
             latitude = data.latitude.points
@@ -791,36 +780,9 @@ def colocate_gridded_ungridded(
                 xrange.append((np.min(c.longitude.points), np.max(c.longitude.points)))
                 yrange.append((np.min(c.latitude.points), np.max(c.latitude.points)))
 
-        # data_ref = data_ref.filter_by_latlon(lat_range, lon_range)
-
-        # if isinstance(data, MultiGriddedData):
-        #     lat_range, lon_range = data.get_latlon_ranges()
-
-        #     data_ref = data_ref.filter_by_latlon(lat_range, lon_range)
-        # else:
-        #     latitude = data.latitude.points
-        #     longitude = data.longitude.points
-        #     lat_range = [np.min(latitude), np.max(latitude)]
-        #     lon_range = [np.min(longitude), np.max(longitude)]
-        #     # use only sites that are within model domain
-
-        #     # filter_by_meta wipes is_vertical_profile
-        #     data_ref = data_ref.filter_by_meta(latitude=lat_range, longitude=lon_range)
     else:
         # gridded data with projection,
         proj = data.proj_info.to_proj
-        # add x/y information to ungridded
-        # for coord in data.grid.dim_coords:
-        #   if coord.var_name == data.proj_info.x_axis:
-        #       vals = coord.points
-        #       xrange = (np.min(vals), np.max(vals))
-        #   if coord.var_name == data.proj_info.y_axis:
-        #       vals = coord.points
-        #       yrange = (np.min(vals), np.max(vals))
-        # if xrange is None or yrange is None:
-        #   raise VariableDefinitionError(
-        #       f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
-        #   )
 
         xrange, yrange = data.get_xyranges()
 
