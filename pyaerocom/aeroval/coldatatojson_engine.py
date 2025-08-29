@@ -1,7 +1,8 @@
 import logging
 import os
-from numpy.typing import ArrayLike
 from time import time
+
+from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData, TsType, const
 from pyaerocom.aeroval._processing_base import ProcessingEngine
@@ -567,21 +568,18 @@ class ColdataToJsonEngine(ProcessingEngine):
             fm_data = data[freq]
         (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
 
-        stats = _calculate_fairmode(
+        _calculate_fairmode(
             fm_data,
             fairmode_statistics,
-            map_meta,
-            obs_var,
-            periods,
-            seasons,
-            use_meteorological_seasons,
-        )
-        fairmode_statistics.save_fairmode_stats(
             self.exp_output,
-            stats,
             obs_name,
             var_name_web,
             vert_code,
             model_name,
             model_var,
+            map_meta,
+            obs_var,
+            periods,
+            seasons,
+            use_meteorological_seasons,
         )
