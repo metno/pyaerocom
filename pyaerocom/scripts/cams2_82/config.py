@@ -351,6 +351,10 @@ def make_EPROFILE_entry(
       colocation_layer_limts=None,
       profile_layer_limits=[
         {
+          "start": 0,
+          "end": 1000
+        },  
+        {
           "start": 1000,
           "end": 2000
         },
