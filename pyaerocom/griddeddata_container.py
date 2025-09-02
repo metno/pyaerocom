@@ -6,6 +6,7 @@ import iris
 from .griddeddata import GriddedData
 from pyaerocom.stationdata import StationData
 from pyaerocom.exceptions import DataCoverageError
+from pyaerocom.mathutils import in_range
 
 from pyaerocom.io.gridded_reader import GriddedReader
 
@@ -198,15 +199,7 @@ class GriddedDataContainer:
         xranges = []
         yranges = []
         for data in self.children:
-            xrange = None
-            yrange = None
-            for coord in data.cube.dim_coords:
-                if coord.var_name == data.proj_info.x_axis:
-                    vals = coord.points
-                    xrange = (np.min(vals), np.max(vals))
-                if coord.var_name == data.proj_info.y_axis:
-                    vals = coord.points
-                    yrange = (np.min(vals), np.max(vals))
+            xrange, yrange = self._get_xyrange_child(data)
             if xrange is None or yrange is None:
                 raise ValueError(
                     f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
@@ -214,6 +207,18 @@ class GriddedDataContainer:
             xranges.append(xrange)
             yranges.append(yrange)
         return xranges, yranges
+
+    def _get_xyrange_child(self, child: GriddedData) -> tuple[tuple[float, float]] | tuple[None]:
+        xrange = None
+        yrange = None
+        for coord in child.cube.dim_coords:
+            if coord.var_name == child.proj_info.x_axis:
+                vals = coord.points
+                xrange = (np.min(vals), np.max(vals))
+            if coord.var_name == child.proj_info.y_axis:
+                vals = coord.points
+                yrange = (np.min(vals), np.max(vals))
+        return xrange, yrange
 
     @property
     @only_one_child
@@ -363,16 +368,60 @@ class GriddedDataContainer:
 
         """
         sd_list = []
-        for data in self.children:
+
+        for lat, lon in zip(coords["latitude"], coords["longitude"]):
+            data = self._get_child_ass_with_coord(lat, lon)
+            if data is None:
+                logger.warning(f"Could not find any gridded data with coord {lat, lon}")
+                continue
+
             try:
                 sd_list += data.to_time_series(
-                    sample_points, scheme, vert_scheme, add_meta, use_iris, **coords
+                    sample_points,
+                    scheme,
+                    vert_scheme,
+                    add_meta,
+                    use_iris,
+                    latitude=[lat],
+                    longitude=[lon],
                 )
             except DataCoverageError:
                 print(f"Could not resample for grid from {data.from_files}")
                 logger.info(f"Could not resample for grid from {data.from_files}")
 
         return sd_list
+
+    def _get_child_ass_with_coord(self, lat: float, lon: float) -> GriddedData:
+        """
+        Finds child associated with coordinate(lat, lon)
+
+         Parameters
+        ----------
+        lat : float
+            latitude of coord
+        lon : float
+            longitude of coord
+
+        Returns
+        -------
+        GriddedData
+            child with has coord in domain
+
+
+        """
+        for child in self.children:
+            if self.proj_info is None:
+                c1 = lat
+                c2 = lon
+                r1, r2 = child.get_latlon_ranges()
+            else:
+                c1, c2 = self.proj_info.to_proj(lat, lon)
+                r1, r2 = self._get_xyrange_child(child)
+
+            if in_range(c1, r1[0], r1[1]) and in_range(c2, r2[0], r2[1]):
+                return child
+        else:
+            return None
 
     def register_var_glob(self, delete_existing=True):  # pragma: no cover
         """
