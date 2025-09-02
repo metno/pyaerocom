@@ -369,69 +369,31 @@ class GriddedDataContainer:
         """
         sd_list = []
 
-        if len(self.children) == 1:
-            for data in self.children:
-                try:
-                    sd_list += data.to_time_series(
-                        sample_points, scheme, vert_scheme, add_meta, use_iris, **coords
-                    )
-                except DataCoverageError:
-                    print(f"Could not resample for grid from {data.from_files}")
-                    logger.info(f"Could not resample for grid from {data.from_files}")
-        else:
-            for lat, lon in zip(coords["latitude"], coords["longitude"]):
-                data = self._get_child_ass_with_coord(lat, lon)
-                if data is None:
-                    logger.warning(f"Could not find any gridded data with coord {lat, lon}")
-                    continue
+        for data in self.children:
+            try:
+                sd_list += data.to_time_series(
+                    sample_points, scheme, vert_scheme, add_meta, use_iris, **coords
+                )
+            except DataCoverageError:
+                print(f"Could not resample for grid from {data.from_files}")
+                logger.info(f"Could not resample for grid from {data.from_files}")
 
-                try:
-                    sd_list += data.to_time_series(
-                        sample_points,
-                        scheme,
-                        vert_scheme,
-                        add_meta,
-                        use_iris,
-                        latitude=[lat],
-                        longitude=[lon],
-                    )
-                except DataCoverageError:
-                    print(f"Could not resample for grid from {data.from_files}")
-                    logger.info(f"Could not resample for grid from {data.from_files}")
+        sorted_list = self.sort_stationdatas_by_coords(sd_list, coords)
+        return sorted_list  # sd_list
 
-        return sd_list
+    def sort_stationdatas_by_coords(
+        self, sd: list[StationData], coords: dict[str, list[float]]
+    ) -> list[StationData]:
+        def coord_index(stationdata: StationData, points):
+            lat = float(stationdata["latitude"])
+            lon = float(stationdata["longitude"])
 
-    def _get_child_ass_with_coord(self, lat: float, lon: float) -> GriddedData:
-        """
-        Finds child associated with coordinate(lat, lon)
+            dists2 = [(point[0] - lat) ** 2 + (point[1] - lon) ** 2 for point in points]
+            return np.argmin(dists2)
 
-         Parameters
-        ----------
-        lat : float
-            latitude of coord
-        lon : float
-            longitude of coord
+        points = [(lat, lon) for lat, lon in zip(coords["latitude"], coords["longitude"])]
 
-        Returns
-        -------
-        GriddedData
-            child with has coord in domain
-
-
-        """
-        for child in self.children:
-            if self.proj_info is None:
-                c1 = lat
-                c2 = lon
-                r1, r2 = child.get_latlon_ranges()
-            else:
-                c1, c2 = self.proj_info.to_proj(lat, lon)
-                r1, r2 = self._get_xyrange_child(child)
-
-            if in_range(c1, r1[0], r1[1]) and in_range(c2, r2[0], r2[1]):
-                return child
-        else:
-            return None
+        return sorted(sd, key=lambda x: coord_index(x, points))
 
     def register_var_glob(self, delete_existing=True):  # pragma: no cover
         """
