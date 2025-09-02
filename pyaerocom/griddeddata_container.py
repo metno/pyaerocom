@@ -369,25 +369,35 @@ class GriddedDataContainer:
         """
         sd_list = []
 
-        for lat, lon in zip(coords["latitude"], coords["longitude"]):
-            data = self._get_child_ass_with_coord(lat, lon)
-            if data is None:
-                logger.warning(f"Could not find any gridded data with coord {lat, lon}")
-                continue
+        if len(self.children) == 1:
+            for data in self.children:
+                try:
+                    sd_list += data.to_time_series(
+                        sample_points, scheme, vert_scheme, add_meta, use_iris, **coords
+                    )
+                except DataCoverageError:
+                    print(f"Could not resample for grid from {data.from_files}")
+                    logger.info(f"Could not resample for grid from {data.from_files}")
+        else:
+            for lat, lon in zip(coords["latitude"], coords["longitude"]):
+                data = self._get_child_ass_with_coord(lat, lon)
+                if data is None:
+                    logger.warning(f"Could not find any gridded data with coord {lat, lon}")
+                    continue
 
-            try:
-                sd_list += data.to_time_series(
-                    sample_points,
-                    scheme,
-                    vert_scheme,
-                    add_meta,
-                    use_iris,
-                    latitude=[lat],
-                    longitude=[lon],
-                )
-            except DataCoverageError:
-                print(f"Could not resample for grid from {data.from_files}")
-                logger.info(f"Could not resample for grid from {data.from_files}")
+                try:
+                    sd_list += data.to_time_series(
+                        sample_points,
+                        scheme,
+                        vert_scheme,
+                        add_meta,
+                        use_iris,
+                        latitude=[lat],
+                        longitude=[lon],
+                    )
+                except DataCoverageError:
+                    print(f"Could not resample for grid from {data.from_files}")
+                    logger.info(f"Could not resample for grid from {data.from_files}")
 
         return sd_list
 
