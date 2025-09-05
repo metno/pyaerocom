@@ -12,6 +12,7 @@ from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
+from pyaerocom.stationdata import StationData
 from pyaerocom._lowlevel_helpers import RegridResDeg
 from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.exceptions import (
@@ -21,6 +22,7 @@ from pyaerocom.exceptions import (
     TimeMatchError,
     VariableDefinitionError,
     VarNotAvailableError,
+    DataExtractionError,
 )
 from pyaerocom.filter import Filter
 from pyaerocom.griddeddata import GriddedData
@@ -32,6 +34,7 @@ from pyaerocom.helpers import (
     isnumeric,
     make_datetime_index,
 )
+from pyaerocom.mathutils import in_range
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType
 
@@ -758,8 +761,8 @@ def colocate_gridded_ungridded(
     # colocation frequency
     col_tst = TsType(col_freq)
 
-    # use only sites that are within model domain
-    # find projection and axes-ranges
+    tiles, xranges, yranges = data.get_tiles()
+
     if data.proj_info is None:
         # lat-lon data, define unity-projection
         def latlon_proj(lat, lon):
@@ -767,26 +770,12 @@ def colocate_gridded_ungridded(
             return (lon, lat)
 
         proj = latlon_proj
-
-        if isinstance(data, GriddedData):
-            latitude = data.latitude.points
-            longitude = data.longitude.points
-            xrange = [np.min(longitude), np.max(longitude)]
-            yrange = [np.min(latitude), np.max(latitude)]
-        elif isinstance(data, GriddedDataContainer):
-            xrange = []
-            yrange = []
-            for c in data.children:
-                xrange.append((np.min(c.longitude.points), np.max(c.longitude.points)))
-                yrange.append((np.min(c.latitude.points), np.max(c.latitude.points)))
-
     else:
-        # gridded data with projection,
         proj = data.proj_info.to_proj
 
-        xrange, yrange = data.get_xyranges()
+    grid_stat_data = []
 
-    data_ref = data_ref.filter_by_projection(proj, xrange, yrange)
+    data_ref = data_ref.filter_by_projection(proj, xranges, yranges)
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
@@ -799,17 +788,30 @@ def colocate_gridded_ungridded(
         **kwargs,
     )
 
-    obs_stat_data = all_stats["stats"]
+    unsorted_obs_stat_data = all_stats["stats"]
     ungridded_lons = all_stats["longitude"]
     ungridded_lats = all_stats["latitude"]
+
+    obs_stat_data = []
+    for i, tile in enumerate(tiles):
+        xrange = xranges[i]
+        yrange = yranges[i]
+
+        obs_data, ungridded_lats, ungridded_lons = _get_obsstats_for_tiles(
+            unsorted_obs_stat_data, proj, xrange, yrange
+        )
+        if len(ungridded_lats) == 0:
+            print(f"Could not find any stations for tile {tile.from_files}")
+            logger.info(f"Could not find any stations for tile {tile.from_files}")
+            continue
+
+        obs_stat_data += obs_data
+        grid_stat_data += tile.to_time_series(longitude=ungridded_lons, latitude=ungridded_lats)
 
     if len(obs_stat_data) == 0:
         raise VarNotAvailableError(
             f"Variable {var_ref} is not available in specified time interval ({start}-{stop})"
         )
-
-    # to read
-    grid_stat_data = data.to_time_series(longitude=ungridded_lons, latitude=ungridded_lats)
 
     pd_freq = col_tst.to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)
@@ -1081,3 +1083,26 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     coldata.data.attrs["Model_STP_corr"] = True
     coldata.data.attrs["Model_STP_corr_info"] = info_str
     return coldata
+
+
+def _get_obsstats_for_tiles(
+    obsstats: list[StationData],
+    projection,
+    xrange: list[tuple[float, float]],
+    yrange: list[tuple[float, float]],
+) -> tuple[list[StationData], list[float], list[float]]:
+    results = []
+    lats = []
+    lons = []
+    for station in obsstats:
+        lat = station.latitude
+        lon = station.longitude
+
+        x, y = projection(lat, lon)
+
+        if in_range(x, xrange[0], xrange[1]) and in_range(y, yrange[0], yrange[1]):
+            results.append(station)
+            lats.append(lat)
+            lons.append(lon)
+
+    return results, lats, lons

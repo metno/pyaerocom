@@ -6,7 +6,6 @@ import iris
 from .griddeddata import GriddedData
 from pyaerocom.stationdata import StationData
 from pyaerocom.exceptions import DataCoverageError
-from pyaerocom.mathutils import in_range
 
 from pyaerocom.io.gridded_reader import GriddedReader
 
@@ -219,6 +218,35 @@ class GriddedDataContainer:
                 vals = coord.points
                 yrange = (np.min(vals), np.max(vals))
         return xrange, yrange
+
+    def get_tiles(
+        self,
+    ) -> tuple[GriddedData, list[tuple[float, float]], list[tuple[float, float]]]:
+        tiles = []
+        xranges = []
+        yranges = []
+        for data in self.children:
+            if self.proj_info is None:
+                latitude = data.latitude.points
+                longitude = data.longitude.points
+                xrange = [np.min(longitude), np.max(longitude)]
+                yrange = [np.min(latitude), np.max(latitude)]
+            else:
+                xrange, yrange = self._get_xyrange_child(data)
+
+            if len(xrange) == 0 or len(yrange) == 0:
+                logger.warning(f"Tile {data.from_files} with no x and y range found")
+                continue
+
+            tiles.append(data)
+            xranges.append(xrange)
+            yranges.append(yrange)
+
+        if not (len(tiles) == len(xranges) and len(tiles) == len(yranges)):
+            raise GriddedDataContainerException(
+                "Something went wrong then getting tiles. Length of ranges were different"
+            )
+        return tiles, xranges, yranges
 
     @property
     @only_one_child
