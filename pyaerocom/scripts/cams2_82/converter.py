@@ -68,7 +68,7 @@ def aeronet(
     data = pl.DataFrame()
     for file in raw_data_path.glob("*.csv"):
         if file.stem == str(start_yr) or file.stem == str(end_yr):
-            read_data = pl.read_csv(file, skip_lines=5, has_header=True)
+            read_data = pl.read_csv(file, skip_lines=5, has_header=True, null_values=[" ","","-"])
             data = pl.concat([data, read_data])
 
 
