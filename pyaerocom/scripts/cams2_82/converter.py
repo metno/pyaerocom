@@ -38,9 +38,6 @@ def aeronet(
         #     return np.nan
         return aod500 * (0.55 / lambda500) ** (-alpha)
 
-
-    path = raw_data_path
-
     opath = result_path
 
     FIELDS = dict(
@@ -61,7 +58,6 @@ def aeronet(
         "Site_Elevation(m)",
     ] + list(FIELDS.values())
 
-
     start_yr = start_date.year
     end_yr = end_date.year
 
@@ -71,14 +67,9 @@ def aeronet(
             read_data = pl.read_csv(file, skip_lines=5, has_header=True, null_values=[" ","","-"])
             data = pl.concat([data, read_data])
 
-
-
-
     #Removes rows with any NULL data
     new_data = data[KEEP].drop_nulls()
     logger.info(f"Removed {len(data) - len(new_data)} rows due to them containing nulls")
-
-
 
     # Creates values for AOD 550
     new_data = new_data.with_columns(
@@ -102,7 +93,6 @@ def aeronet(
     new_data = new_data.with_columns(pl.lit("AOD_550nm").alias("variable_name"))
     new_data = new_data.with_columns(pl.lit("1").alias("units"))
 
-
     # Create correct Datetime column
     new_data = new_data.with_columns(
         (pl.col("Date(dd:mm:yyyy)") + " " + pl.col("Time(hh:mm:ss)"))
@@ -112,11 +102,11 @@ def aeronet(
 
     # Filters on dates
     new_data = new_data.filter(pl.col("Datetime").is_between(start_date, end_date))
+
     #Removes unwanted stations
     logger.info(f"Before removing DRAGON {len(new_data)}")
     new_data = new_data.remove(pl.col("AERONET_Site").str.contains("DRAGON"))
     logger.info(f"After removing DRAGON {len(new_data)}")
-
 
     # Saves file
     new_data.write_csv(opath, include_header=False)
