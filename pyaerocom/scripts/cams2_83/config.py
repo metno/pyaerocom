@@ -49,7 +49,7 @@ GLOBAL_CONFIG = dict(
     use_diurnal=False,
     # O3 is special, since we want to look at daily max
     # Here we say that we when O3(vmro3) is evaluated, the daily results will be the maximum for that day
-    resample_how={"vmro3": {"daily": {"hourly": "max"}}},
+    resample_how={"conco3": {"daily": {"hourly": "max"}}},
     # Assorted options, more info can be found in 'cfg_examples_examples1.py'
     # zeros_to_nan=False,
     zeros_to_nan=True,
