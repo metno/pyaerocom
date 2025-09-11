@@ -14,7 +14,6 @@ from pyaerocom.colocation.colocation_utils import (
     colocate_gridded_ungridded,
     _get_stat_data,
 )
-from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.exceptions import UnresolvableTimeDefinitionError
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm

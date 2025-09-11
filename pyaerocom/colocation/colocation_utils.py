@@ -22,7 +22,6 @@ from pyaerocom.exceptions import (
     TimeMatchError,
     VariableDefinitionError,
     VarNotAvailableError,
-    DataExtractionError,
 )
 from pyaerocom.filter import Filter
 from pyaerocom.griddeddata import GriddedData
