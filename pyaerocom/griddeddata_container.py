@@ -22,8 +22,6 @@ class GriddedDataContainer:
         """
         Class for holding and working with multiple GriddedData objects.
 
-
-
         """
         self.data_id = data_id
 
@@ -41,8 +39,6 @@ class GriddedDataContainer:
         self.units = None
         self.var_name = None
         self.ts_type = None
-
-        # self.latlon_info = {}
 
         self._lon_res = None
         self._lat_res = None
@@ -395,6 +391,11 @@ class GriddedDataContainer:
             are: ``longitude, latitude, var_name``
 
         """
+
+        if len(self.children) > 1:
+            logger.warning(
+                "This function might not return the stationdatas in the same order as the ungridded data"
+            )
         sd_list = []
 
         for data in self.children:
@@ -406,8 +407,8 @@ class GriddedDataContainer:
                 print(f"Could not resample for grid from {data.from_files}")
                 logger.info(f"Could not resample for grid from {data.from_files}")
 
-        sorted_list = self.sort_stationdatas_by_coords(sd_list, coords)
-        return sorted_list  # sd_list
+        # sorted_list = self.sort_stationdatas_by_coords(sd_list, coords)
+        return sd_list
 
     def sort_stationdatas_by_coords(
         self, sd: list[StationData], coords: dict[str, list[float]]
@@ -439,6 +440,10 @@ class GriddedDataContainer:
 
         See GriddedData for more info on this function
         """
+        if self.proj_info is not None:
+            raise GriddedDataContainerException(
+                "Could not regrid, since the data is projected. Please use data with latlon instead"
+            )
         for i, data in enumerate(self.children):
             self.children[i] = data.regrid(other, lat_res_deg, lon_res_deg, scheme, **kwargs)
 
@@ -541,7 +546,7 @@ class GriddedDataContainer:
 
         See GriddedData for more info on this function
         """
-        logger.info(
+        logger.warning(
             "Altitude filtering is not applied in GriddedDataContainer and will be skipped"
         )
 

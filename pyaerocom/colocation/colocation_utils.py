@@ -761,8 +761,10 @@ def colocate_gridded_ungridded(
     # colocation frequency
     col_tst = TsType(col_freq)
 
+    # Gets tiles and ranges from GriddedDataContainer
     tiles, xranges, yranges = data.get_tiles()
 
+    # Defines a projection and filters ref by above ranges with proj
     if data.proj_info is None:
         # lat-lon data, define unity-projection
         def latlon_proj(lat, lon):
@@ -789,29 +791,13 @@ def colocate_gridded_ungridded(
     )
 
     unsorted_obs_stat_data = all_stats["stats"]
-    ungridded_lons = all_stats["longitude"]
-    ungridded_lats = all_stats["latitude"]
+    # ungridded_lons = all_stats["longitude"]
+    # ungridded_lats = all_stats["latitude"]
 
-    obs_stat_data = []
-    for i, tile in enumerate(tiles):
-        xrange = xranges[i]
-        yrange = yranges[i]
-
-        obs_data, ungridded_lats, ungridded_lons = _get_obsstats_for_tiles(
-            unsorted_obs_stat_data, proj, xrange, yrange
-        )
-        if len(ungridded_lats) == 0:
-            print(f"Could not find any stations for tile {tile.from_files}")
-            logger.info(f"Could not find any stations for tile {tile.from_files}")
-            continue
-
-        obs_stat_data += obs_data
-        grid_stat_data += tile.to_time_series(longitude=ungridded_lons, latitude=ungridded_lats)
-
-    if len(obs_stat_data) == 0:
-        raise VarNotAvailableError(
-            f"Variable {var_ref} is not available in specified time interval ({start}-{stop})"
-        )
+    # Goes through each tile, gets lats/lons for stations in that tile, then finds obs and mod stat data for the tile
+    grid_stat_data, obs_stat_data = _get_stat_data(
+        start, stop, var_ref, tiles, xranges, yranges, proj, unsorted_obs_stat_data
+    )
 
     pd_freq = col_tst.to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)
@@ -971,6 +957,32 @@ def colocate_gridded_ungridded(
     coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=var, attrs=meta)
 
     return coldata
+
+
+def _get_stat_data(start, stop, var_ref, tiles, xranges, yranges, proj, unsorted_obs_stat_data):
+    obs_stat_data = []
+    grid_stat_data = []
+    for i, tile in enumerate(tiles):
+        xrange = xranges[i]
+        yrange = yranges[i]
+
+        obs_data, ungridded_lats, ungridded_lons = _get_obsstats_for_tiles(
+            unsorted_obs_stat_data, proj, xrange, yrange
+        )
+        if len(ungridded_lats) == 0:
+            print(f"Could not find any stations for tile {tile.from_files}")
+            logger.info(f"Could not find any stations for tile {tile.from_files}")
+            continue
+
+        obs_stat_data += obs_data
+        grid_stat_data += tile.to_time_series(longitude=ungridded_lons, latitude=ungridded_lats)
+
+    if len(obs_stat_data) == 0:
+        raise VarNotAvailableError(
+            f"Variable {var_ref} is not available in specified time interval ({start}-{stop})"
+        )
+
+    return grid_stat_data, obs_stat_data
 
 
 def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):

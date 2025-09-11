@@ -12,7 +12,9 @@ from pyaerocom.colocation.colocation_utils import (
     _regrid_gridded,
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
+    _get_stat_data,
 )
+from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.exceptions import UnresolvableTimeDefinitionError
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
@@ -217,6 +219,65 @@ def test_colocate_gridded_ungridded(
 
     assert np.nanmean(coldata.data.data[0]) == pytest.approx(obsmean, rel=TEST_RTOL)
     assert np.nanmean(coldata.data.data[1]) == pytest.approx(modmean, rel=TEST_RTOL)
+
+
+def test__get_stat_data(cities_data, lcs_data):
+    from pyaerocom.units.datetime import to_pandas_timestamp
+
+    def proj(lat, lon):
+        return (lon, lat)
+
+    def coord_index(stationdata, points):
+        lat = float(stationdata["latitude"])
+        lon = float(stationdata["longitude"])
+
+        dists2 = [(point[0] - lat) ** 2 + (point[1] - lon) ** 2 for point in points]
+        return np.argmin(dists2)
+
+    data_id = "test_id"
+    var_ref = "concpm25"
+    ts_type = "monthly"
+    obs_start = to_pandas_timestamp("01-2019")
+    obs_stop = to_pandas_timestamp("12-2019")
+    mg = GriddedDataContainer(data_id)
+
+    for gd in cities_data["EMEP"]:
+        mg.add_griddeddata(gd)
+
+    data_ref = lcs_data
+
+    tiles, xranges, yranges = mg.get_tiles()
+
+    data_ref = data_ref.filter_by_projection(proj, xranges, yranges)
+
+    all_stats = data_ref.to_station_data_all(
+        vars_to_convert=var_ref,
+        start=obs_start,
+        stop=obs_stop,
+        by_station_name=True,
+        ts_type_preferred=ts_type,
+    )
+
+    unsorted_obs_stat_data = all_stats["stats"]
+
+    grid_stat_data, obs_stat_data = _get_stat_data(
+        obs_start, obs_stop, var_ref, tiles, xranges, yranges, proj, unsorted_obs_stat_data
+    )
+
+    points_obs = [(stat["latitude"], stat["longitude"]) for stat in obs_stat_data]
+    points_mod = [(stat["latitude"], stat["longitude"]) for stat in grid_stat_data]
+
+    sorted_grid_stats = sorted(grid_stat_data, key=lambda x: coord_index(x, points_obs))
+    sorted_obs_stats = sorted(unsorted_obs_stat_data, key=lambda x: coord_index(x, points_mod))
+
+    assert sorted_grid_stats == grid_stat_data
+    assert sorted_obs_stats == obs_stat_data
+    assert sum(
+        [i["latitude"] != j["latitude"] for i, j in zip(unsorted_obs_stat_data, obs_stat_data)]
+    )
+    assert sum(
+        [i["longitude"] != j["longitude"] for i, j in zip(unsorted_obs_stat_data, obs_stat_data)]
+    )
 
 
 def test_colocate_gridded_ungridded_wstationtype(data_tm5, aeronetsunv3lev2_subset):

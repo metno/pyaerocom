@@ -73,7 +73,45 @@ def test_get_xyranges(cities_data):
             assert abs(_l - c_l) < 1e-5
 
 
+def test_regrid(cities_data):
+    data_id = "test_id"
+    mg = GriddedDataContainer(data_id)
+
+    for gd in cities_data["EMEP"]:
+        mg.add_griddeddata(gd)
+
+    lat_res = 0.001
+    lon_res = 0.001
+
+    for child in mg.children:
+        assert child.lat_res != lat_res
+        assert child.lon_res != lon_res
+
+    mg.regrid(lat_res_deg=lat_res, lon_res_deg=lon_res)
+
+    for child in mg.children:
+        assert child.lat_res == pytest.approx(lat_res, rel=1e-6)
+        assert child.lon_res == pytest.approx(lon_res, rel=1e-6)
+
+
 # Tests for error handling
+
+
+def test_regrid_fail_due_to_projection(cities_data):
+    data_id = "test_id"
+    mg = GriddedDataContainer(data_id)
+
+    for gd in cities_data["uEMEP"]:
+        mg.add_griddeddata(gd)
+
+    lat_res = 0.001
+    lon_res = 0.001
+
+    with pytest.raises(
+        GriddedDataContainerException,
+        match="Could not regrid, since the data is projected. Please use data with latlon instead",
+    ):
+        mg.regrid(lat_res_deg=lat_res, lon_res_deg=lon_res)
 
 
 def test_add_griddeddata_different_model(cities_data):
