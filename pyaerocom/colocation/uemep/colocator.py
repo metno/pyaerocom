@@ -193,14 +193,14 @@ class UEMEPColocator:
                 logger.error("No stations with data for the given time range.")
                 return
 
-            combined = xr.concat(darrays, dim=pd.Index(sids, name="station_name"))
+            combined = xr.concat(darrays, dim=pd.Index(sids, name="station_name"), join="outer")
             uemep_data = uemep_data.expand_dims(data_source=["uemep"])
             combined = combined.expand_dims(data_source=[obs_id])
             combined = combined.assign_coords(
                 {"station_name": [x for x in combined.station_name.values]}
             )
 
-            coldataarray = xr.concat([combined, uemep_data], dim="data_source")
+            coldataarray = xr.concat([combined, uemep_data], dim="data_source", join="outer")
 
             coldataarray = coldataarray.transpose("data_source", "time", "station_name").rename(
                 {"lat": "latitude", "lon": "longitude"}
