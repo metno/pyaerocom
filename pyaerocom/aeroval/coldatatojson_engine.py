@@ -360,7 +360,7 @@ class ColdataToJsonEngine(ProcessingEngine):
 
     def _process_stats_timeseries_for_all_regions(
         self,
-        data: dict[str, ColocatedData],
+        data: dict[str, ColocatedData | None],
         coldata: ColocatedData,
         main_freq: str,
         regnames: dict,

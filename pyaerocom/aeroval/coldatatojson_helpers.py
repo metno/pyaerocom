@@ -1000,7 +1000,7 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
 
 def _process_map_and_scat(
-    data: dict[str, ColocatedData],
+    data: dict[str, ColocatedData | None],
     map_data: list[dict],
     site_indices: list[int],
     periods: list[str],
@@ -1018,20 +1018,22 @@ def _process_map_and_scat(
     stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     scat_data = {}
     scat_dummy = [np.nan]
-    new_map_data = deepcopy(map_data)
+    new_map_data: list[dict] = []
     for freq, cd in data.items():
         for per in periods:
             for season in seasons:
-                use_dummy = cd is None
-                if not use_dummy:
+                use_dummy = True
+                if cd is not None:
                     try:
                         subset = _select_period_season_coldata(
                             cd, per, season, use_meteorological_seasons
                         )
                         jsdate = subset.data.jsdate.values.tolist()
+                        use_dummy = False
                     except (DataCoverageError, TemporalResolutionError):
-                        use_dummy = True
-                for i, map_stat in zip(site_indices, new_map_data):
+                        pass
+
+                for i, map_stat in zip(site_indices, map_data):
                     if freq not in map_stat:
                         map_stat[freq] = {}
 
@@ -1108,6 +1110,8 @@ def _process_map_and_scat(
                             "date": jsdate,
                             "units": units,
                         }
+
+                    new_map_data.append(map_stat)
 
     return (new_map_data, scat_data)
 
@@ -1298,7 +1302,9 @@ def _calc_temporal_corr(coldata):
         return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
 
 
-def _select_period_season_coldata(coldata, period, season, use_meteorological_seasons):
+def _select_period_season_coldata(
+    coldata: ColocatedData, period: str, season: str, use_meteorological_seasons: bool
+):
     tslice = _period_str_to_timeslice(period)
     if use_meteorological_seasons and len(period) == 4 and season == "DJF":
         # relevant only for single years and DJF
