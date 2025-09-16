@@ -9,6 +9,8 @@ from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
 from attrs import define, field
 
+from pyaerocom.units.helpers import set_unit_overrides
+
 logger = logging.getLogger(__name__)
 
 
@@ -31,6 +33,7 @@ class HasConfig:
     avdb: aerovaldb.AerovalDB = field()
 
     def __init__(self, cfg: EvalSetup):
+        set_unit_overrides(cfg.units_cfg.units)
         self.cfg = cfg
         self.exp_output = ExperimentOutput(cfg)
         self.avdb = self.exp_output.avdb
