@@ -1000,24 +1000,25 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
 
 def _process_map_and_scat(
-    data,
-    map_data,
-    site_indices,
-    periods,
-    scatter_freq,
-    min_num,
-    seasons,
-    add_trends,
-    trends_min_yrs,
-    avg_over_trends,
-    use_fairmode,
-    obs_var,
-    drop_stats,
-    use_meteorological_seasons,
+    data: dict[str, ColocatedData],
+    map_data: list[dict],
+    site_indices: list[int],
+    periods: list[str],
+    scatter_freq: str,
+    min_num: int,
+    seasons: list[str],
+    add_trends: bool,
+    trends_min_yrs: int,
+    avg_over_trends: bool,
+    use_fairmode: bool,
+    obs_var: str,
+    drop_stats: tuple,
+    use_meteorological_seasons: bool,
 ):
     stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     scat_data = {}
     scat_dummy = [np.nan]
+    new_map_data = deepcopy(map_data)
     for freq, cd in data.items():
         for per in periods:
             for season in seasons:
@@ -1030,7 +1031,7 @@ def _process_map_and_scat(
                         jsdate = subset.data.jsdate.values.tolist()
                     except (DataCoverageError, TemporalResolutionError):
                         use_dummy = True
-                for i, map_stat in zip(site_indices, map_data):
+                for i, map_stat in zip(site_indices, new_map_data):
                     if freq not in map_stat:
                         map_stat[freq] = {}
 
@@ -1108,7 +1109,7 @@ def _process_map_and_scat(
                             "units": units,
                         }
 
-    return (map_data, scat_data)
+    return (new_map_data, scat_data)
 
 
 def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
