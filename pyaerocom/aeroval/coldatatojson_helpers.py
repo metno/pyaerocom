@@ -1000,36 +1000,39 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
 
 def _process_map_and_scat(
-    data,
-    map_data,
-    site_indices,
-    periods,
-    scatter_freq,
-    min_num,
-    seasons,
-    add_trends,
-    trends_min_yrs,
-    avg_over_trends,
-    use_fairmode,
-    obs_var,
-    drop_stats,
-    use_meteorological_seasons,
+    data: dict[str, ColocatedData | None],
+    map_data: list[dict],
+    site_indices: list[int],
+    periods: list[str],
+    scatter_freq: str,
+    min_num: int,
+    seasons: list[str],
+    add_trends: bool,
+    trends_min_yrs: int,
+    avg_over_trends: bool,
+    use_fairmode: bool,
+    obs_var: str,
+    drop_stats: tuple,
+    use_meteorological_seasons: bool,
 ):
     stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     scat_data = {}
     scat_dummy = [np.nan]
+    new_map_data: list[dict] = []
     for freq, cd in data.items():
         for per in periods:
             for season in seasons:
-                use_dummy = cd is None
-                if not use_dummy:
+                use_dummy = True
+                if cd is not None:
                     try:
                         subset = _select_period_season_coldata(
                             cd, per, season, use_meteorological_seasons
                         )
                         jsdate = subset.data.jsdate.values.tolist()
+                        use_dummy = False
                     except (DataCoverageError, TemporalResolutionError):
-                        use_dummy = True
+                        pass
+
                 for i, map_stat in zip(site_indices, map_data):
                     if freq not in map_stat:
                         map_stat[freq] = {}
@@ -1108,7 +1111,9 @@ def _process_map_and_scat(
                             "units": units,
                         }
 
-    return (map_data, scat_data)
+                    new_map_data.append(map_stat)
+
+    return (new_map_data, scat_data)
 
 
 def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
@@ -1297,7 +1302,9 @@ def _calc_temporal_corr(coldata):
         return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
 
 
-def _select_period_season_coldata(coldata, period, season, use_meteorological_seasons):
+def _select_period_season_coldata(
+    coldata: ColocatedData, period: str, season: str, use_meteorological_seasons: bool
+):
     tslice = _period_str_to_timeslice(period)
     if use_meteorological_seasons and len(period) == 4 and season == "DJF":
         # relevant only for single years and DJF
