@@ -220,6 +220,24 @@ def test_colocate_gridded_ungridded(
     assert np.nanmean(coldata.data.data[1]) == pytest.approx(modmean, rel=TEST_RTOL)
 
 
+def test_colocate_gridded_ungridded_split(cities_data, lcs_data):
+    mdata_split = GriddedDataContainer("split")
+    mdata_berlin = GriddedDataContainer("whole")
+
+    for tile in cities_data["EMEP_split"]:
+        mdata_split.add_griddeddata(tile)
+
+    mdata_berlin.add_griddeddata(cities_data["EMEP"][1])
+
+    coldata_split = colocate_gridded_ungridded(mdata_split, lcs_data)
+    coldata_berlin = colocate_gridded_ungridded(mdata_berlin, lcs_data)
+
+    assert len(coldata_split.data.station_name) == len(coldata_berlin.data.station_name)
+
+    assert np.nanmean(coldata_split.data.data[0]) == np.nanmean(coldata_berlin.data.data[0])
+    assert np.nanmean(coldata_split.data.data[1]) == np.nanmean(coldata_berlin.data.data[1])
+
+
 def test__get_stat_data(cities_data, lcs_data):
     from pyaerocom.units.datetime import to_pandas_timestamp
 

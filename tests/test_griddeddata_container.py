@@ -23,6 +23,7 @@ def test_fixture(cities_data):
     [
         "uEMEP",
         "EMEP",
+        "EMEP_split",
     ],
 )
 def test__initiate(cities_data, model):
