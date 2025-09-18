@@ -70,11 +70,7 @@ GLOBAL_CONFIG = dict(
     var_order_menu=[
         "conco3",
         "conco3mda8",
-        "concno2",
         "concpm10",
-        "concpm25",
-        "concso2",
-        "concco",
     ],
     min_num_obs=dict(
         # yearly=dict(monthly=9),
@@ -131,12 +127,8 @@ EEA_FILTER = {
 }
 
 species_list = [
-    "concno2",
-    "concco",
-    "conco3",
-    "concso2",
+    "conco3",    
     "concpm10",
-    "concpm25",
 ]
 
 

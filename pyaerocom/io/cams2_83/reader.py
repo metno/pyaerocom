@@ -23,30 +23,21 @@ This might have to be componsated for, with the filepath being for 3 days before
 """
 
 AEROCOM_NAMES = dict(
-    co_conc="concco",
-    no2_conc="concno2",
-    o3_conc="conco3",
-    pm10_conc="concpm10",
-    pm2p5_conc="concpm25",
-    so2_conc="concso2",
+    # SURF_ppb_O3="vmro3",
+    SURF_ug_O3="conco3",
+    SURF_ug_PM10_rh50="concpm10",
 )
 
 FULL_NAMES = dict(
-    co_conc="Carbon Monoxide",
-    no2_conc="Nitrogen Dioxide",
-    o3_conc="Ozone",
-    pm10_conc="PM10 Aerosol",
-    pm2p5_conc="PM2.5 Aerosol",
-    so2_conc="Sulphur Dioxide",
+    # SURF_ppb_O3="Ozone vmr",
+    SURF_ug_O3="Ozone",
+    SURF_ug_PM10_rh50="PM10 rh50",
 )
 
 STANDARD_NAMES = dict(
-    co_conc="mass_concentration_of_carbon_monoxide_in_air",
-    no2_conc="mass_concentration_of_nitrogen_dioxide_in_air",
-    o3_conc="mass_concentration_of_ozone_in_air",
-    pm10_conc="mass_concentration_of_pm10_ambient_aerosol_in_air",
-    pm2p5_conc="mass_concentration_of_pm2p5_ambient_aerosol_in_air",
-    so2_conc="mass_concentration_of_sulfur_dioxide_in_air",
+    # SURF_ppb_O3="volume_mixing_ratio_of_ozone_in_air",
+    SURF_ug_O3="mass_concentration_of_ozone_in_air",
+    SURF_ug_PM10_rh50="mass_concentration_of_pm10_rh50_in_air",
 )
 
 
@@ -132,7 +123,7 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
         ds = ds.interp(time=dateselect)
         ds = ds.sel(time=dateselect)
 
-    ds = ds.sel(level=0.0)
+    # ds = ds.sel(level=0.0)
     ds.time.attrs["long_name"] = "time"
     ds.time.attrs["standard_name"] = "time"
 
@@ -189,6 +180,7 @@ def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
         return ds.pipe(forecast_day, day=day).pipe(fix_missing_vars)
 
     ds = xr.open_mfdataset(paths, preprocess=preprocess, parallel=False, chunks={"time": 24})
+    ds = ds.rename(lon="longitude", lat="latitude")
     return ds.pipe(fix_coord).pipe(fix_names)
 
 
