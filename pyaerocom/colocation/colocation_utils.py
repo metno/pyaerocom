@@ -33,7 +33,6 @@ from pyaerocom.helpers import (
     isnumeric,
     make_datetime_index,
 )
-from pyaerocom.mathutils import in_range
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.units.datetime import TsType
 
@@ -794,8 +793,16 @@ def colocate_gridded_ungridded(
     # ungridded_lats = all_stats["latitude"]
 
     # Goes through each tile, gets lats/lons for stations in that tile, then finds obs and mod stat data for the tile
-    grid_stat_data, obs_stat_data = _get_stat_data(
-        start, stop, var_ref, tiles, xranges, yranges, proj, unsorted_obs_stat_data
+
+    grid_stat_data, obs_stat_data = _get_stat_data_vec(
+        start,
+        stop,
+        var_ref,
+        tiles,
+        xranges,
+        yranges,
+        proj,
+        unsorted_obs_stat_data,
     )
 
     pd_freq = col_tst.to_pandas_freq()
@@ -958,23 +965,50 @@ def colocate_gridded_ungridded(
     return coldata
 
 
-def _get_stat_data(start, stop, var_ref, tiles, xranges, yranges, proj, unsorted_obs_stat_data):
+def _get_stat_data_vec(
+    start,
+    stop,
+    var_ref,
+    tiles,
+    xranges,
+    yranges,
+    proj,
+    unsorted_obs_stat_data,
+) -> tuple[list[StationData], list[StationData]]:
+    obs_stat_pos = np.array(
+        [
+            [*proj(station.latitude, station.longitude), station.latitude, station.longitude]
+            for station in unsorted_obs_stat_data
+        ],
+    )
+
     obs_stat_data = []
     grid_stat_data = []
+
     for i, tile in enumerate(tiles):
         xrange = xranges[i]
         yrange = yranges[i]
 
-        obs_data, ungridded_lats, ungridded_lons = _get_obsstats_for_tiles(
-            unsorted_obs_stat_data, proj, xrange, yrange
-        )
+        found_id = np.where(
+            np.logical_and(
+                np.logical_and(obs_stat_pos[:, 0] >= xrange[0], obs_stat_pos[:, 0] < xrange[1]),
+                np.logical_and(obs_stat_pos[:, 1] >= yrange[0], obs_stat_pos[:, 1] < yrange[1]),
+            )
+        )[0]
+
+        found_stations = [unsorted_obs_stat_data[i] for i in found_id]
+
+        ungridded_lats = list(obs_stat_pos[found_id, 2])
+        ungridded_lons = list(obs_stat_pos[found_id, 3])
+
         if len(ungridded_lats) == 0:
             print(f"Could not find any stations for tile {tile.from_files}")
             logger.info(f"Could not find any stations for tile {tile.from_files}")
             continue
 
-        obs_stat_data += obs_data
         grid_stat_data += tile.to_time_series(longitude=ungridded_lons, latitude=ungridded_lats)
+
+        obs_stat_data += found_stations
 
     if len(obs_stat_data) == 0:
         raise VarNotAvailableError(
@@ -1094,26 +1128,3 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     coldata.data.attrs["Model_STP_corr"] = True
     coldata.data.attrs["Model_STP_corr_info"] = info_str
     return coldata
-
-
-def _get_obsstats_for_tiles(
-    obsstats: list[StationData],
-    projection,
-    xrange: list[tuple[float, float]],
-    yrange: list[tuple[float, float]],
-) -> tuple[list[StationData], list[float], list[float]]:
-    results = []
-    lats = []
-    lons = []
-    for station in obsstats:
-        lat = station.latitude
-        lon = station.longitude
-
-        x, y = projection(lat, lon)
-
-        if in_range(x, xrange[0], xrange[1]) and in_range(y, yrange[0], yrange[1]):
-            results.append(station)
-            lats.append(lat)
-            lons.append(lon)
-
-    return results, lats, lons

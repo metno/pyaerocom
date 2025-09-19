@@ -12,7 +12,7 @@ from pyaerocom.colocation.colocation_utils import (
     _regrid_gridded,
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
-    _get_stat_data,
+    _get_stat_data_vec,
 )
 from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.exceptions import UnresolvableTimeDefinitionError
@@ -277,8 +277,15 @@ def test__get_stat_data(cities_data, lcs_data):
 
     unsorted_obs_stat_data = all_stats["stats"]
 
-    grid_stat_data, obs_stat_data = _get_stat_data(
-        obs_start, obs_stop, var_ref, tiles, xranges, yranges, proj, unsorted_obs_stat_data
+    grid_stat_data, obs_stat_data = _get_stat_data_vec(
+        obs_start,
+        obs_stop,
+        var_ref,
+        tiles,
+        xranges,
+        yranges,
+        proj,
+        unsorted_obs_stat_data,
     )
 
     points_obs = [(stat["latitude"], stat["longitude"]) for stat in obs_stat_data]
