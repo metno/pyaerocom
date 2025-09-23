@@ -695,6 +695,8 @@ def colocate_gridded_ungridded(
         if none of the data points in input :class:`UngriddedDataContainer` matches
         the input colocation constraints
     """
+    if "obs_only" in kwargs:
+        kwargs.pop("obs_only")
     if filter_name is None:
         filter_name = const.DEFAULT_REG_FILTER
     if data.proj_info is None:
