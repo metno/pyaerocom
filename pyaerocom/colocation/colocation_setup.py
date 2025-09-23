@@ -318,6 +318,7 @@ class ColocationSetup(BaseModel):
     model_id: str | None
     obs_id: str | None
     obs_vars: tuple[str, ...] | str
+    obs_only: bool = False
 
     @field_validator("obs_vars")
     @classmethod

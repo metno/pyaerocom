@@ -1093,7 +1093,7 @@ class Colocator:
         )
         args = self._prepare_colocation_args(model_var, obs_var)
         args = self._check_dimensionality(args)
-        coldata = self._colocation_func(**args)
+        coldata = self._colocation_func(**args, obs_only=self.colocation_setup.obs_only)
 
         if isinstance(coldata, ColocatedData):
             coldata.data.attrs["model_name"] = self.get_model_name()

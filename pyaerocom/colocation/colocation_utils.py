@@ -71,7 +71,7 @@ def resolve_var_name(data: GriddedData) -> tuple[str, str]:
     return (var, vardef.var_name_aerocom)
 
 
-def _regrid_gridded(gridded, regrid_scheme: str, regrid_res_deg: RegridResDeg):
+def _regrid_gridded(gridded: GriddedData, regrid_scheme: str, regrid_res_deg: RegridResDeg):
     """
     Regrid instance of `GriddedData`
 
@@ -153,8 +153,8 @@ def _ensure_gridded_gridded_same_freq(data, data_ref, min_num_obs, resample_how)
 
 
 def colocate_gridded_gridded(
-    data,
-    data_ref,
+    data: GriddedData,
+    data_ref: GriddedData,
     ts_type=None,
     start=None,
     stop=None,
@@ -165,6 +165,7 @@ def colocate_gridded_gridded(
     min_num_obs=None,
     colocate_time=False,
     resample_how=None,
+    obs_only=False,
     **kwargs,
 ):
     """Colocate 2 gridded data objects
@@ -243,7 +244,7 @@ def colocate_gridded_gridded(
     if regrid_res_deg is not None:
         data_ref = _regrid_gridded(data_ref, regrid_scheme, regrid_res_deg)
     # perform regridding
-    if data.lon_res < data_ref.lon_res:  # obs has lower resolution
+    if obs_only or data.lon_res < data_ref.lon_res:  # obs has lower resolution
         data = data.regrid(data_ref, scheme=regrid_scheme)
     else:
         data_ref = data_ref.regrid(data, scheme=regrid_scheme)
