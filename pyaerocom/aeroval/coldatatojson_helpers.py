@@ -1034,6 +1034,7 @@ def _process_map_and_scat(
                         pass
 
                 for i, map_stat in zip(site_indices, map_data):
+                    map_stat = deepcopy(map_stat)
                     if freq not in map_stat:
                         map_stat[freq] = {}
 
