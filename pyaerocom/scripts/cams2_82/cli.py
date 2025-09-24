@@ -29,6 +29,7 @@ DEFAULT_EEA_PATH = Path("/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA
 DEFAULT_AERONET_PATH = Path("/lustre/storeB/users/danielh/cams282/src/")
 DEFAULT_OPENAQ_PATH = Path("/lustre/storeB/users/danielh/cams282/src/openaq/")
 DEFAULT_VPROFILES_PATH = Path("/lustre/storeB/project/fou/kl/v-profiles")
+VPROFILES_EXCLUDE_LIST = ["AP_0-20000-0-03808-C","AP_0-20000-0-07014-A","AP_0-20000-0-07110-A","AP_0-20000-0-07145-A","AP_0-20000-0-07606-A","AP_0-20000-0-07617-A","AP_0-20000-0-07774-A","AP_0-20000-0-78990-A","AP_0-20008-0-LAU-A","AP_0-203-10-LNG-A"]
 DEFAULT_MODEL_PATH = DATA_FOLDER_PATH
 
 
@@ -60,6 +61,9 @@ def vpro_subpaths(
         path = root_path / date.strftime(subpath)
         fpaths = path.glob(date.strftime(pattern))
         for p in fpaths: 
+            # exclude wigos IDs that belong to Mini-MPL and CL61 instruments, aka wrong wavelength
+            if any(wigosid in str(p) for wigosid in VPROFILES_EXCLUDE_LIST):
+                continue
             yield p.resolve()
 
 def make_config(
