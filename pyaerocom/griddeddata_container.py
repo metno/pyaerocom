@@ -194,7 +194,7 @@ class GriddedDataContainer:
         xranges = []
         yranges = []
         for data in self.children:
-            xrange, yrange = self._get_xyrange_child(data)
+            xrange, yrange = self._get_xyrange(data)
             if xrange is None or yrange is None:
                 raise ValueError(
                     f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
@@ -203,7 +203,8 @@ class GriddedDataContainer:
             yranges.append(yrange)
         return xranges, yranges
 
-    def _get_xyrange_child(self, child: GriddedData) -> tuple[tuple[float, float]] | tuple[None]:
+    @staticmethod
+    def _get_xyrange(child: GriddedData) -> tuple[tuple[float, float]] | tuple[None]:
         xrange = None
         yrange = None
         for coord in child.cube.dim_coords:
@@ -228,7 +229,7 @@ class GriddedDataContainer:
                 xrange = [np.min(longitude), np.max(longitude)]
                 yrange = [np.min(latitude), np.max(latitude)]
             else:
-                xrange, yrange = self._get_xyrange_child(data)
+                xrange, yrange = self._get_xyrange(data)
 
             if len(xrange) == 0 or len(yrange) == 0:
                 logger.warning(f"Tile {data.from_files} with no x and y range found")
@@ -407,22 +408,7 @@ class GriddedDataContainer:
                 print(f"Could not resample for grid from {data.from_files}")
                 logger.info(f"Could not resample for grid from {data.from_files}")
 
-        # sorted_list = self.sort_stationdatas_by_coords(sd_list, coords)
         return sd_list
-
-    def sort_stationdatas_by_coords(
-        self, sd: list[StationData], coords: dict[str, list[float]]
-    ) -> list[StationData]:
-        def coord_index(stationdata: StationData, points):
-            lat = float(stationdata["latitude"])
-            lon = float(stationdata["longitude"])
-
-            dists2 = [(point[0] - lat) ** 2 + (point[1] - lon) ** 2 for point in points]
-            return np.argmin(dists2)
-
-        points = [(lat, lon) for lat, lon in zip(coords["latitude"], coords["longitude"])]
-
-        return sorted(sd, key=lambda x: coord_index(x, points))
 
     def register_var_glob(self, delete_existing=True):  # pragma: no cover
         """

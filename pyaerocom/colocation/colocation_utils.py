@@ -788,7 +788,7 @@ def colocate_gridded_ungridded(
         **kwargs,
     )
 
-    unsorted_obs_stat_data = all_stats["stats"]
+    unsorted_obs_stat_data = np.array(all_stats["stats"], dtype=StationData)
     # ungridded_lons = all_stats["longitude"]
     # ungridded_lats = all_stats["latitude"]
 
@@ -977,9 +977,10 @@ def _get_stat_data_vec(
 ) -> tuple[list[StationData], list[StationData]]:
     obs_stat_pos = np.array(
         [
-            [*proj(station.latitude, station.longitude), station.latitude, station.longitude]
+            (*proj(station.latitude, station.longitude), station.latitude, station.longitude)
             for station in unsorted_obs_stat_data
         ],
+        np.dtype([("x", "f8"), ("y", "f8"), ("lat", "f8"), ("lon", "f8")]),
     )
 
     obs_stat_data = []
@@ -991,15 +992,15 @@ def _get_stat_data_vec(
 
         found_id = np.where(
             np.logical_and(
-                np.logical_and(obs_stat_pos[:, 0] >= xrange[0], obs_stat_pos[:, 0] < xrange[1]),
-                np.logical_and(obs_stat_pos[:, 1] >= yrange[0], obs_stat_pos[:, 1] < yrange[1]),
+                np.logical_and(obs_stat_pos["x"] >= xrange[0], obs_stat_pos["x"] <= xrange[1]),
+                np.logical_and(obs_stat_pos["y"] >= yrange[0], obs_stat_pos["y"] <= yrange[1]),
             )
         )[0]
 
         found_stations = [unsorted_obs_stat_data[i] for i in found_id]
 
-        ungridded_lats = list(obs_stat_pos[found_id, 2])
-        ungridded_lons = list(obs_stat_pos[found_id, 3])
+        ungridded_lats = obs_stat_pos["lat"][found_id]
+        ungridded_lons = obs_stat_pos["lon"][found_id]
 
         if len(ungridded_lats) == 0:
             print(f"Could not find any stations for tile {tile.from_files}")
