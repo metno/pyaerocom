@@ -210,10 +210,12 @@ class GriddedDataContainer:
         for coord in child.cube.dim_coords:
             if coord.var_name == child.proj_info.x_axis:
                 vals = coord.points
-                xrange = (np.min(vals), np.max(vals))
+                xrange = (vals[0], vals[-1])
+
             if coord.var_name == child.proj_info.y_axis:
                 vals = coord.points
-                yrange = (np.min(vals), np.max(vals))
+                yrange = (vals[0], vals[-1])
+
         return xrange, yrange
 
     def get_tiles(

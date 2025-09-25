@@ -788,7 +788,7 @@ def colocate_gridded_ungridded(
         **kwargs,
     )
 
-    unsorted_obs_stat_data = np.array(all_stats["stats"], dtype=StationData)
+    unsorted_obs_stat_data = all_stats["stats"]
     # ungridded_lons = all_stats["longitude"]
     # ungridded_lats = all_stats["latitude"]
 

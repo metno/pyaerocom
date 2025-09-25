@@ -95,6 +95,20 @@ def test_regrid(cities_data):
         assert child.lon_res == pytest.approx(lon_res, rel=1e-6)
 
 
+def test_get_tiles(cities_data):
+    data_id = "test_id"
+    mg = GriddedDataContainer(data_id)
+
+    for gd in cities_data["uEMEP"]:
+        mg.add_griddeddata(gd)
+
+    tiles, xranges, yranges = mg.get_tiles()
+
+    assert len(tiles) == 2
+    assert len(tiles) == len(xranges)
+    assert len(xranges) == len(yranges)
+
+
 # Tests for error handling
 
 

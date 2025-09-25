@@ -1022,10 +1022,14 @@ class GriddedData:
         for coord in self.cube.dim_coords:
             if coord.var_name == self.proj_info.x_axis:
                 vals = coord.points
-                xrange = (np.min(vals), np.max(vals))
+                xrange = (vals[0], vals[-1])
+
             if coord.var_name == self.proj_info.y_axis:
                 vals = coord.points
-                yrange = (np.min(vals), np.max(vals))
+                yrange = (vals[0], vals[-1])
+
+        if xrange[0] > xrange[1] or yrange[0] > yrange[1]:
+            raise ValueError(f"X or Y range had start bigger than end: {xrange=}, {yrange=}")
         if xrange is None or yrange is None:
             raise VariableDefinitionError(
                 f"x/y axis not found in cube: {self.proj_info.x_axis}, {self.proj_info.y_axis}"
@@ -1048,8 +1052,11 @@ class GriddedData:
 
         latitude = self.latitude.points
         longitude = self.longitude.points
-        lat_range = (np.min(latitude), np.max(latitude))
-        lon_range = (np.min(longitude), np.max(longitude))
+        lat_range = (latitude[0], latitude[-1])
+        lon_range = (longitude[0], longitude[-1])
+
+        if lat_range[0] > lat_range[1] or lon_range[0] > lon_range[1]:
+            raise ValueError(f"X or Y range had start bigger than end: {lat_range=}, {lon_range=}")
 
         if len(lon_range) == 0 or len(lat_range) == 0:
             raise ValueError("Failed to find lat or lon ranges")
