@@ -20,6 +20,7 @@ class ModelName(str, Enum):
     MONARCH = "monarch"
     SILAM = "silam"
     IFS = "ifs"
+    EMEPAI = "emepai"
 
     def __str__(self) -> str:
         return self.value
@@ -40,6 +41,7 @@ class ModelName(str, Enum):
             MONARCH="MONARCH",
             SILAM="SILAM",
             IFS="IFS",
+            EMEPAI="EMEPAI",
         )[self.name]
 
 

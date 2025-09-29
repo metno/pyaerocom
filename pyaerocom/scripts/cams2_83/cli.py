@@ -64,6 +64,8 @@ def make_config(
     fairmode: bool,
     medianscores: bool,
     useanalysisobsset: bool,
+    ai_model_path: Path,
+    add_ai_model: bool,
 ) -> dict:
     logger.info("Making the configuration")
 
@@ -87,6 +89,18 @@ def make_config(
         json_basedir=str(data_path),
         coldata_basedir=str(coldata_path),
     )
+
+    if add_ai_model:
+        cfg["model_cfg"].update(
+            EMEPAI=make_model_entry(
+                start_date,
+                end_date,
+                leap,
+                ai_model_path,
+                ModelName.EMEPAI,
+                run_type=run_type,
+            )
+        )
 
     if eval_type is not None:
         eval_type.check_dates(start_date, end_date)
@@ -145,6 +159,9 @@ def main(
     model_path: Path = typer.Option(
         DEFAULT_MODEL_PATH, exists=True, readable=True, help="path to model data"
     ),
+    ai_model_path: Path = typer.Option(
+        DEFAULT_MODEL_PATH, exists=True, readable=True, help="path to ai model data"
+    ),
     obs_path: Path = typer.Option(
         DEFAULT_OBS_PATH, exists=True, readable=True, help="path to observation data"
     ),
@@ -173,6 +190,7 @@ def main(
     name: str = typer.Option(CFG["exp_name"], help="experiment name"),
     description: str = typer.Option(CFG["exp_descr"], help="experiment description"),
     add_map: bool = typer.Option(False, "--addmap", help="set add_model_maps"),
+    add_ai_model: bool = typer.Option(False, "--add_ai_model", help="set add_ai_model"),
     only_map: bool = typer.Option(
         False, "--onlymap", help="set add_model_maps and only_model_maps"
     ),
@@ -230,6 +248,8 @@ def main(
         fairmode,
         medianscores,
         useanalysisobsset,
+        ai_model_path,
+        add_ai_model
     )
 
     # we do not want the cache produced in previous runs to be silently cleared
