@@ -6,6 +6,20 @@ from pathlib import Path
 from typing import NamedTuple
 
 
+class AiModelName(str, Enum):
+    EMEPAI = "emepai"
+    EMEPAIREANALYSIS = "emepaireanalysis"#"emepairenalysis"
+
+    def __str__(self) -> str:
+        return self.value
+    
+    @property
+    def webname(self) -> str:
+        return dict(
+            EMEPAI="EMEPAI",
+            EMEPAIREANALYSIS="EMEPAI-Reanalysis"
+        )[self.name]
+
 class ModelName(str, Enum):
     ENSEMBLE = "ensemble"
     CHIMERE = "chimere"
@@ -41,7 +55,6 @@ class ModelName(str, Enum):
             MONARCH="MONARCH",
             SILAM="SILAM",
             IFS="IFS",
-            EMEPAI="EMEPAI",
         )[self.name]
 
 
@@ -58,7 +71,7 @@ class RunType(str, Enum):
 
 
 class ModelData(NamedTuple):
-    name: ModelName
+    name: ModelName | AiModelName
     run: RunType
     date: date = date.today()
     root: Path = Path.cwd()
@@ -71,12 +84,14 @@ class ModelData(NamedTuple):
         return self.root / self.date.strftime(f"%Y%m/%Y%m%d_{self.name}_{self.run}.nc")
 
     @classmethod
-    def frompath(cls, path: str | Path) -> ModelData:
+    def frompath(cls, path: str | Path) -> ModelData | AiModelName:
         if isinstance(path, str):
             path = Path(path)
         date, name, run = path.stem.split("_")
+
+        model = ModelName(name) if name in ModelName else AiModelName(name)
         return cls(
-            ModelName(name),
+            model,
             RunType(run),
             datetime.strptime(date, "%Y%m%d").date(),
             path.parents[1],

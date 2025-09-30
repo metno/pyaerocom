@@ -10,7 +10,7 @@ from typing import Optional
 import typer
 
 from pyaerocom import change_verbosity, const
-from pyaerocom.io.cams2_83.models import ModelName, RunType
+from pyaerocom.io.cams2_83.models import ModelName, RunType, AiModelName
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
@@ -66,6 +66,7 @@ def make_config(
     useanalysisobsset: bool,
     ai_model_path: Path,
     add_ai_model: bool,
+    ai_reanalysis_path: Path | None,
 ) -> dict:
     logger.info("Making the configuration")
 
@@ -91,16 +92,28 @@ def make_config(
     )
 
     if add_ai_model:
+        if ai_reanalysis_path is not None:
+            cfg["model_cfg"].update(
+                AIREANALYSIS=make_model_entry(
+                    start_date,
+                    end_date,
+                    leap,
+                    ai_reanalysis_path,
+                    AiModelName.EMEPAIREANALYSIS,
+                    run_type=run_type,
+                )
+            )
         cfg["model_cfg"].update(
             EMEPAI=make_model_entry(
                 start_date,
                 end_date,
                 leap,
                 ai_model_path,
-                ModelName.EMEPAI,
+                AiModelName.EMEPAI,
                 run_type=run_type,
             )
         )
+        
 
     if eval_type is not None:
         eval_type.check_dates(start_date, end_date)
@@ -161,6 +174,9 @@ def main(
     ),
     ai_model_path: Path = typer.Option(
         DEFAULT_MODEL_PATH, exists=True, readable=True, help="path to ai model data"
+    ),
+    ai_reanalysis_path: Path = typer.Option(
+        None, exists=True, readable=True, help="path to ai model reanalysis data"
     ),
     obs_path: Path = typer.Option(
         DEFAULT_OBS_PATH, exists=True, readable=True, help="path to observation data"
@@ -249,7 +265,8 @@ def main(
         medianscores,
         useanalysisobsset,
         ai_model_path,
-        add_ai_model
+        add_ai_model,
+        ai_reanalysis_path
     )
 
     # we do not want the cache produced in previous runs to be silently cleared

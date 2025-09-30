@@ -12,7 +12,7 @@ import xarray as xr
 from tqdm import tqdm
 
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.io.cams2_83.models import ModelData, ModelName, RunType
+from pyaerocom.io.cams2_83.models import ModelData, ModelName, RunType, AiModelName
 from pyaerocom.io.gridded_reader import GriddedReader
 
 """
@@ -60,14 +60,21 @@ logger = logging.getLogger(__name__)
 
 
 def __model_path(
-    name: str | ModelName,
+    name: str | ModelName | AiModelName,
     date: str | date | datetime,
     *,
     root_path: Path | str,
     run: str | RunType,
 ) -> Path:
-    if not isinstance(name, ModelName):
-        name = ModelName[name]
+    
+    if not isinstance(name, ModelName) and not isinstance(name, AiModelName):
+        if name in ModelName.__members__:
+            name = ModelName[name]
+        elif name in AiModelName.__members__:
+            name = AiModelName[name]
+        else:
+            raise ValueError(f"Model {name} is not a supported model")
+            
     if isinstance(date, str):
         date = datetime.strptime(date, "%Y%m%d").date()
     if isinstance(date, datetime):
@@ -80,7 +87,7 @@ def __model_path(
 
 
 def model_paths(
-    model: str | ModelName,
+    model: str | ModelName | AiModelName,
     *dates: datetime | date | str,
     root_path: Path | str = DATA_FOLDER_PATH,
     run: str | RunType = RunType.FC,
@@ -132,7 +139,10 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
         ds = ds.interp(time=dateselect)
         ds = ds.sel(time=dateselect)
 
-    ds = ds.sel(level=0.0)
+    try:
+        ds = ds.sel(level=0.0)
+    except:
+        ds = ds.isel(level=0)
     ds.time.attrs["long_name"] = "time"
     ds.time.attrs["standard_name"] = "time"
 
@@ -230,7 +240,7 @@ class ReadCAMS2_83(GriddedReader):
         self._filedata: xr.Dataset | None = None
         self._filepaths: list[Path] | None = None
         self._data_dir: Path | None = None
-        self._model: ModelName | None = None
+        self._model: ModelName | AiModelName | None = None
         self._forecast_day: int | None = None
         self._data_id: str | None = None
         self._daterange: pd.DatetimeIndex | None = None
@@ -286,7 +296,12 @@ class ReadCAMS2_83(GriddedReader):
 
         model, day, run_type = match.groups()
         self.run_type = RunType[run_type]
-        self.model = ModelName[model]
+        if model in ModelName.__members__:
+            self.model = ModelName[model]
+        elif model in AiModelName.__members__:
+            self.model = AiModelName[model]
+        else:
+            raise ValueError(f"Model {model} is not a supported model")
         self.forecast_day = int(day)
 
     @property
@@ -366,8 +381,13 @@ class ReadCAMS2_83(GriddedReader):
 
     @model.setter
     def model(self, val: str | ModelName):
-        if not isinstance(val, ModelName):
-            val = ModelName(val)
+        if not isinstance(val, ModelName) and not isinstance(val, AiModelName):
+            if val in ModelName.__members__:
+                val = ModelName(val)
+            elif val in AiModelName.__members__:
+                val = AiModelName(val)
+            else:
+                raise ValueError(f"Model {val} is not a supported model")            
         self._model = val
         self._filedata = None
 
