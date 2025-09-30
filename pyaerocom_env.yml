@@ -17,7 +17,7 @@ dependencies:
   - requests
   - tqdm
   - openpyxl
-  - typer >=0.7.0
+  - typer >=0.19.2
   - pydantic ~= 2.7
   - pyproj >= 3.0.0
   - pooch >=1.7.0
