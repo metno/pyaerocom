@@ -40,7 +40,7 @@ dependencies = [
     "geocoder_reverse_natural_earth",
     "tqdm",
     "openpyxl",
-    "typer>=0.19.2",
+    "typer>=0.7.0",
     # python < 3.11
     'tomli>=2.0.1; python_version < "3.11"',
     'importlib-resources>=5.10; python_version < "3.11"',
@@ -239,7 +239,7 @@ deps =
     numpy ==1.25.0; python_version < "3.11"
     seaborn ==0.12.2; python_version < "3.11"
     geonum ==1.5.0; python_version < "3.11"
-    typer ==0.19.2; python_version < "3.11"
+    typer ==0.7.0; python_version < "3.11"
     tomli ==2.0.1; python_version < "3.11"
     importlib-resources ==5.10; python_version < "3.11"
     typing-extensions ==4.6.1; python_version < "3.11"
