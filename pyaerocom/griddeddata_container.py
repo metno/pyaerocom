@@ -205,6 +205,19 @@ class GriddedDataContainer:
 
     @staticmethod
     def _get_xyrange(child: GriddedData) -> tuple[tuple[float, float]] | tuple[None]:
+        """
+        Finds the range of the axis. Done by taking first and last point in each dimension.
+        This might be the middle point of the bounding cells
+
+        Parameters:
+        child : GriddedData
+            The GriddedData to find the ranges
+
+        Returns:
+        tuple[tuple[float, float]]
+            Tuple of the ranges
+
+        """
         xrange = None
         yrange = None
         for coord in child.cube.dim_coords:

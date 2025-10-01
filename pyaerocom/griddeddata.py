@@ -531,7 +531,7 @@ class GriddedData:
             raise AttributeError("Data does not contain longitude information")
         vals = np.diff(self.longitude.points)
         val = vals.mean()
-        if vals.std() / val > 0.1:  # NOTE: Increased from 0.0001
+        if vals.std() / val > 0.0001:  # NOTE: Increased from 0.0001
             raise ValueError("Check longitudes")
         return val
 
@@ -541,7 +541,7 @@ class GriddedData:
             raise AttributeError("Data does not contain longitude information")
         vals = np.diff(self.latitude.points)
         val = vals.mean()
-        if vals.std() / val > 0.1:  # NOTE: Increased from 0.0001
+        if vals.std() / val > 0.0001:  # NOTE: Increased from 0.0001
             raise ValueError("Check latitudes")
         return val
 
@@ -995,7 +995,8 @@ class GriddedData:
 
     def get_xyranges(self) -> tuple[list[tuple[float, float]]]:
         """
-        Finds the max/min ranges for x and y
+        Finds the max/min ranges for x and y. Done by taking first and last point in each dimension.
+        This might be the middle point of the bounding cells
 
 
         Returns

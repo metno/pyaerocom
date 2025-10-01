@@ -999,13 +999,13 @@ def _get_stat_data_vec(
 
         found_stations = [unsorted_obs_stat_data[i] for i in found_id]
 
-        ungridded_lats = obs_stat_pos["lat"][found_id]
-        ungridded_lons = obs_stat_pos["lon"][found_id]
-
-        if len(ungridded_lats) == 0:
+        if len(found_stations) == 0:
             print(f"Could not find any stations for tile {tile.from_files}")
             logger.info(f"Could not find any stations for tile {tile.from_files}")
             continue
+
+        ungridded_lats = obs_stat_pos["lat"][found_id]
+        ungridded_lons = obs_stat_pos["lon"][found_id]
 
         grid_stat_data += tile.to_time_series(longitude=ungridded_lons, latitude=ungridded_lats)
 
