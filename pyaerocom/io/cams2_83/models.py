@@ -32,7 +32,6 @@ class ModelName(str, Enum):
     MONARCH = "monarch"
     SILAM = "silam"
     IFS = "ifs"
-    EMEPAI = "emepai"
 
     def __str__(self) -> str:
         return self.value

@@ -18,7 +18,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
 )
 from pyaerocom.aeroval.fairmode_statistics import SPECIES, FairmodeStatistics
 from pyaerocom.exceptions import DataCoverageError, UnknownRegion
-from pyaerocom.io.cams2_83.models import ModelName
+from pyaerocom.io.cams2_83.models import ModelName, AiModelName
 from pyaerocom.units.datetime import TsType
 
 logger = logging.getLogger(__name__)
@@ -114,12 +114,19 @@ class CAMS2_83_Engine(ProcessingEngine):
         # we do not want them added to the ModelName class
         # so we need a bunch of ugly special cases here
         modelname = coldata[0].model_name.split("-")[2]
+        
         if modelname == "ENS" or modelname == "MOS":
             model = modelname
         else:
-            model = ModelName[modelname]
+            if modelname in ModelName.__members__:
+                model = ModelName[modelname]
+            elif modelname in AiModelName.__members__:
+                model = AiModelName[modelname]
+            else:
+                raise ValueError(f"Unknow model {modelname}")
         vert_code = coldata[0].get_meta_item("vert_code")
         obs_name = coldata[0].obs_name
+        
         if modelname == "ENS" or modelname == "MOS":  # MOS/ENS evaluation special case
             mcfg = self.cfg.model_cfg.get_entry(modelname)
         else:
