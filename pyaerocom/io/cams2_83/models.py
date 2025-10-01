@@ -85,8 +85,7 @@ class ModelData(NamedTuple):
         if isinstance(path, str):
             path = Path(path)
         date, name, run = path.stem.split("_")
-
-        model = ModelName(name) if name in ModelName else AiModelName(name)
+        model = ModelName(name) if name in [i.value for i in ModelName] else AiModelName(name)
         return cls(
             model,
             RunType(run),
