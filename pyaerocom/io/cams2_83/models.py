@@ -8,17 +8,15 @@ from typing import NamedTuple
 
 class AiModelName(str, Enum):
     EMEPAI = "emepai"
-    EMEPAIREANALYSIS = "emepaireanalysis"#"emepairenalysis"
+    EMEPAIREANALYSIS = "emepaireanalysis"  # "emepairenalysis"
 
     def __str__(self) -> str:
         return self.value
-    
+
     @property
     def webname(self) -> str:
-        return dict(
-            EMEPAI="EMEPAI",
-            EMEPAIREANALYSIS="EMEPAI-Reanalysis"
-        )[self.name]
+        return dict(EMEPAI="EMEPAI", EMEPAIREANALYSIS="EMEPAI-Reanalysis")[self.name]
+
 
 class ModelName(str, Enum):
     ENSEMBLE = "ensemble"

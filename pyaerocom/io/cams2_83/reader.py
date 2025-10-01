@@ -66,7 +66,6 @@ def __model_path(
     root_path: Path | str,
     run: str | RunType,
 ) -> Path:
-    
     if not isinstance(name, ModelName) and not isinstance(name, AiModelName):
         if name in ModelName.__members__:
             name = ModelName[name]
@@ -74,7 +73,7 @@ def __model_path(
             name = AiModelName[name]
         else:
             raise ValueError(f"Model {name} is not a supported model")
-            
+
     if isinstance(date, str):
         date = datetime.strptime(date, "%Y%m%d").date()
     if isinstance(date, datetime):
@@ -387,7 +386,7 @@ class ReadCAMS2_83(GriddedReader):
             elif val in AiModelName.__members__:
                 val = AiModelName(val)
             else:
-                raise ValueError(f"Model {val} is not a supported model")            
+                raise ValueError(f"Model {val} is not a supported model")
         self._model = val
         self._filedata = None
 

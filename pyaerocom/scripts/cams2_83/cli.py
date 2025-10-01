@@ -6,6 +6,7 @@ from copy import deepcopy
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Optional
+import yaml
 
 import typer
 
@@ -67,6 +68,7 @@ def make_config(
     ai_model_path: Path,
     add_ai_model: bool,
     ai_reanalysis_path: Path | None,
+    update_config: Path | None,
 ) -> dict:
     logger.info("Making the configuration")
 
@@ -153,6 +155,12 @@ def make_config(
         else:
             cfg.update(use_fairmode=True)
 
+    
+    if update_config is not None and update_config.exists():
+        with open(update_config, "r") as f:
+            cfg_part = yaml.load(f, Loader=yaml.Loader)
+
+        cfg.update(cfg_part)
     return cfg
 
 
@@ -207,6 +215,9 @@ def main(
     description: str = typer.Option(CFG["exp_descr"], help="experiment description"),
     add_map: bool = typer.Option(False, "--addmap", help="set add_model_maps"),
     add_ai_model: bool = typer.Option(False, "--add_ai_model", help="set add_ai_model"),
+    update_config: Path = typer.Option(
+        None, exists=True, readable=True, help="path to extra config, in form of yaml"
+    ),
     only_map: bool = typer.Option(
         False, "--onlymap", help="set add_model_maps and only_model_maps"
     ),
@@ -266,7 +277,8 @@ def main(
         useanalysisobsset,
         ai_model_path,
         add_ai_model,
-        ai_reanalysis_path
+        ai_reanalysis_path,
+        update_config
     )
 
     # we do not want the cache produced in previous runs to be silently cleared
