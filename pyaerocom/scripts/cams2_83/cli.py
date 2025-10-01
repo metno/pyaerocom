@@ -96,12 +96,12 @@ def make_config(
     if add_ai_model:
         if ai_reanalysis_path is not None:
             cfg["model_cfg"].update(
-                AIREANALYSIS=make_model_entry(
+                EMEPVRA=make_model_entry(
                     start_date,
                     end_date,
                     leap,
                     ai_reanalysis_path,
-                    AiModelName.EMEPAIREANALYSIS,
+                    AiModelName.EMEPVRA,
                     run_type=run_type,
                 )
             )
