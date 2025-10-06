@@ -233,7 +233,22 @@ class GriddedDataContainer:
 
     def get_tiles(
         self,
-    ) -> tuple[GriddedData, list[tuple[float, float]], list[tuple[float, float]]]:
+    ) -> tuple[list[GriddedData], list[tuple[float, float]], list[tuple[float, float]]]:
+        """
+        Makes a list of available tiles, and lists of x- and yranges for said tiles
+
+
+        Returns:
+        list[GriddedData]
+            list of tiles
+
+        tuple[tuple[float, float]]
+            list of the xranges
+
+        tuple[tuple[float, float]]
+            list of the yranges
+
+        """
         tiles = []
         xranges = []
         yranges = []
@@ -364,66 +379,9 @@ class GriddedDataContainer:
         use_iris=False,
         **coords,
     ) -> list[StationData]:
-        """Extract time-series for provided input coordinates (lon, lat)
-
-        Tries to apply to_time_series on all children, then makes list of all returned stations data.
-
-        See function in GriddedData for more info
-
-
-        Parameters
-        ----------
-        sample_points : list
-            coordinates (e.g. lon / lat) at which time series is supposed to be
-            retrieved
-        scheme : str or iris interpolator object
-            interpolation scheme (for details, see :func:`interpolate`)
-        vert_scheme : str
-            string specifying how to treat vertical coordinates. This is only
-            relevant for data that contains vertical levels. It will be ignored
-            otherwise. Note that if the input coordinate specifications contain
-            altitude information, this parameter will be set automatically to
-            'altitude'. Allowed inputs are all data collapse schemes that
-            are supported by :func:`pyaerocom.helpers.str_to_iris` (e.g. `mean,
-            median, sum`). Further valid schemes are `altitude, surface,
-            profile`.
-            If not other specified and if `altitude` coordinates are provided
-            via sample_points (or **coords parameters) then, vert_scheme will
-            be set to `altitude`. Else, `profile` is used.
-        add_meta : dict, optional
-            dictionary specifying additional metadata for individual input
-            coordinates. Keys are meta attribute names (e.g. station_name)
-            and corresponding values are lists (with length of input coords)
-            or single entries that are supposed to be assigned to each station.
-            E.g. `add_meta=dict(station_name=[<list_of_station_names>])`).
-        **coords
-            additional keyword args that may be used to provide the interpolation
-            coordinates (for details, see :func:`interpolate`)
-
-        Returns
-        -------
-        list
-            list of result dictionaries for each coordinate. Dictionary keys
-            are: ``longitude, latitude, var_name``
-
-        """
-
-        if len(self.children) > 1:
-            logger.warning(
-                "This function might not return the stationdatas in the same order as the ungridded data"
-            )
-        sd_list = []
-
-        for data in self.children:
-            try:
-                sd_list += data.to_time_series(
-                    sample_points, scheme, vert_scheme, add_meta, use_iris, **coords
-                )
-            except DataCoverageError:
-                print(f"Could not resample for grid from {data.from_files}")
-                logger.info(f"Could not resample for grid from {data.from_files}")
-
-        return sd_list
+        raise NotImplementedError(
+            "to_time_series is not implemented for this container, due to problems with sorting returned stationdata (compared with the stations datas of the obs)"
+        )
 
     def register_var_glob(self, delete_existing=True):  # pragma: no cover
         """
