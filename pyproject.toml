@@ -25,7 +25,7 @@ dependencies = [
     # NOTE: Please also update dependency versions in pyaerocom_env.yml,
     # and minimum versions in the tox config at the bottom of this file!
     "aerovaldb>=0.5.0, < 0.6.0",
-    "scitools-iris>=3.11.0, < 3.13.0",
+    "scitools-iris>=3.11.0",
     "xarray>=2022.12.0",
     "cartopy>=0.21.1",
     "matplotlib>=3.7.1",
@@ -123,6 +123,7 @@ filterwarnings = [
     'ignore::DeprecationWarning:^(?!pyaerocom|tests).*:',
     'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
     'ignore::FutureWarning:^(?!xarray).*:',
+    'ignore::iris.warnings.IrisLoadWarning:^(?!pyaerocom|tests).*', # https://github.com/metno/pyaerocom/issues/1710
     # and not on this list
     "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:", # Issue #1394
 ]
@@ -240,6 +241,7 @@ deps =
     seaborn ==0.12.2; python_version < "3.11"
     geonum ==1.5.0; python_version < "3.11"
     typer ==0.7.0; python_version < "3.11"
+    click ==8.1.0; python_version < "3.11"
     tomli ==2.0.1; python_version < "3.11"
     importlib-resources ==5.10; python_version < "3.11"
     typing-extensions ==4.6.1; python_version < "3.11"
