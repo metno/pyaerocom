@@ -618,7 +618,7 @@ class GriddedData:
             if val == 1:
                 self.metadata["ts_type"] = ts_type
                 return ts_type
-        raise AttributeError("Failed to infer ts_type from data")
+        raise AttributeError("Failed to infer ts_type from data 🚫")
 
     def change_base_year(self, new_year, inplace=True):
         """
@@ -674,7 +674,7 @@ class GriddedData:
 
             self.update_meta(**get_metadata_from_filename(input))
         except Exception:
-            logger.warning("Failed to access metadata from filename")
+            logger.warning("Failed to access metadata from filename 🚫")
 
     def register_var_glob(self, delete_existing=True):
         vmin, vmax = self.estimate_value_range_from_data()
@@ -731,13 +731,15 @@ class GriddedData:
         elif isinstance(input, str) and os.path.exists(input):
             self._read_netcdf(input, var_name, perform_fmt_checks)
         else:
-            raise ValueError(f"Failed to load input: {input}")
+            raise ValueError(f"Failed to load input: {input} 🚫")
 
         if var_name is not None and self.var_name != var_name:
             try:
                 self.var_name = var_name
             except ValueError:
-                logger.warning(f"Could not update var_name, invalid input {var_name} (need str)")
+                logger.warning(
+                    f"Could not update var_name, invalid input {var_name} (need str) ❌"
+                )
 
     def _check_invalid_unit_alias(self):
         """Check for units that have been invalidated by iris
@@ -785,7 +787,7 @@ class GriddedData:
             elif to_unit.convert(1, current_unit) == 1:
                 self.units = to_unit_str
                 logger.info(
-                    f"Updating unit string from {current_unit} to {to_unit_str} in GriddedData."
+                    f"Updating unit string from {current_unit} to {to_unit_str} in GriddedData. 🔧"
                 )
                 unit_ok = True
         except (VariableDefinitionError, ValueError):
@@ -794,7 +796,7 @@ class GriddedData:
         if not unit_ok and try_convert_if_wrong and isinstance(to_unit_str, str):
             logger.warning(
                 f"Unit {self.units} in GriddedData {self.short_str()} is not "
-                f"AeroCom conform ({to_unit_str}). Trying to convert ... "
+                f"AeroCom conform ({to_unit_str}). Trying to convert ... 🔄"
             )
             if self.var_info.units == "1" and self.units.is_unknown():
                 self.units = "1"
@@ -805,7 +807,7 @@ class GriddedData:
                     unit_ok = True
                 except Exception as e:
                     logger.warning(
-                        f"Failed to convert unit from {self.units} to {to_unit_str}. Reason: {e}"
+                        f"Failed to convert unit from {self.units} to {to_unit_str}. Reason: {e} ❌"
                     )
 
         return unit_ok
@@ -1129,7 +1131,7 @@ class GriddedData:
             t0 = time()
             logger.info(
                 f"Extracting timeseries data from large array (shape: {self.shape}). "
-                f"This may take a while..."
+                f"This may take a while... ⏳"
             )
 
         # if the method makes it to this point, it is 3 or 4 dimensional
@@ -1147,7 +1149,7 @@ class GriddedData:
                 result = self._to_time_series_xarray(scheme=scheme, add_meta=add_meta, **coords)
             if pinfo:
                 logger.info(
-                    f"Time series extraction successful. Elapsed time: {time() - t0:.0f} s"
+                    f"Time series extraction successful. Elapsed time: {time() - t0:.0f} s 🟢"
                 )
             return result
 
@@ -1275,7 +1277,7 @@ class GriddedData:
             are: ``longitude, latitude, var_name``
         """
         if self.ndim != 3:
-            raise Exception("Developers: Debug! Users: please contact developers :)")
+            raise Exception("Developers: Debug! Users: please contact developers 🤠")
 
         data = self.interpolate(sample_points, scheme, collapse_scalar)
         var = self.var_name
@@ -2615,7 +2617,7 @@ class GriddedData:
             if key == "var_name" and not isinstance(val, str):
                 logger.warning(
                     f"Skipping assignment of var_name from metadata in GriddedData, "
-                    f"since attr. needs to be str and is {val}"
+                    f"since attr. needs to be str and is {val} ⏭️"
                 )
             else:
                 self._grid.attributes[key] = val

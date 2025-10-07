@@ -1,3 +1,4 @@
+from __future__ import annotations
 import configparser
 import getpass
 import logging
@@ -5,6 +6,7 @@ import os
 
 from pathlib import Path
 from datetime import datetime
+from typing import Any
 
 import numpy as np
 
@@ -22,10 +24,16 @@ from pyaerocom.region_defs import ALL_REGION_NAME, HTAP_REGIONS, OLD_AEROCOM_REG
 from pyaerocom.varcollection import VarCollection
 from pyaerocom.variable import Variable
 
+import typing
+
+if typing.TYPE_CHECKING:
+    # Working around circular import.
+    from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+
 logger = logging.getLogger(__name__)
 
 
-class Config:
+class ConfigReader:
     """Class containing relevant paths for read and write routines
 
     A loaded instance of this class is created on import of pyaerocom and
@@ -33,6 +41,10 @@ class Config:
 
     TODO: provide more information
     """
+
+    # Keep record of instance for singleton pattern.
+    # Should not be accessed directly. Instead use Config.get_instance()
+    _instance: ConfigReader | None = None
 
     # NAMES
     # default names of the different obs networks
@@ -194,8 +206,8 @@ class Config:
         self._filtermaskdir = None
         self._local_tmp_dir = None
         self._downloaddatadir = None
-        self._confirmed_access = []
-        self._rejected_access = []
+        self._confirmed_access = set()
+        self._rejected_access = set()
 
         # Options
         self._caching_active = True
@@ -244,7 +256,7 @@ class Config:
             elif not config_file.endswith("ini"):
                 raise ValueError("Need path to an ini file for input config_file")
 
-            basedir, config_file = os.path.split(config_file)
+            _, config_file = os.path.split(config_file)
         elif try_infer_environment:
             try:
                 config_file = self.infer_config()
@@ -261,7 +273,7 @@ class Config:
         # create MyPyaerocom directory
         chk_make_subdir(self.HOMEDIR, self._outhomename)
 
-    def _check_access(self, loc, timeout=None):
+    def _check_access(self, loc: str | os.PathLike | None) -> bool:
         """Uses multiprocessing approach to check if location can be accessed
 
         Parameters
@@ -284,24 +296,13 @@ class Config:
 
         logger.info(f"Checking access to: {loc}")
         if check_dir_access(loc):
-            self._confirmed_access.append(loc)
+            self._confirmed_access.add(loc)
             return True
-        self._rejected_access.append(loc)
+        self._rejected_access.add(loc)
         return False
 
-    def _basedirs_search_db(self):
+    def _basedirs_search_db(self) -> list[str]:
         return [self.ROOTDIR, self.HOMEDIR]
-
-    def _infer_config_from_basedir(self, basedir):
-        basedir = os.path.normpath(basedir)
-        for env_id, chk_sub in self._check_subdirs_cfg.items():
-            chkdir = os.path.join(basedir, chk_sub)
-            if self._check_access(chkdir):
-                return (self._config_files[env_id], env_id)
-
-        raise FileNotFoundError(
-            f"Could not infer environment configuration for input directory: {basedir}"
-        )
 
     def infer_config(self):
         """
@@ -326,7 +327,9 @@ class Config:
 
         return self._paths_ini
 
-    def update_config_ini_file(self, user_file: str, default_file: str):
+    def update_config_ini_file(
+        self, user_file: str | os.PathLike, default_file: str | os.PathLike
+    ):
         """
         helper method that puts new keys from the default ini file into the user specific ini file
         below the path ~/MyPyaerocom
@@ -362,7 +365,9 @@ class Config:
         extra_user_keys = user_keys - default_keys
 
         if missing_default_keys or extra_user_keys:
-            backup_file_name = user_file + ".backup" + datetime.today().strftime("%Y%m%d%H%M%S")
+            backup_file_name = (
+                str(user_file) + ".backup" + datetime.today().strftime("%Y%m%d%H%M%S")
+            )
             # try to make this fail save
             try:
                 os.rename(user_file, backup_file_name)
@@ -407,9 +412,9 @@ class Config:
 
             try:
                 with open(user_file, "w") as fh:
-                    fh.write(user_file)
+                    fh.write(str(user_file))
                 logger.info(
-                    f"update of file {user_file} was successful. The original file was retained as {backup_file_name}, You might want to check paths for validity."
+                    f"Update of file {user_file} was successful. The original file was retained as {backup_file_name}, You might want to check paths for validity."
                 )
             except BaseException:
                 logger.warning(f"Failed to write user file: {user_file}. Undoing changes.")
@@ -436,29 +441,12 @@ class Config:
         self._var_param = None
 
     @property
-    def has_access_users_database(self):
-        chk_dir = self._check_subdirs_cfg["users-db"]
-        chk_paths = [
-            os.path.join("/metno/aerocom_users_database/", chk_dir),
-            os.path.join(self.HOMEDIR, "/aerocom_users_database/", chk_dir),
-        ]
-        for p in chk_paths:
-            if self._check_access(p):
-                return True
-        return False
-
-    @property
     def has_access_lustre(self):
         """Boolean specifying whether MetNO AeroCom server is accessible"""
         for path in self._search_dirs:
             if self._LUSTRE_CHECK_PATH in path and self._check_access(path):
                 return True
         return False
-
-    @property
-    def ALL_DATABASE_IDS(self):
-        """ID's of available database configurations"""
-        return list(self._config_files)
 
     @property
     def ROOTDIR(self):
@@ -681,7 +669,9 @@ class Config:
                 raise FileNotFoundError(f"Input location {loc} could not be accessed")
             self._search_dirs.append(loc)
 
-    def add_ungridded_obs(self, obs_id, data_dir, reader=None, check_read=False):
+    def add_ungridded_obs(
+        self, obs_id, data_dir, reader: type[ReadUngriddedBase] | None = None, check_read=False
+    ):
         """Add a network to the data search structure
 
         Parameters
@@ -713,6 +703,7 @@ class Config:
 
             reader = get_ungridded_reader(obs_id)
 
+        assert reader is not None
         if obs_id not in reader.SUPPORTED_DATASETS:
             reader.SUPPORTED_DATASETS.append(obs_id)
         self.OBSLOCS_UNGRIDDED[obs_id] = data_dir
@@ -799,7 +790,7 @@ class Config:
 
         self.OBS_UNGRIDDED_POST[obs_id] = addinfo.to_dict()
 
-    def _check_obsreader(self, obs_id, data_dir, reader):
+    def _check_obsreader(self, obs_id: str, data_dir: str, reader: type[ReadUngriddedBase]):
         """
         Check if files can be accessed when registering new dataset
 
@@ -830,7 +821,7 @@ class Config:
             self.add_ungridded_obs(obs_id, chk_dir, reader, check_read=True)
 
     @property
-    def ebas_flag_info(self):
+    def ebas_flag_info(self) -> dict[str, dict]:
         """Information about EBAS flags
 
         Note
@@ -848,17 +839,17 @@ class Config:
             self._ebas_flag_info = read_ebas_flags_file(self.EBAS_FLAGS_FILE)
         return self._ebas_flag_info
 
-    def reload(self, keep_basedirs=True):
+    def reload(self, keep_basedirs: bool = True) -> None:
         """Reload config file (for details see :func:`read_config`)"""
         self.read_config(self.last_config_file, keep_basedirs)
 
     def read_config(
         self,
-        config_file,
-        basedir=None,
-        init_obslocs_ungridded=False,
-        init_data_search_dirs=False,
-    ):
+        config_file: str,
+        basedir: str | None = None,
+        init_obslocs_ungridded: bool = False,
+        init_data_search_dirs: bool = False,
+    ) -> None:
         """
         Import paths from one of the config ini files
 
@@ -928,7 +919,7 @@ class Config:
         self.GRID_IO.load_aerocom_default()
         self.last_config_file = config_file
 
-    def _resolve_basedir(self, locs, chk_dirs):
+    def _resolve_basedir(self, locs: list[str], chk_dirs: list[str]) -> str:
         repl = "${BASEDIR}"
         for loc in locs:
             if repl in loc:
@@ -938,7 +929,9 @@ class Config:
                         return chk_dir
         raise FileNotFoundError("Could not confirm any directory...")
 
-    def _add_searchdirs(self, cr, basedir=None):
+    def _add_searchdirs(
+        self, cr: configparser.ConfigParser, basedir: os.PathLike | None = None
+    ) -> bool:
         chk_dirs = []
         if basedir is not None and self._check_access(basedir):
             chk_dirs.append(basedir)
@@ -976,7 +969,9 @@ class Config:
                 self._search_dirs.append(loc)
         return True
 
-    def _add_obsconfig(self, cr, basedir=None):
+    def _add_obsconfig(
+        self, cr: configparser.ConfigParser, basedir: os.PathLike | None = None
+    ) -> None:
         chk_dirs = []
         if basedir is not None and self._check_access(basedir):
             chk_dirs.append(basedir)
@@ -994,11 +989,11 @@ class Config:
             if _dir not in chk_dirs and self._check_access(_dir):
                 chk_dirs.append(_dir)
         if len(chk_dirs) == 0:
-            return False
+            return
 
         names_cfg = self._add_obsnames_config(cr)
 
-        candidates = {}
+        candidates: dict[str, str] = {}
         dirconfirmed = None
         repl = "${BASEDIR}"
         if cr.has_section("obsfolders"):
@@ -1028,7 +1023,7 @@ class Config:
 
             self.OBSLOCS_UNGRIDDED[name] = loc
 
-    def _init_output_folders_from_cfg(self, cr):
+    def _init_output_folders_from_cfg(self, cr: configparser.ConfigParser) -> None:
         cfg = cr["outputfolders"]
         if "cachedir" in cfg and not self._check_access(self._cache_basedir):
             self._cache_basedir = cfg["cachedir"]
@@ -1049,12 +1044,12 @@ class Config:
 
             self._local_tmp_dir = _dir
 
-    def _add_obsname(self, name):
+    def _add_obsname(self, name: str) -> str:
         name_str = f"{name.upper()}_NAME"
         self[name_str] = name
         return name_str
 
-    def _add_obsnames_config(self, cr):
+    def _add_obsnames_config(self, cr: configparser.ConfigParser) -> list[str]:
         names_cfg = []
         if cr.has_section("obsnames"):
             for obsname, ID in cr["obsnames"].items():
@@ -1063,14 +1058,10 @@ class Config:
                 names_cfg.append(name_str)
         return names_cfg
 
-    def short_str(self):
-        """Deprecated method"""
-        return self.__str__()
-
-    def __setitem__(self, key, val):
+    def __setitem__(self, key: str, val: Any):
         self.__dict__[key] = val
 
-    def __str__(self):
+    def __str__(self) -> str:
         head = f"Pyaerocom {type(self).__name__}"
         s = f"\n{head}\n{len(head) * '-'}\n"
         for k, v in self.__dict__.items():
@@ -1086,3 +1077,16 @@ class Config:
             else:
                 s += f"\n{k}: {v}"
         return s
+
+    @staticmethod
+    def get_instance() -> ConfigReader:
+        """Getter for singleton pattern for Config instance.
+        Returns the existing instance if it exists, otherwise
+        initializing it.
+
+        :return: Config.
+        """
+        if ConfigReader._instance is None:
+            ConfigReader._instance = ConfigReader()
+
+        return ConfigReader._instance

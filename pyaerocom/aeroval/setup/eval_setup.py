@@ -79,6 +79,42 @@ class EvalSetup(BaseModel):
 
     _aux_funs: dict = {}
 
+    # Override BaseModel's __str__ method to provide a custom string representation
+    def __str__(self) -> str:
+        try:
+            entries = [
+                ("Project ID", self.proj_info.proj_id),
+                ("Experiment ID", self.exp_info.exp_id),
+                ("JSON Filename", self.json_filename),
+                ("Public", "Yes" if self.exp_info.public else "No"),
+                ("Models Defined", self.model_cfg.keylist()),
+                ("Observation Networks", self.obs_cfg.keylist()),
+                ("Observation Variables", self.obs_cfg.get_all_vars()),
+                ("Periods", self.time_cfg.periods),
+                ("Processing Settings", self.processing_opts.model_dump()),
+                ("Gridded Aux Funs", f"{list(self.gridded_aux_funs.keys())[:3]}..."),
+                ("Var Info File", self.var_web_info_file),
+                ("Var Scale Col File", self.var_scale_colmap_file),
+                ("Path Manager", self.path_manager),
+                ("Web Display Settings", self.webdisp_opts.model_dump()),
+                ("CAMS2-83", self.cams2_83_cfg.model_dump()),
+                ("Statistics Settings", self.statistics_opts.model_dump()),
+                ("Colocation Settings", self.colocation_opts.model_dump()),
+                ("Units Defined", len(self.units_cfg.units)),
+                ("Model Maps Settings", self.modelmaps_opts.model_dump()),
+                ("pip freeze count", f"{len(self.pip_freeze)} packages"),
+            ]
+            max_label_len = max(len(label) for label, _ in entries)
+
+            summary_lines = ["EvalSetup Summary:"]
+            for label, val in entries:
+                summary_lines.append(f"  ├─ {label.ljust(max_label_len)} : {val}")
+            summary_lines[-1] = summary_lines[-1].replace("├─", "└─", 1)  # Last entry uses └─
+
+            return "\n".join(summary_lines)
+        except Exception:
+            return super().__str__()
+
     @model_validator(mode="after")
     def model_validator(self) -> Self:
         # Add missing variables to var_order_menu.

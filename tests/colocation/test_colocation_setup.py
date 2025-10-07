@@ -5,7 +5,7 @@ from pydantic import ValidationError
 
 from pyaerocom import const
 from pyaerocom.colocation.colocation_setup import ColocationSetup
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 
 COL_OUT_DEFAULT = Path(const.OUTPUTDIR) / "colocated_data"
 

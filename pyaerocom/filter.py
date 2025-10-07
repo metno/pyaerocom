@@ -1,7 +1,7 @@
 import numpy as np
 
 from pyaerocom import region
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 
 
 class Filter:

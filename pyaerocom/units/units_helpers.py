@@ -76,7 +76,7 @@ def convert_unit(
         )
     except ValueError as e:
         raise UnitConversionError(
-            f"failed to convert unit from {str(from_unit)} to {to_unit}"
+            f"Failed to convert unit from {str(from_unit)} to {to_unit}. Reason: {e}."
         ) from e
 
     return data

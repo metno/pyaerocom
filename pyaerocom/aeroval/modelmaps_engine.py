@@ -106,7 +106,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if not var_list:
             raise VarNotAvailableError("List of variables is empty.")
         for var in var_list:
-            logger.info(f"Processing model maps for {model_name} ({var})")
+            logger.info(f"Processing model maps for {model_name} ({var}) 🗺️")
 
             try:  # pragma: no cover
                 make_contour, make_overlay = False, False

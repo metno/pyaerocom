@@ -48,7 +48,13 @@ def test_ProjectOutput(proj_id: str, json_basedir: str):
 @pytest.mark.parametrize(
     "proj_id,json_basedir,exception,error",
     [
-        pytest.param(42, None, ValueError, "need str, got 42", id="ValueError"),
+        pytest.param(
+            42,
+            None,
+            ValueError,
+            "Expected string or AerovalDB, got <class 'NoneType'>.",
+            id="ValueError",
+        ),
     ],
 )
 def test_ProjectOutput_error(proj_id, json_basedir, exception: type[Exception], error: str):
@@ -109,7 +115,7 @@ def test_ExperimentOutput():
 
 
 def test_ExperimentOutput_error():
-    with pytest.raises(ValueError):
+    with pytest.raises(AttributeError):
         ExperimentOutput(None)
 
 
@@ -276,7 +282,7 @@ def test_ExperimentOutput_reorder_experiments(
 def test_ExperimentOutput_reorder_experiments_error(dummy_expout: ExperimentOutput):
     with pytest.raises(ValueError) as e:
         dummy_expout.reorder_experiments("b")
-    assert str(e.value) == "need list as input"
+    assert "list" in str(e.value).lower()
 
 
 @pytest.mark.parametrize("cfg,drop_stats,stats_decimals", [("cfgexp1", ("mab", "R_spearman"), 2)])

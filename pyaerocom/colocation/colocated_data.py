@@ -839,68 +839,51 @@ class ColocatedData(BaseModel):
             coords = zip(self.latitude.data, self.longitude.data)
         return list(coords)
 
-    def check_set_countries(self, inplace=True, assign_to_dim=None):
+    def check_set_countries(self, assign_to_dim=None):
         """
-        Checks if country information is available and assigns if not
+        Checks if country information is available and assigns if not.
 
-        If not country information is available, countries will be assigned
-        for each lat / lon coordinate using
+        If no country information is available, countries will be assigned
+        for each lat/lon coordinate using
         :func:`pyaerocom.geodesy.get_country_info_coords`.
 
         Parameters
         ----------
-        inplace : bool, optional
-            If True, modify and return this object, else a copy.
-            The default is True.
         assign_to_dim : str, optional
-            name of dimension to which the country coordinate is assigned.
-            Default is None, in which case station_name is used.
-
-        Raises
-        ------
-        DataDimensionError
-            If data is 4D (i.e. if latitude and longitude are othorgonal
-            dimensions)
+            Name of dimension to which the country coordinate is assigned.
+            Default is None, in which case 'station_name' is used.
 
         Returns
         -------
-        ColocatedData
-            data object with countries assigned
-
+        self : ColocatedData
+            This object with countries assigned (modified in place).
         """
-        if self.has_latlon_dims:
-            raise DataDimensionError(
-                "Countries cannot be assigned to 4D"
-                "ColocatedData with othorgonal lat / lon "
-                "dimensions. Please consider stacking "
-                "the latitude and longitude dimensions-"
-            )
         if assign_to_dim is None:
             assign_to_dim = "station_name"
 
-        if assign_to_dim not in self.dims:
+        # Stack lat/lon into station_name for 4D data if needed
+        if all(dim in self.dims for dim in ("latitude", "longitude")):
+            logger.info("Stacking lat and lon dimensions into station_name")
+            self.data = self.data.stack(station_name=("latitude", "longitude"))
+
+        elif assign_to_dim not in self.dims:
             raise DataDimensionError("No such dimension", assign_to_dim)
 
-        coldata = self if inplace else self.copy()
-
-        if "country" in coldata.data.coords:
+        if "country" in self.data.coords:
             logger.info("Country information is available")
-            return coldata
-        coords = coldata._get_stat_coords()
+            return self
 
+        coords = self._get_stat_coords()
         info = get_country_info_coords(coords)
 
-        countries, codes = [], []
-        for item in info:
-            countries.append(item["country"])
-            codes.append(item["country_code"])
+        countries = [item["country"] for item in info]
+        codes = [item["country_code"] for item in info]
 
-        arr = coldata.data
-        arr = arr.assign_coords(
+        self.data = self.data.assign_coords(
             country=(assign_to_dim, countries), country_code=(assign_to_dim, codes)
         )
-        coldata.data = arr
-        return coldata
+
+        return self
 
     def copy(self):
         """Copy this object"""
@@ -972,6 +955,10 @@ class ColocatedData(BaseModel):
 
         stats["num_coords_tot"] = nc
         stats["num_coords_with_data"] = ncd
+        try:
+            stats["units"] = self.data.var_units[0]
+        except AttributeError:
+            stats["units"] = self.data.attrs.get("units", None)
         return stats
 
     def calc_temporal_statistics(self, aggr=None, **kwargs):

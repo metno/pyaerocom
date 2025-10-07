@@ -56,7 +56,7 @@ class ReadUngridded:
 
     """
 
-    SUPPORTED_READERS = [
+    SUPPORTED_READERS: list[type[ReadUngriddedBase]] = [
         ReadAeronetInvV3,
         ReadAeronetSdaV3,
         ReadAeronetSunV3,
@@ -847,7 +847,7 @@ class ReadUngridded:
                 if getattr(data_to_append, "is_vertical_profile", None):
                     data.is_vertical_profile = data_to_append.is_vertical_profile
 
-            logger.info(f"Successfully imported {ds} data")
+            logger.info(f"Successfully imported {ds} data ✅")
         return data
 
     def _check_var_alias(self, var, supported):

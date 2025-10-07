@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 
 from .common import add_dummy_model_data
 

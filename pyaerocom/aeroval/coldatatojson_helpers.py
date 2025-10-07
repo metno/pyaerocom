@@ -5,9 +5,9 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 import logging
 from collections.abc import Callable
 from copy import deepcopy
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Literal
-from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
@@ -16,12 +16,14 @@ import xarray as xr
 from pyaerocom import ColocatedData
 from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
+
+# from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import (
     _get_min_max_year_periods,
     _period_str_to_timeslice,
 )
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
 from pyaerocom.region import (
     Region,
@@ -101,7 +103,7 @@ def init_regions_web(coldata, regions_how):
     elif regions_how == "country":
         regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
         regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
-        coldata.check_set_countries(True)
+        coldata.check_set_countries()
         regborders.update(coldata.get_country_codes())
         add_regs = _prepare_country_regions(coldata.get_country_codes().keys())
         regs.update(add_regs)
@@ -998,36 +1000,39 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
 
 def _process_map_and_scat(
-    data,
-    map_data,
-    site_indices,
-    periods,
-    scatter_freq,
-    min_num,
-    seasons,
-    add_trends,
-    trends_min_yrs,
-    avg_over_trends,
-    use_fairmode,
-    obs_var,
-    drop_stats,
-    use_meteorological_seasons,
+    data: dict[str, ColocatedData | None],
+    map_data: list[dict],
+    site_indices: list[int],
+    periods: list[str],
+    scatter_freq: str,
+    min_num: int,
+    seasons: list[str],
+    add_trends: bool,
+    trends_min_yrs: int,
+    avg_over_trends: bool,
+    use_fairmode: bool,
+    obs_var: str,
+    drop_stats: tuple,
+    use_meteorological_seasons: bool,
 ):
     stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     scat_data = {}
     scat_dummy = [np.nan]
+    new_map_data: list[dict] = []
     for freq, cd in data.items():
         for per in periods:
             for season in seasons:
-                use_dummy = cd is None
-                if not use_dummy:
+                use_dummy = True
+                if cd is not None:
                     try:
                         subset = _select_period_season_coldata(
                             cd, per, season, use_meteorological_seasons
                         )
                         jsdate = subset.data.jsdate.values.tolist()
+                        use_dummy = False
                     except (DataCoverageError, TemporalResolutionError):
-                        use_dummy = True
+                        pass
+
                 for i, map_stat in zip(site_indices, map_data):
                     if freq not in map_stat:
                         map_stat[freq] = {}
@@ -1068,6 +1073,7 @@ def _process_map_and_scat(
                                     # The whole trends dicts are placed in the stats dict
                                     stats["obs_trend"] = obs_trend
                                     stats["mod_trend"] = mod_trend
+                                    stats["units"] = subset.units[0]
 
                                     if avg_over_trends:
                                         stats["obs_mean_trend"] = obs_trend
@@ -1094,15 +1100,20 @@ def _process_map_and_scat(
                             scat_data[site]["region"] = map_stat["region"]
                         if use_dummy:
                             obs = mod = jsdate = scat_dummy
+                            units = None
                         else:
                             obs, mod = obs_vals.tolist(), mod_vals.tolist()
+                            units = subset.units[0]
                         scat_data[site][perstr] = {
                             "obs": obs,
                             "mod": mod,
                             "date": jsdate,
+                            "units": units,
                         }
 
-    return (map_data, scat_data)
+                    new_map_data.append(map_stat)
+
+    return (new_map_data, scat_data)
 
 
 def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
@@ -1291,7 +1302,9 @@ def _calc_temporal_corr(coldata):
         return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
 
 
-def _select_period_season_coldata(coldata, period, season, use_meteorological_seasons):
+def _select_period_season_coldata(
+    coldata: ColocatedData, period: str, season: str, use_meteorological_seasons: bool
+):
     tslice = _period_str_to_timeslice(period)
     if use_meteorological_seasons and len(period) == 4 and season == "DJF":
         # relevant only for single years and DJF
@@ -1514,7 +1527,7 @@ def _get_jsdate(nparr: np.ndarray):
     return (dt - offs).astype(int) * 1000
 
 
-def _init_data_default_frequencies(coldata, to_ts_types):
+def _init_data_default_frequencies(coldata: ColocatedData, to_ts_types):
     """
     Compute one colocated data object for each desired statistics frequency
 
@@ -1823,14 +1836,20 @@ def _process_statistics_timeseries_single_region(
 def _calculate_fairmode(
     coldata: ColocatedData,
     fairmode_statistics,  #: FairmodeStatistics,
+    exp_output,  #: ExperimentOutput,
+    obs_name: str,
+    var_name_web: str,
+    vert_code: str,
+    model_name: str,
+    model_var: str,
     map_meta: list[dict],
     obs_var: str = None,
     periods: tuple[str, ...] | None = None,
     seasons: tuple[str, ...] | None = None,
     use_meteorological_seasons: bool = False,
 ):
-    results = {"ALL": {}}
     for per in periods:
+        results = {"ALL": {}}
         for season in seasons:
             try:
                 subset = _select_period_season_coldata(
@@ -1856,4 +1875,16 @@ def _calculate_fairmode(
 
                 results[region][perstr][station_name] = fm_stats[station_name]
                 results["ALL"][perstr][station_name] = fm_stats[station_name]
-    return results
+
+        for reg in results:
+            fairmode_statistics.save_fairmode_stats(
+                exp_output,
+                results,
+                obs_name,
+                var_name_web,
+                vert_code,
+                model_name,
+                model_var,
+                per,
+                reg,
+            )

@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from pyaerocom import ColocatedData, Filter
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 
 from .data_access import DataForTests
 

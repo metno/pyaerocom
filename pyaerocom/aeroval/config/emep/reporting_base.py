@@ -839,10 +839,11 @@ def get_CFG(reportyear, year, model_dir) -> dict:
             obs_filters=EBAS_FILTER,
         ),
         ################
-        #    EEA-rural
+        #   EEA-background
         ################
-        "EEA-d-rural": dict(
-            obs_id="EEA-d-rural",
+        # EEA-background-rural
+        "EEA-d-background-rural": dict(
+            obs_id="EEA-d-background-rural",
             obs_vars=[
                 "concpm10",
                 "concpm25",
@@ -852,7 +853,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 "vmro3max",
             ],
             pyaro_config={
-                "name": "EEA-d-rural",
+                "name": "EEA-d-background-rural",
                 "reader_id": "eeareader",
                 "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
                 "name_map": {
@@ -894,20 +895,20 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                     "background",
                 ],
             },
-            web_interface_name="EEA-rural",
+            web_interface_name="EEA-background-rural",
             obs_vert_type="Surface",
             obs_filters=EEA_FILTER,
             ts_type="daily",
         ),
-        "EEA-h-diurnal-rural": dict(
-            obs_id="EEA-h-diurnal-rural",
+        "EEA-h-diurnal-background-rural": dict(
+            obs_id="EEA-h-diurnal-background-rural",
             obs_vars=[
                 "concNno2",
                 "vmro3",
                 "vmrox",
             ],
             pyaro_config={
-                "name": "EEA-h-diurnal-rural",
+                "name": "EEA-h-diurnal-background-rural",
                 "reader_id": "eeareader",
                 "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
                 "name_map": {
@@ -949,17 +950,15 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                     "background",
                 ],
             },
-            web_interface_name="EEA-h-rural",
+            web_interface_name="EEA-h-background-rural",
             obs_vert_type="Surface",
             obs_filters={**EEA_FILTER, "ts_type": "hourly"},
             resample_how="mean",
             ts_type="hourly",
         ),
-        ################
-        #   EEA-background
-        ################
-        "EEA-d-background": dict(
-            obs_id="EEA-d-background",
+        # EEA-background-suburban
+        "EEA-d-background-suburban": dict(
+            obs_id="EEA-d-background-suburban",
             obs_vars=[
                 "concpm10",
                 "concpm25",
@@ -969,7 +968,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                 "vmro3max",
             ],
             pyaro_config={
-                "name": "EEA-d-background",
+                "name": "EEA-d-background-suburban",
                 "reader_id": "eeareader",
                 "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
                 "name_map": {
@@ -1001,24 +1000,25 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                     "vmro3max_from_conco3",
                 ],
                 "dataset": "verified",
+                "station_area": ["suburban"],
                 "station_type": [
                     "background",
                 ],
             },
-            web_interface_name="EEA-background",
+            web_interface_name="EEA-background-suburban",
             obs_vert_type="Surface",
             obs_filters=EEA_FILTER,
             ts_type="daily",
         ),
-        "EEA-h-diurnal-background": dict(
-            obs_id="EEA-h-diurnal-background",
+        "EEA-h-diurnal-background-suburban": dict(
+            obs_id="EEA-h-diurnal-background-suburban",
             obs_vars=[
                 "concNno2",
                 "vmro3",
                 "vmrox",
             ],
             pyaro_config={
-                "name": "EEA-h-diurnal-background",
+                "name": "EEA-h-diurnal-background-suburban",
                 "reader_id": "eeareader",
                 "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
                 "name_map": {
@@ -1050,11 +1050,117 @@ def get_CFG(reportyear, year, model_dir) -> dict:
                     "vmrox_from_vmrno2_vmro3",
                 ],
                 "dataset": "verified",
+                "station_area": ["suburban"],
                 "station_type": [
                     "background",
                 ],
             },
-            web_interface_name="EEA-h-background",
+            web_interface_name="EEA-h-background-suburban",
+            obs_vert_type="Surface",
+            obs_filters={**EEA_FILTER, "ts_type": "hourly"},
+            resample_how="mean",
+            ts_type="hourly",
+        ),
+        # EEA-background-urban
+        "EEA-d-background-urban": dict(
+            obs_id="EEA-d-background-urban",
+            obs_vars=[
+                "concpm10",
+                "concpm25",
+                "concSso2",
+                "concNno2",
+                "concNno",
+                "vmro3max",
+            ],
+            pyaro_config={
+                "name": "EEA-d-background-urban",
+                "reader_id": "eeareader",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "name_map": {
+                    "PM2.5": "concpm25",
+                    "PM10": "concpm10",
+                    "NO": "concno",
+                    "NO2": "concno2",
+                    "SO2": "concso2",
+                    "O3": "conco3",
+                },
+                "filters": {
+                    "time_bounds": {
+                        "startend_include": [
+                            (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
+                        ],
+                    },
+                    "valleyfloor_relaltitude": {
+                        "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
+                        "radius": 5000,
+                        "topo_var": "Band1",
+                        "lower": None,
+                        "upper": 500,
+                    },
+                },
+                "post_processing": [
+                    "concNno_from_concno",
+                    "concNno2_from_concno2",
+                    "concSso2_from_concso2",
+                    "vmro3max_from_conco3",
+                ],
+                "dataset": "verified",
+                "station_area": ["urban"],
+                "station_type": [
+                    "background",
+                ],
+            },
+            web_interface_name="EEA-background-urban",
+            obs_vert_type="Surface",
+            obs_filters=EEA_FILTER,
+            ts_type="daily",
+        ),
+        "EEA-h-diurnal-background-urban": dict(
+            obs_id="EEA-h-diurnal-background-urban",
+            obs_vars=[
+                "concNno2",
+                "vmro3",
+                "vmrox",
+            ],
+            pyaro_config={
+                "name": "EEA-h-diurnal-background-urban",
+                "reader_id": "eeareader",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "name_map": {
+                    "PM2.5": "concpm25",
+                    "PM10": "concpm10",
+                    "NO": "concno",
+                    "NO2": "concno2",
+                    "SO2": "concso2",
+                    "O3": "conco3",
+                },
+                "filters": {
+                    "time_bounds": {
+                        "startend_include": [
+                            (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
+                        ],
+                    },
+                    "valleyfloor_relaltitude": {
+                        "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
+                        "radius": 5000,
+                        "topo_var": "Band1",
+                        "lower": None,
+                        "upper": 500,
+                    },
+                },
+                "post_processing": [
+                    "concNno2_from_concno2",
+                    "vmro3_from_conco3",
+                    "vmrno2_from_concno2",
+                    "vmrox_from_vmrno2_vmro3",
+                ],
+                "dataset": "verified",
+                "station_area": ["urban"],
+                "station_type": [
+                    "background",
+                ],
+            },
+            web_interface_name="EEA-h-background-urban",
             obs_vert_type="Surface",
             obs_filters={**EEA_FILTER, "ts_type": "hourly"},
             resample_how="mean",

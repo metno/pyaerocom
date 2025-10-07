@@ -2,14 +2,13 @@ import dataclasses
 
 import numpy as np
 import numpy.typing as npt
-
 from pyaro.timeseries import (
-    Reader,
     Data,
+    Reader,
 )
 
+from pyaerocom.units.constants import M_N, M_O, M_S
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
-from pyaerocom.units.constants import M_N, M_S, M_O
 
 
 @dataclasses.dataclass
@@ -44,6 +43,27 @@ class VariableCombiner:
 
 
 TRANSFORMATIONS = {
+    "proxyconcpm10dust_from_concpm10": VariableScaling(
+        REQ_VAR="concpm10",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ug m-3",
+        SCALING_FACTOR=1,
+        OUT_VARNAME="proxyconcpm10dust",
+    ),
+    "proxyconcpm10wf_from_concpm10": VariableScaling(
+        REQ_VAR="concpm10",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ug m-3",
+        SCALING_FACTOR=1,
+        OUT_VARNAME="proxyconcpm10wf",
+    ),
+    "proxyconcpm10ss_from_concpm10": VariableScaling(
+        REQ_VAR="concpm10",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ug m-3",
+        SCALING_FACTOR=1,
+        OUT_VARNAME="proxyconcpm10ss",
+    ),
     "concNno_from_concno": VariableScaling(
         REQ_VAR="concno",
         IN_UNIT="ug m-3",
