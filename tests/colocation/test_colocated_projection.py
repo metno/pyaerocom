@@ -2,6 +2,7 @@ from pytest import approx
 
 from pyaerocom.colocation.colocation_utils import colocate_gridded_ungridded
 from pyaerocom.griddeddata import GriddedData
+from pyaerocom.griddeddata_container import GriddedDataContainer
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from pyaerocom.ungriddeddata import UngriddedData
 from tests.fixtures.data_access import TEST_DATA
@@ -12,8 +13,11 @@ ROOT = TEST_DATA["MODELS"].path
 
 def test_read_emep_colocate_projection():
     reader = ReadMscwCtm(data_dir=str(ROOT / "emep4no20240630"))
-    data_emep = reader.read_var("concpm10", ts_type="hourly")
-    assert isinstance(data_emep, GriddedData)
+    data = reader.read_var("concpm10", ts_type="hourly")
+    assert isinstance(data, GriddedData)
+
+    data_emep = GriddedDataContainer("test_id")
+    data_emep.add_griddeddata(data)
 
     S1 = create_fake_station_data(
         "concpm10",
