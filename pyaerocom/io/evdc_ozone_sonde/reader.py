@@ -19,7 +19,6 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -750,7 +749,7 @@ class ReadEvdcOzoneSondeDataHarp(ReadEvdcOzoneSondeData):
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EVDC_OZONE_SONDES_NAME_HARP
-    DEFAULT_PATH = const.OBSLOCS_UNGRIDDED[DATA_ID]
+    # DEFAULT_PATH = const.OBSLOCS_UNGRIDDED[DATA_ID]
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.EVDC_OZONE_SONDES_NAME_HARP]
@@ -797,7 +796,7 @@ class ReadEvdcOzoneSondeDataHdf(ReadEvdcOzoneSondeData):
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EVDC_OZONE_SONDES_NAME_HDF
-    DEFAULT_PATH = const.OBSLOCS_UNGRIDDED[DATA_ID]
+    # DEFAULT_PATH = const.OBSLOCS_UNGRIDDED[DATA_ID]
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.EVDC_OZONE_SONDES_NAME_HDF]
