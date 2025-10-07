@@ -5,7 +5,6 @@ import iris
 
 from .griddeddata import GriddedData
 from pyaerocom.stationdata import StationData
-from pyaerocom.exceptions import DataCoverageError
 
 from pyaerocom.io.gridded_reader import GriddedReader
 
