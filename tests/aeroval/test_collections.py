@@ -1,7 +1,8 @@
-from pyaerocom.aeroval.collections import ObsCollection, ModelCollection
-from pyaerocom.aeroval.obsentry import ObsEntry
-from pyaerocom.aeroval.modelentry import ModelEntry
 import pytest
+
+from pyaerocom.aeroval.collections import ObsCollection, ModelCollection
+from pyaerocom.aeroval.modelentry import ModelEntry
+from pyaerocom.aeroval.obsentry import ObsEntry
 
 
 def test_obscollection_init_and_add_entry():
@@ -54,7 +55,9 @@ def test_obscollection_all_vert_types():
     entry2 = ObsEntry(obs_id="obs2", obs_vars=("var2",), obs_vert_type="Profile")
     collection.add_entry("key1", entry1)
     collection.add_entry("key2", entry2)
-    assert set(collection.all_vert_types) == {"Surface", "Profile"}
+    # assert set(collection.all_vert_types) == {"Surface", "Profile"}
+    # at the model level, Profile is named ModelLevel
+    assert set(collection.all_vert_types) == {"Surface", "ModelLevel"}
 
 
 def test_modelcollection_init_and_add_entry():
