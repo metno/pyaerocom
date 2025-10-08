@@ -1,7 +1,8 @@
-from pathlib import Path
 import string
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from pyaerocom import ungriddeddata
@@ -222,3 +223,16 @@ def test_extract_var_error(aeronetsunv3lev2_subset_uds: UngriddedDataStructured)
     data = aeronetsunv3lev2_subset_uds.copy()
     with pytest.raises(VariableDefinitionError):
         data.extract_var("nope")
+
+
+def test__metablock_to_stationdata_nonmonotonically_increasing_index(caplog):
+    station = FAKE_STATION_DATA["station_data_mangled"]
+    d = ungriddeddata.UngriddedData.from_station_data(station)
+    uds = UngriddedDataStructured()
+    uds.merge(d, new_obj=False)
+    sd = uds._metablock_to_stationdata(0, np.str_("od550aer"))
+    assert (
+        "Non monotonically increasing time index for station test station mangled. Possible duplicates."
+        in caplog.text
+    )
+    assert pd.Series(sd.dtime).index.is_monotonic_increasing

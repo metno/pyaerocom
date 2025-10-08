@@ -272,3 +272,13 @@ def test_extract_var_error(aeronetsunv3lev2_subset: UngriddedData):
     data = aeronetsunv3lev2_subset.copy()
     with pytest.raises(VariableDefinitionError):
         data.extract_var("nope")
+
+
+def test__metablock_to_stationdata_nonmonotonically_increasing_index(caplog):
+    station = FAKE_STATION_DATA["station_data_mangled"]
+    d = ungriddeddata.UngriddedData.from_station_data(station)
+    d._metablock_to_stationdata(0, np.str_("od550aer"))
+    assert (
+        "Non monotonically increasing time index for station test station mangled. Possible duplicates."
+        in caplog.text
+    )
