@@ -123,6 +123,21 @@ def test_filter_by_meta(aeronetsunv3lev2_subset_uds, args, sitenames):
     assert sorted(sitenames) == stats
 
 
+def test_filter_by_latlon(aeronetsunv3lev2_subset_uds):
+    correct_lats = [[20.0, 60.0], [20.0, 60.0]]
+    correct_lons = [[1.0, 9.0], [10.0, 20.0]]
+
+    nb_stations = 2
+
+    data = aeronetsunv3lev2_subset_uds
+    data_filtered = data.filter_by_latlon(correct_lats, correct_lons)
+
+    assert len(data.to_station_data_all()["station_name"]) > len(
+        data_filtered.to_station_data_all()["station_name"]
+    )
+    assert len(data_filtered.to_station_data_all()["station_name"]) == nb_stations
+
+
 def test_filter_by_projection(aeronetsunv3lev2_subset_uds):
     data = aeronetsunv3lev2_subset_uds
 

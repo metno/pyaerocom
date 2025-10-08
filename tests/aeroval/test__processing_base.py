@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from pyaerocom import Colocator, GriddedData, UngriddedData
+from pyaerocom import Colocator, UngriddedData, GriddedDataContainer
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval._processing_base import DataImporter, HasColocator, HasConfig
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
@@ -71,7 +71,7 @@ def importer(eval_config: dict) -> DataImporter:
 @pytest.mark.parametrize("cfg", ["cfgexp1"])
 def test_DataImporter_read_model_data(importer: DataImporter):
     data = importer.read_model_data("TM5-AP3-CTRL", "od550aer")
-    assert isinstance(data, GriddedData)
+    assert isinstance(data, GriddedDataContainer)
 
 
 @pytest.mark.parametrize("cfg", ["cfgexp1"])

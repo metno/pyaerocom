@@ -409,7 +409,7 @@ class ColocationSetup(BaseModel):
 
     # Attributes related to model data
     model_name: str | None = None
-    model_data_dir: Path | str | None = None
+    model_data_dir: Path | str | list[str] | list[Path] | None = None
 
     model_read_opts: dict = {}
 
