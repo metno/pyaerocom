@@ -15,8 +15,6 @@ from pyaerocom.io.evdc_ozone_sonde.reader import (
 ROOT_HARP: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HARP-test"])
 ROOT_HDF: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HDF-test"])
 
-# LUSTRE_ROOT_HDF = Path(const.OBSLOCS_UNGRIDDED["EVDC.Ozone.Sondes.HDF"])
-
 TEST_FILES_HARP: list[str | Path] = [
     Path(
         f"{ROOT_HARP}/2019/08/07/evdc-sonde_o3-mch-000-consolidated-payerne-20190807T110000-20190807T123713-003-20200907T191640.nc"
@@ -36,7 +34,6 @@ TEST_FILES_HDF: list[str | Path] = [
 ]
 
 SIMPLE_TEST_VAR = "conco33d"
-# TEST_VAR_HDF = "pro33d"  # this is what all files provide
 TEST_VAR_HDF = "vmro33d"  # this is what all files provide
 TEST_RTOL = 1.0e-4
 
@@ -74,10 +71,6 @@ def test_Evdc_harp_read_file(num: int, vars_to_retrieve: list[str]):
     assert np.nanmean(stat[SIMPLE_TEST_VAR].data) == pytest.approx(
         2.3126154036210864, rel=TEST_RTOL
     )
-    #
-    # assert np.nanmean(stat[SIMPLE_TEST_VAR].data_err) == pytest.approx(0.003919774151078758, rel=TEST_RTOL)
-    # assert np.nanstd(stat[SIMPLE_TEST_VAR].data_err) == pytest.approx(0.0020847733483625517, rel=TEST_RTOL)
-    #
     assert np.min(stat[SIMPLE_TEST_VAR].altitude) <= 1000
     assert np.max(stat[SIMPLE_TEST_VAR].altitude) >= 5000
 
@@ -103,15 +96,9 @@ def test_Evdc_hdf_read_file(num: int, vars_to_retrieve: list[str]):
 
     assert isinstance(stat[SIMPLE_TEST_VAR], VerticalProfile)
     assert len(stat[SIMPLE_TEST_VAR].data) > 500
-    # assert np.sum(np.isnan(stat[SIMPLE_TEST_VAR].data)) == 0
-    #
     assert np.nanmean(stat[SIMPLE_TEST_VAR].data) == pytest.approx(
         2.431399685597938, rel=TEST_RTOL
     )
-    #
-    # assert np.nanmean(stat[SIMPLE_TEST_VAR].data_err) == pytest.approx(0.003919774151078758, rel=TEST_RTOL)
-    # assert np.nanstd(stat[SIMPLE_TEST_VAR].data_err) == pytest.approx(0.0020847733483625517, rel=TEST_RTOL)
-    #
     assert np.min(stat[SIMPLE_TEST_VAR].altitude) <= 1000
     assert np.max(stat[SIMPLE_TEST_VAR].altitude) >= 5000
 
@@ -149,65 +136,3 @@ def test_EvdcOzoneSondeData_read_harp():
     data = read.read(vars_to_retrieve=SIMPLE_TEST_VAR)
     #
     assert len(data.metadata) > 1
-
-
-# def test_EvdcOzoneSondeData_read_hdf_lustre():
-#     if LUSTRE_ROOT_HDF.exists():
-#         read = ReadEvdcOzoneSondeDataHdf(
-#             data_dir=LUSTRE_ROOT_HDF,
-#         )
-#         data = read.read(vars_to_retrieve=TEST_VAR_HDF)
-#         #
-#         assert len(data.metadata) >= 1
-#     else:
-#         assert True
-#
-
-#     assert data.shape == (164, 12)
-#
-#     assert np.nanmin(data._data[:, data._DATAINDEX]) == pytest.approx(
-#         -0.002188435098876817, rel=TEST_RTOL
-#     )
-#     assert np.nanmean(data._data[:, data._DATAINDEX]) == pytest.approx(
-#         0.02495260001522142, rel=TEST_RTOL
-#     )
-#     assert np.nanmax(data._data[:, data._DATAINDEX]) == pytest.approx(
-#         0.16084047083963124, rel=TEST_RTOL
-#     )
-#
-#     merged = data.to_station_data(0)
-#     # same values as above because only one meta_idx
-#     assert np.nanmin(merged.ec355aer) == pytest.approx(-0.002188435098876817, rel=TEST_RTOL)
-#     assert np.nanmean(merged.ec355aer) == pytest.approx(0.02495260001522142, rel=TEST_RTOL)
-#     assert np.nanmax(merged.ec355aer) == pytest.approx(0.16084047083963124, rel=TEST_RTOL)
-#
-#
-# @pytest.mark.parametrize(
-#     "vars_to_retrieve,pattern,num",
-#     [
-#         (None, None, 1),
-#         (["ec355aer"], None, 1),
-#         (["bsc355aer"], None, 0),
-#         (["bsc532aer"], None, 1),
-#     ],
-# )
-# def test_ReadEarlinet_get_file_list(
-#         vars_to_retrieve: list[str] | None, pattern: str | None, num: int
-# ):
-#     reader = ReadEarlinet("Earlinet-test")
-#     files = reader.get_file_list(vars_to_retrieve, pattern)
-#     assert len(files) == num
-#
-#
-# def test_ReadEarlinet_get_file_list_error():
-#     reader = ReadEarlinet("Earlinet-test")
-#     with pytest.raises(NotImplementedError) as e:
-#         reader.get_file_list(pattern="*e.v*")
-#     assert str(e.value) == "filetype delimiter . not supported"
-#
-#
-# def test_ReadEarlinet__get_exclude_filelist():
-#     reader = ReadEarlinet("Earlinet-test")
-#     reader.EXCLUDE_CASES.append("onefile.txt")
-#     files = reader.get_file_list(reader.PROVIDES_VARIABLES)
-#     assert len(files) == 1
