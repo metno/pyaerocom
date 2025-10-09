@@ -11,6 +11,7 @@ from pyaerocom.io.evdc_ozone_sonde.reader import (
     ReadEvdcOzoneSondeDataHdf,
     ReadEvdcOzoneSondeDataHarp,
 )
+from pyaerocom.io.evdc_ozone_sonde.jdcal import is_leap, gcal2jd, jcal2jd, jd2jcal, jd2gcal
 
 ROOT_HARP: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HARP-test"])
 ROOT_HDF: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HDF-test"])
@@ -135,3 +136,10 @@ def test_EvdcOzoneSondeData_read_harp():
     data = read.read(vars_to_retrieve=SIMPLE_TEST_VAR)
     #
     assert len(data.metadata) > 1
+
+
+def test_jdcal():
+    # to make codecov happy
+    assert not is_leap(2021)
+    assert jd2gcal(*gcal2jd(1950, 1, 1)) == (1950, 1, 1, 0.0)
+    assert jd2jcal(*jcal2jd(2000, 1, 1)) == (2000, 1, 1, 0.0)
