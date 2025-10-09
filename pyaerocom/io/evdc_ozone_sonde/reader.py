@@ -88,6 +88,10 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
     #: If true, the uncertainties are also read
     READ_UNCERTAINTIES = False
 
+    # will be filled by the reading classes
+    VAR_NAMES_FILE_HDF = {}
+    VAR_NAMES_FILE_HARP = {}
+
     def __init__(self, data_id=None, data_dir: str | Path | None = None, format: str = "HARP"):
         # initiate base class
         if isinstance(data_id, Path):
@@ -105,7 +109,6 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         self.excluded_files = []
 
         self.is_vertical_profile = True
-        # assert self.data_revision
         self.format = format
         if format == "HARP":
             self.FILEMASK = self._FILEMASK_HARP
@@ -128,8 +131,8 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         :param vars_to_retrieve:
         :param read_uncertainties:
         :param remove_outliers:
-        :param format:
         :return:
+        list of files
         """
         _file = Path(filename)
         if _file.suffix == self._SUFFIX_HARP:
@@ -156,7 +159,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         read_uncertainties=False,
         remove_outliers=True,
     ):
-        """Read EARLINET file and return it as instance of :class:`StationData`
+        """Read HARP file and return it as instance of :class:`StationData`
 
         Parameters
         ----------
@@ -171,8 +174,6 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
             if True, outliers are removed for each variable using the
             `minimum` and `maximum` attributes for that variable (accessed
             via pyaerocom.const.VARS[var_name]).
-        format : str
-            supported formats are "HARP" or "EVDC"
 
         Returns
         -------
@@ -315,8 +316,6 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
             if True, outliers are removed for each variable using the
             `minimum` and `maximum` attributes for that variable (accessed
             via pyaerocom.const.VARS[var_name]).
-        format : str
-            supported formats are "HARP" or "EVDC"
 
         Returns
         -------
@@ -377,8 +376,8 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
                 data_in[self.ALTITUDE_ID_HDF].values[0]
             )
             # these are the profile coordinates
-            data_out[self.LONGITUDE_NAME] = np.float64(data_in[self.LONGITUDE_NAME_HDF].values)
-            data_out[self.LATITUDE_NAME] = np.float64(data_in[self.LATITUDE_NAME_HDF].values)
+            data_out[self.LONGITUDE_NAME] = np.float64(data_in[self.LONGITUDE_NAME_HDF].values[0])
+            data_out[self.LATITUDE_NAME] = np.float64(data_in[self.LATITUDE_NAME_HDF].values[0])
             data_out[self.ALTITUDE_NAME] = np.float64(data_in[self.ALTITUDE_ID_HDF].values)
 
             # dtime is needed later again
@@ -639,7 +638,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
                     # write data to data object
                     data_obj._data[idx:stop, col_idx["time"]] = time
-                    data_obj._data[idx:stop, col_idx["stoptime"]] = stat.stopdtime
+                    data_obj._data[idx:stop, col_idx["stoptime"]] = stat["stopdtime"]
                     data_obj._data[idx:stop, col_idx["data"]] = data
                     data_obj._data[idx:stop, col_idx["dataaltitude"]] = altitude
                     data_obj._data[idx:stop, col_idx["varidx"]] = var_idx
@@ -670,11 +669,6 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
     def get_file_list(self, pattern=None):
         """Perform recursive file search for all input variables
-
-        Note
-        ----
-        Overloaded implementation of base class, since for EVDC the
-        paths are dependending on the format
 
         Parameters
         ----------
@@ -749,7 +743,6 @@ class ReadEvdcOzoneSondeDataHarp(ReadEvdcOzoneSondeData):
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EVDC_OZONE_SONDES_NAME_HARP
-    # DEFAULT_PATH = const.OBSLOCS_UNGRIDDED[DATA_ID]
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.EVDC_OZONE_SONDES_NAME_HARP]
@@ -796,7 +789,6 @@ class ReadEvdcOzoneSondeDataHdf(ReadEvdcOzoneSondeData):
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EVDC_OZONE_SONDES_NAME_HDF
-    # DEFAULT_PATH = const.OBSLOCS_UNGRIDDED[DATA_ID]
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.EVDC_OZONE_SONDES_NAME_HDF]
