@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 __all__ = ["download_minimal_dataset"]
 
 #: tarfile to download
-DEFAULT_TESTDATA_FILE = "testdata-minimal.tar.gz.20250620"
+DEFAULT_TESTDATA_FILE = "testdata-minimal.tar.gz.20250916"
 
 minimal_dataset = pooch.create(
     path=const.OUTPUTDIR,  # ~/MyPyaerocom/
@@ -26,8 +26,6 @@ minimal_dataset = pooch.create(
         "testdata-minimal.tar.gz.20231116": "md5:5da747f6596817295ba7affe3402b722",
         "testdata-minimal.tar.gz.20240722": "md5:7d933901c6d273d012f132c60df086cc",
         "testdata-minimal.tar.gz.20241120": "md5:4d2bc1782b1f468321817139d327e014",
-        "testdata-minimal.tar.gz.20250404": "md5:5dc035eebc531f105ab8463c877e8ddc",
-        "testdata-minimal.tar.gz.20250409": "md5:82afe8a8e58751657c01e4ff89ffcdee",
         "testdata-minimal.tar.gz.20250425": "md5:23f5b2e34f294c3232248a2b9b779864",
         "testdata-minimal.tar.gz.20250506": "md5:aab174c263d350e9c6120614a0bda8a5",
         "testdata-minimal.tar.gz.20250512": "md5:00d2f7cf41e6303bad33e822d25fe960",
@@ -35,6 +33,9 @@ minimal_dataset = pooch.create(
         "testdata-minimal.tar.gz.20250521": "md5:42b2f476145e763a010587881576e38c",
         "testdata-minimal.tar.gz.20250618": "md5:852bf1802d52a1506f9e19393f534103",
         "testdata-minimal.tar.gz.20250620": "md5:28253ccbd7e69c9b5716352ca57e5751",
+        "testdata-minimal.tar.gz.20250708": "md5:928682b802dc56ba189c939cc009ab40",
+        "testdata-minimal.tar.gz.20250911": "md5:5607d7b300ce0680b7bbce78cf8abe64",
+        "testdata-minimal.tar.gz.20250916": "md5:e0477c787c359455b50404abe960e5fc",
     },
 )
 

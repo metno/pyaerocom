@@ -165,7 +165,7 @@ def compute_model_average_and_diversity(
             if not data.units == unit_out:
                 data.convert_unit(unit_out)
 
-            elif not data.longitude.circular:
+            elif not data.longitude_circular:
                 if not data.check_lon_circular():
                     raise Exception(f"Longitude of {mname} is not circular...")
             data.reorder_dimensions_tseries()
@@ -182,7 +182,7 @@ def compute_model_average_and_diversity(
             logger.info(f"Failed! Reason: {e}")
             continue
 
-        loaded.append(data.cube.data)
+        loaded.append(data.get_cube_data())
         from_files.extend(data.from_files)
         from_models.append(data.data_id)
         from_vars.append(data.var_name)
