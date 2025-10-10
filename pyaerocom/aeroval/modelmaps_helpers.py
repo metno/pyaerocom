@@ -14,7 +14,7 @@ import numpy as np
 import geojson
 import contourpy
 
-from pyaerocom import GriddedData
+from pyaerocom import GriddedData, GriddedDataContainer
 from pyaerocom.aeroval.coldatatojson_helpers import _get_jsdate
 from pyaerocom.helpers import make_datetime_index
 from pyaerocom.units.datetime import TsType
@@ -28,6 +28,9 @@ OVERLAY = "overlay"
 def _jsdate_list(data: GriddedData | xarray.DataArray):
     tst = TsType(data.ts_type)
     if isinstance(data, GriddedData):
+        start_yr = data.start
+        stop_yr = data.stop
+    elif isinstance(data, GriddedDataContainer):
         start_yr = data.start
         stop_yr = data.stop
     elif isinstance(data, xarray.DataArray):

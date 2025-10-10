@@ -4,7 +4,7 @@ import logging
 import aerovaldb
 import xarray as xr
 
-from pyaerocom import ColocatedData, GriddedData, TsType, __version__, const
+from pyaerocom import ColocatedData, GriddedData, GriddedDataContainer, TsType, __version__, const
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelmaps_helpers import (
@@ -269,13 +269,13 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if tst < freq:
             raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
         elif tst > freq:
-            if isinstance(data, GriddedData):
+            if isinstance(data, GriddedData) or isinstance(data, GriddedDataContainer):
                 data = data.resample_time(str(freq))
             elif isinstance(data, xr.DataArray):
                 data = data.resample(time=str(freq)[0].capitalize()).mean()
 
         ts = _jsdate_list(data)
-        if isinstance(data, GriddedData):
+        if isinstance(data, GriddedData) or isinstance(data, GriddedDataContainer):
             data.check_unit()
             data = data.to_xarray().load()
 
@@ -383,7 +383,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         logger.info(f"Found coarsest freq available as model data: {freq}")
         return freq
 
-    def _read_model_data(self, model_name: str, var: str) -> GriddedData:
+    def _read_model_data(self, model_name: str, var: str) -> GriddedDataContainer:
         """
         Function for reading the model data without going through the colocation object.
         This means that none of the checks normally done in the colocation class are run.
@@ -397,7 +397,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         Returns
         -----------
-        Griddeddata
+        GriddedDataContainer
             the read data
         """
         start, stop = self.cfg.colocation_opts.start, self.cfg.colocation_opts.stop
