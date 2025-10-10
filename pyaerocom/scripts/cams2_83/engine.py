@@ -120,17 +120,16 @@ class CAMS2_83_Engine(ProcessingEngine):
         else:
             if modelname in ModelName.__members__:
                 model = ModelName[modelname]
-            elif modelname in AiModelName.__members__:
-                model = AiModelName[modelname]
+                model_webname = model.webname
             else:
-                raise ValueError(f"Unknow model {modelname}")
+                model_webname = modelname
         vert_code = coldata[0].get_meta_item("vert_code")
         obs_name = coldata[0].obs_name
         
         if modelname == "ENS" or modelname == "MOS":  # MOS/ENS evaluation special case
             mcfg = self.cfg.model_cfg.get_entry(modelname)
         else:
-            mcfg = self.cfg.model_cfg.get_entry(model.webname)
+            mcfg = self.cfg.model_cfg.get_entry(model_webname)
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
         seasons = self.cfg.time_cfg.get_seasons()
 
@@ -282,7 +281,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                         (
                             modelname
                             if (modelname == "ENS" or modelname == "MOS")
-                            else model.webname
+                            else model_webname
                         ),  # MOS/ENS evaluation special case
                         model_var,
                         per,
@@ -299,7 +298,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                     (
                         modelname
                         if (modelname == "ENS" or modelname == "MOS")
-                        else model.webname
+                        else model_webname
                     ),  # MOS/ENS evaluation special case
                     model_var,
                 )

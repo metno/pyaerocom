@@ -69,10 +69,8 @@ def __model_path(
     if not isinstance(name, ModelName) and not isinstance(name, AiModelName):
         if name in ModelName.__members__:
             name = ModelName[name]
-        elif name in AiModelName.__members__:
-            name = AiModelName[name]
         else:
-            raise ValueError(f"Model {name} is not a supported model")
+            name = AiModelName(name)
 
     if isinstance(date, str):
         date = datetime.strptime(date, "%Y%m%d").date()
@@ -297,10 +295,9 @@ class ReadCAMS2_83(GriddedReader):
         self.run_type = RunType[run_type]
         if model in ModelName.__members__:
             self.model = ModelName[model]
-        elif model in AiModelName.__members__:
-            self.model = AiModelName[model]
         else:
-            raise ValueError(f"Model {model} is not a supported model")
+            self.model = AiModelName(model)
+
         self.forecast_day = int(day)
 
     @property
@@ -383,10 +380,9 @@ class ReadCAMS2_83(GriddedReader):
         if not isinstance(val, ModelName) and not isinstance(val, AiModelName):
             if val in ModelName.__members__:
                 val = ModelName(val)
-            elif val in AiModelName.__members__:
-                val = AiModelName(val)
             else:
-                raise ValueError(f"Model {val} is not a supported model")
+                val = AiModelName(val)
+
         self._model = val
         self._filedata = None
 

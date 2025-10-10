@@ -6,16 +6,13 @@ from pathlib import Path
 from typing import NamedTuple
 
 
-class AiModelName(str, Enum):
-    EMEPAI = "emepai"
-    EMEPVRA = "emepvra"  # "emepairenalysis"
+class AiModelName:
+    def __init__(self, name: str):
+        self.name = name
+        self.webname = name
 
-    def __str__(self) -> str:
-        return self.value
-
-    @property
-    def webname(self) -> str:
-        return dict(EMEPAI="EMEPAI", EMEPVRA="EMEP-VRA")[self.name]
+    def __str__(self):
+        return self.name
 
 
 class ModelName(str, Enum):

@@ -101,7 +101,7 @@ def make_config(
                     end_date,
                     leap,
                     ai_reanalysis_path,
-                    AiModelName.EMEPVRA,
+                    AiModelName("EMEPAIREANAL"),
                     run_type=run_type,
                 )
             )
@@ -111,7 +111,7 @@ def make_config(
                 end_date,
                 leap,
                 ai_model_path,
-                AiModelName.EMEPAI,
+                AiModelName("EMEPAI"),
                 run_type=run_type,
             )
         )
