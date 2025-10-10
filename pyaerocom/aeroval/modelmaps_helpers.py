@@ -159,6 +159,7 @@ def plot_overlay_pixel_maps(
         subplot_kw=dict(projection=proj),
         figsize=(8, 8),
     )
+    axis.axis("off")
 
     data.plot(
         ax=axis,
