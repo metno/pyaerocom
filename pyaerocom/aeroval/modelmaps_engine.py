@@ -269,13 +269,13 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if tst < freq:
             raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
         elif tst > freq:
-            if isinstance(data, (GriddedData, GriddedDataContainer)):
+            if isinstance(data, GriddedData | GriddedDataContainer):
                 data = data.resample_time(str(freq))
             elif isinstance(data, xr.DataArray):
                 data = data.resample(time=str(freq)[0].capitalize()).mean()
 
         ts = _jsdate_list(data)
-        if isinstance(data, (GriddedData, GriddedDataContainer)):
+        if isinstance(data, GriddedData | GriddedDataContainer):
             data.check_unit()
             data = data.to_xarray().load()
 
