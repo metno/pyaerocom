@@ -275,7 +275,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 data = data.resample(time=str(freq)[0].capitalize()).mean()
 
         ts = _jsdate_list(data)
-        if isinstance(data, GriddedData) or isinstance(data, GriddedDataContainer):
+        if isinstance(data, (GriddedData, GriddedDataContainer)):
             data.check_unit()
             data = data.to_xarray().load()
 
