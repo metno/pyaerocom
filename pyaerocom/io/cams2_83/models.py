@@ -9,7 +9,7 @@ from typing import NamedTuple
 class AiModelName:
     def __init__(self, name: str):
         self.name = name
-        self.webname = name
+        self.webname = name.upper()
 
     def __str__(self):
         return self.name

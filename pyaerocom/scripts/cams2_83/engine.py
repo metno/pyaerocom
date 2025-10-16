@@ -122,7 +122,8 @@ class CAMS2_83_Engine(ProcessingEngine):
                 model = ModelName[modelname]
                 model_webname = model.webname
             else:
-                model_webname = modelname
+                model = AiModelName(modelname)
+                model_webname = model.webname
         vert_code = coldata[0].get_meta_item("vert_code")
         obs_name = coldata[0].obs_name
         
