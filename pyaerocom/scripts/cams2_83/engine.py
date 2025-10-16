@@ -36,7 +36,7 @@ class CAMS2_83_Engine(ProcessingEngine):
     ]
 
     def run(
-        self, files: list[list[str | Path]], var_list: list
+        self, files: list[list[str | Path]], var_list: list, model_dict: dict | None = None,
     ) -> None:  # type:ignore[override]
         logger.info(f"Processing: {files}")
         coldata = [ColocatedData(data=file) for file in files]
@@ -67,9 +67,9 @@ class CAMS2_83_Engine(ProcessingEngine):
                 continue
             logger.info(f"Processing Component: {var}")
             if found_persistence:
-                self.process_coldata(coldata[var], persistence_cols[var], var)
+                self.process_coldata(coldata[var], persistence_cols[var], var, model_dict)
             else:
-                self.process_coldata(coldata[var], [], var)
+                self.process_coldata(coldata[var], [], var, model_dict)
 
         logger.info(f"Time for weird plot: {time.time() - start} sec")
 
@@ -78,6 +78,7 @@ class CAMS2_83_Engine(ProcessingEngine):
         coldata: list[ColocatedData],
         persistence_coldata: list[ColocatedData],
         var_name: str,
+        model_dict: dict | None = None,
     ) -> None:
         use_weights = self.cfg.statistics_opts.weighted_stats
         forecast_days = self.cfg.statistics_opts.forecast_days
@@ -123,7 +124,8 @@ class CAMS2_83_Engine(ProcessingEngine):
                 model_webname = model.webname
             else:
                 model = AiModelName(modelname)
-                model_webname = model.webname
+                model_webname = model_dict[modelname]
+
         vert_code = coldata[0].get_meta_item("vert_code")
         obs_name = coldata[0].obs_name
         

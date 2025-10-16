@@ -122,9 +122,9 @@ def read_observations(specie: str, *, files: list, cache: str | Path | None) -> 
     logger.info(f"Finished {specie}")
 
 
-def run_forecast(specie: str, *, stp: EvalSetup, analysis: bool) -> None:
+def run_forecast(specie: str, *, stp: EvalSetup, analysis: bool, model_dict: dict | None = None,) -> None:
     ana_cams2_83 = CAMS2_83_Processer(stp)
-    ana_cams2_83.run(analysis=analysis, var_list=specie)
+    ana_cams2_83.run(analysis=analysis, var_list=specie, model_dict=model_dict)
 
 
 def runner(
@@ -190,6 +190,7 @@ def runnermedianscores(
     analysis: bool = False,
     dry_run: bool = False,
     pool: int = 1,
+    model_dict: dict | None = None
 ):
     if dry_run:
         return
@@ -206,13 +207,13 @@ def runnermedianscores(
         logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
         with ProcessPoolExecutor(max_workers=pool) as executor:
             futures = [
-                executor.submit(run_forecast, specie, stp=stp, analysis=analysis)
+                executor.submit(run_forecast, specie, stp=stp, analysis=analysis, model_dict=model_dict)
                 for specie in species_list
             ]
         for future in as_completed(futures):
             future.result()
     else:
         logger.info(f"Making median scores plot with pool {pool} and analysis {analysis}")
-        CAMS2_83_Processer(stp).run(analysis=analysis)
+        CAMS2_83_Processer(stp).run(analysis=analysis,model_dict=model_dict)
 
     logger.info("Median scores run finished")

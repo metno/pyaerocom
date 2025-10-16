@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class CAMS2_83_Processer(ProcessingEngine, HasColocator):
-    def _run_single_entry(self, model_name, obs_name, var_list, analysis=False):
+    def _run_single_entry(self, model_name, obs_name, var_list, analysis=False, model_dict: dict | None = None):
 
         logger.info(f"Running CAMS2_83_Processer._run_single_entry with var_list {var_list} and model name {model_name}")
 
@@ -74,7 +74,7 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
             )
         else:
             engine = CAMS2_83_Engine(self.cfg)
-            engine.run(files_to_convert, var_list)
+            engine.run(files_to_convert, var_list, model_dict)
 
     def run(
         self,
@@ -84,6 +84,7 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
         update_interface=True,
         analysis=False,
         obs_path=None,
+        model_dict: dict | None = None,
     ):
         if isinstance(var_list, str):
             var_list = [var_list]
@@ -97,7 +98,7 @@ class CAMS2_83_Processer(ProcessingEngine, HasColocator):
         if not self.cfg.processing_opts.only_model_maps:
             for obs_name in obs_list:
                 for model_name in model_list:
-                    self._run_single_entry(model_name, obs_name, var_list, analysis)
+                    self._run_single_entry(model_name, obs_name, var_list, analysis, model_dict)
 
         if update_interface:
             self.update_interface()
