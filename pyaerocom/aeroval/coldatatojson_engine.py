@@ -1,7 +1,8 @@
 import logging
 import os
-from numpy.typing import ArrayLike
 from time import time
+
+from numpy.typing import ArrayLike
 
 from pyaerocom import ColocatedData, TsType, const
 from pyaerocom.aeroval._processing_base import ProcessingEngine
@@ -359,30 +360,30 @@ class ColdataToJsonEngine(ProcessingEngine):
 
     def _process_stats_timeseries_for_all_regions(
         self,
-        data: dict[str, ColocatedData] | None = None,
-        coldata: ColocatedData | None = None,
-        main_freq: str | None = None,
-        regnames: dict | None = None,
-        use_weights: bool = True,
-        drop_stats: tuple = (),
-        use_country: bool = False,
-        obs_name: str | None = None,
-        obs_var: str = None,
-        var_name_web: str | None = None,
-        vert_code: str | None = None,
-        model_name: str | None = None,
-        model_var: str | None = None,
-        meta_glob: dict | None = None,
-        periods: tuple[str, ...] | None = None,
-        seasons: tuple[str, ...] | None = None,
-        add_trends: bool = False,
-        trends_min_yrs: int = 7,
-        regions_how: str = "default",
-        regs: dict | None = None,
-        stats_min_num: int = 1,
-        use_fairmode: bool = False,
-        avg_over_trends: bool = False,
-        use_meteorological_seasons: bool = False,
+        data: dict[str, ColocatedData | None],
+        coldata: ColocatedData,
+        main_freq: str,
+        regnames: dict,
+        use_weights: bool,
+        drop_stats: tuple,
+        use_country: bool,
+        obs_name: str,
+        obs_var: str,
+        var_name_web: str,
+        vert_code: str,
+        model_name: str,
+        model_var: str,
+        meta_glob: dict,
+        periods: list[str],
+        seasons: list[str],
+        add_trends: bool,
+        trends_min_yrs: int,
+        regions_how: str,
+        regs: dict,
+        stats_min_num: int,
+        use_fairmode: bool,
+        avg_over_trends: bool,
+        use_meteorological_seasons: bool,
     ):
         input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
 
@@ -567,21 +568,18 @@ class ColdataToJsonEngine(ProcessingEngine):
             fm_data = data[freq]
         (ts_objs, map_meta, site_indices) = _process_sites(data, regs, regions_how, meta_glob)
 
-        stats = _calculate_fairmode(
+        _calculate_fairmode(
             fm_data,
             fairmode_statistics,
-            map_meta,
-            obs_var,
-            periods,
-            seasons,
-            use_meteorological_seasons,
-        )
-        fairmode_statistics.save_fairmode_stats(
             self.exp_output,
-            stats,
             obs_name,
             var_name_web,
             vert_code,
             model_name,
             model_var,
+            map_meta,
+            obs_var,
+            periods,
+            seasons,
+            use_meteorological_seasons,
         )

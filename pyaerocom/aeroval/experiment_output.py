@@ -993,6 +993,7 @@ class ExperimentOutput(ProjectOutput):
         layer: str,
         modelname: str,
         modvar: str,
+        period: str,
     ):
         """Adds a fairmode entry to fairmode
 
@@ -1008,7 +1009,15 @@ class ExperimentOutput(ProjectOutput):
 
         with self.avdb.lock():
             glob_stats = self.avdb.get_fairmode(
-                project, experiment, region, network, obsvar, layer, default={}
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+                modelname,
+                period.replace("/", ""),  # Remove slashes in CAMS2_83 period,
+                default={},
             )
             glob_stats = recursive_defaultdict(glob_stats)
             glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
@@ -1020,6 +1029,8 @@ class ExperimentOutput(ProjectOutput):
                 network,
                 obsvar,
                 layer,
+                modelname,
+                period.replace("/", ""),  # Remove slashes in CAMS2_83 period,
             )
 
     def add_heatmap_entry(

@@ -181,4 +181,4 @@ def test_vmrox():
     stats = alldata["stats"]
     assert len(stats) >= 4
     first = stats[0]
-    assert first["units"] == {"vmrox": "nmol mol-1"}
+    assert first.units == {"vmrox": "nmol mol-1"}

@@ -791,6 +791,9 @@ class UngriddedData(UngriddedDataMetadata):
 
             data = pd.Series(vals, dtime)
             if not data.index.is_monotonic_increasing:
+                logger.warning(
+                    f"Non monotonically increasing time index for station {meta['station_name']}. Possible duplicates."
+                )
                 idx = data.index.argsort()
                 data = data.iloc[idx]
                 vals_err = vals_err[idx]
@@ -1157,7 +1160,7 @@ class UngriddedData(UngriddedDataMetadata):
 
     def _len_datapoints(self, meta_idx, var):
         """Get the number of datapoints for meta_idx and var."""
-        if isinstance(meta_idx, float):
+        if isinstance(meta_idx, float | int):
             meta_idx = [meta_idx]
         if isinstance(var, str):
             var = [var]

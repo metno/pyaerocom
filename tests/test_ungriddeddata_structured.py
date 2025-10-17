@@ -1,7 +1,8 @@
-from pathlib import Path
 import string
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from pyaerocom import ungriddeddata
@@ -122,6 +123,34 @@ def test_filter_by_meta(aeronetsunv3lev2_subset_uds, args, sitenames):
     assert sorted(sitenames) == stats
 
 
+def test_filter_by_latlon(aeronetsunv3lev2_subset_uds):
+    correct_lats = [[20.0, 60.0], [20.0, 60.0]]
+    correct_lons = [[1.0, 9.0], [10.0, 20.0]]
+
+    nb_stations = 2
+
+    data = aeronetsunv3lev2_subset_uds
+    data_filtered = data.filter_by_latlon(correct_lats, correct_lons)
+
+    assert len(data.to_station_data_all()["station_name"]) > len(
+        data_filtered.to_station_data_all()["station_name"]
+    )
+    assert len(data_filtered.to_station_data_all()["station_name"]) == nb_stations
+
+
+def test_filter_by_projection(aeronetsunv3lev2_subset_uds):
+    data = aeronetsunv3lev2_subset_uds
+
+    def latlon_proj(lat, lon):
+        """unity projection for lat-lon, mapping lat to y and lon to x"""
+        return (lon, lat)
+
+    subset = data.filter_by_projection(latlon_proj, xrange=(0, 20), yrange=(40, 70))
+    sites = [x["station_name"] for x in subset.metadata.values()]
+    stats = sorted(list(dict.fromkeys(sites)))
+    assert sorted(["AAOT", "Avignon", "The_Hague", "Thornton_C-power"]) == stats
+
+
 def test_ebas_revision(data_scat_jungfraujoch: UngriddedDataContainer):
     assert isinstance(data_scat_jungfraujoch, UngriddedDataStructured)
     assert data_scat_jungfraujoch.get_data_revision("EBASSubset") == "20220101"
@@ -194,3 +223,16 @@ def test_extract_var_error(aeronetsunv3lev2_subset_uds: UngriddedDataStructured)
     data = aeronetsunv3lev2_subset_uds.copy()
     with pytest.raises(VariableDefinitionError):
         data.extract_var("nope")
+
+
+def test__metablock_to_stationdata_nonmonotonically_increasing_index(caplog):
+    station = FAKE_STATION_DATA["station_data_mangled"]
+    d = ungriddeddata.UngriddedData.from_station_data(station)
+    uds = UngriddedDataStructured()
+    uds.merge(d, new_obj=False)
+    sd = uds._metablock_to_stationdata(0, np.str_("od550aer"))
+    assert (
+        "Non monotonically increasing time index for station test station mangled. Possible duplicates."
+        in caplog.text
+    )
+    assert pd.Series(sd.dtime).index.is_monotonic_increasing
