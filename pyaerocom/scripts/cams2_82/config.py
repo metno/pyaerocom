@@ -295,6 +295,7 @@ def make_ICOS_entry(
     return  dict(
         obs_id="ICOS",
         web_interface_name="ICOS",
+        obs_data_dir=str(obs_path),
         obs_vars=ICOS_SPECIES,
         obs_vert_type="Surface",
         ts_type="hourly",
