@@ -353,6 +353,21 @@ class GriddedDataContainer:
         return self.children[0].grid
 
     @property
+    @only_one_child
+    def altitude(self):
+        return self.children[0].altitude
+    
+    @property
+    @only_one_child
+    def latitude(self):
+        return self.children[0].latitude
+    
+    @property
+    @only_one_child
+    def longitude(self):
+        return self.children[0].longitude
+
+    @property
     def data_revision(self):
         revision = ""
         for i, data in enumerate(self.children):
