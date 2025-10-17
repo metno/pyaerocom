@@ -252,7 +252,10 @@ class ReadEprofile(ReadUngriddedBase):
 
                 info = var_info[var]
                 arr = data_in.variables[netcdf_var_name]
-                val = np.squeeze(np.float64(arr))  # squeeze to 1D array
+
+                if not len(arr.dims) == 2:
+                    raise DataDimensionError("EPROFILE data must be two dimensional")
+                val = arr.to_numpy()
 
                 # CONVERT UNIT
                 unit = None
@@ -281,10 +284,9 @@ class ReadEprofile(ReadUngriddedBase):
                     unit_ok = True
                     unit = self._var_info[var].units
 
-                if not val.ndim == 2:
-                    raise DataDimensionError("EPROFILE data must be two dimensional")
-                elif len(val) == 0:
+                if len(val) == 0:
                     continue  # no data
+
                 # Remove NaN equivalent values
                 val[val > self._MAX_VAL_NAN] = np.nan
 

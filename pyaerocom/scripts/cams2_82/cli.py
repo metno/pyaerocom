@@ -30,6 +30,7 @@ DEFAULT_AERONET_PATH = Path("/lustre/storeB/users/danielh/cams282/src/")
 DEFAULT_OPENAQ_PATH = Path("/lustre/storeB/users/danielh/cams282/src/openaq/")
 DEFAULT_VPROFILES_PATH = Path("/lustre/storeB/project/fou/kl/v-profiles")
 DEFAULT_ICOS_PATH = Path("/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/ICOS/download/")
+VPROFILES_EXCLUDE_LIST = ["AP_0-20000-0-03808-C","AP_0-20000-0-07014-A","AP_0-20000-0-07110-A","AP_0-20000-0-07145-A","AP_0-20000-0-07606-A","AP_0-20000-0-07617-A","AP_0-20000-0-07774-A","AP_0-20000-0-78990-A","AP_0-20008-0-LAU-A","AP_0-203-10-LNG-A"]
 DEFAULT_MODEL_PATH = DATA_FOLDER_PATH
 
 
@@ -61,6 +62,9 @@ def vpro_subpaths(
         path = root_path / date.strftime(subpath)
         fpaths = path.glob(date.strftime(pattern))
         for p in fpaths: 
+            # exclude wigos IDs that belong to Mini-MPL and CL61 instruments, aka wrong wavelength
+            if any(wigosid in str(p) for wigosid in VPROFILES_EXCLUDE_LIST):
+                continue
             yield p.resolve()
 
 def make_config(
@@ -68,7 +72,6 @@ def make_config(
     end_date: date,
     model_path: Path,
     eea_path: Path,
-    icos_path: Path,
     aeronet_path: Path,
     openaq_path: Path,
     vprofiles_path: Path,
@@ -92,7 +95,7 @@ def make_config(
     )
 
     obs_dates = date_range(start_date, end_date)
-    cfg["obs_cfg"]["ICOS"] = make_ICOS_entry(start_date, end_date, icos_path)
+    cfg["obs_cfg"]["ICOS"] = make_ICOS_entry(start_date, end_date, "")
     #cfg["obs_cfg"]["openAQ"] = make_openAQ_entry(start_date, end_date, openaq_path)
     cfg["obs_cfg"]["Aeronet"] = make_Aeronet_entry(start_date, end_date, aeronet_path)
     cfg["obs_cfg"]["EEA"] = make_EEA_entry(start_date, end_date, eea_path)
@@ -134,9 +137,6 @@ def run(
     ),
     eea_obs_path: Path = typer.Option(
         DEFAULT_EEA_PATH, exists=True, readable=True, help="path to observation data"
-    ),
-    icos_obs_path: Path = typer.Option(
-        DEFAULT_ICOS_PATH, exists=True, readable=True, help="path to observation data"
     ),
     aeronet_obs_path: Path = typer.Option(
         DEFAULT_AERONET_PATH, exists=True, readable=True, help="path to observation data"
@@ -202,7 +202,6 @@ def run(
         
         model_path,
         eea_obs_path,
-        icos_obs_path,
         aeronet_obs_path,
         openaq_obs_path,
         vprofiles_path,
