@@ -11,7 +11,7 @@ import xarray as xr
 from geonum.atmosphere import T0_STD, p0  # , temperature, pressure
 from tqdm import tqdm
 
-from pyaerocom.aux_var_helpers import vmrx_to_concx
+from pyaerocom.aux_var_helpers import vmrx_to_concx, mmrx_to_concx
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.units.molecular_mass import get_molmass
@@ -106,6 +106,8 @@ AEROCOM_NAMES = dict(
     aerext1064="ec1064aer",
     pm10="concpm10",
     pm2p5="concpm25",
+    ch4_c="vmrch4",
+    co="vmrco",
 )
 
 KEEP_FIELDS = [
@@ -118,12 +120,16 @@ KEEP_FIELDS = [
     "aerext1064",
     "no2",
     "go3",
+    "ch4_c",
+    "co",
     "level",
 ]
 
 FULL_NAMES = dict(
     no2="Nitrogen Dioxide",
     go3="Ozone",
+    ch4_c="Methane",
+    co="Carbon Monoxide",
     aod550="AOD 550nm",
     aerext1064="Aerosol extinction coefficient 1064nm",
     pm10="PM10 Aerosol",
@@ -141,6 +147,11 @@ CONVERT_UNITS = {
     },
 }
 
+TO_VMR = {
+    "ch4_c": {"factor": 28.9644 / 16.0425 * 1e9},
+    "co": {"factor": 28.9644 / 28.0101 * 1e9},
+}
+
 UNITS = dict(
     no2="kg m**-3",
     go3="kg m**-3",
@@ -148,6 +159,8 @@ UNITS = dict(
     aerext1064="m**-1",
     pm10="kg m**-3",
     pm2p5="kg m**-3",
+    ch4_c="ppb",
+    co="ppb",
 )
 
 FILE_NAME = dict(
@@ -157,15 +170,19 @@ FILE_NAME = dict(
     aerext1064="cIFS-00UTC_o-suite_multilev.nc",
     pm10="cIFS-00UTC_o-suite_surface.nc",
     pm2p5="cIFS-00UTC_o-suite_surface.nc",
+    ch4_c="cIFS-00UTC_o-suite_lev137.nc",
+    co="cIFS-00UTC_o-suite_lev137.nc",
 )
 
 STANDARD_NAMES = dict(
-    no2="mole_fraction_of_nitrogen_dioxide_in_air",
-    go3="mole_fraction_of_ozone_in_air",
+    no2="mass_fraction_of_nitrogen_dioxide_in_air",
+    go3="mass_fraction_of_ozone_in_air",
     aod550="atmosphere_optical_thickness_due_to_ambient_aerosol_particles",
     aerext1064="volume_extinction_coefficient_in_air_due_to_ambient_aerosol_particles",
     pm10="mass_concentration_of_pm10_ambient_aerosol_in_air",
     pm2p5="mass_concentration_of_pm2p5_ambient_aerosol_in_air",
+    ch4_c="mass_fraction_of_methane_in_air",
+    co="mass_fraction_of_carbon_monoxide_in_air",
 )
 
 
@@ -202,15 +219,27 @@ def fix_names(ds: xr.Dataset) -> xr.Dataset:
 def convert_units(ds: xr.Dataset) -> xr.Dataset:
     for var_name, attrs in CONVERT_UNITS.items():
         data = ds[var_name].data
-        ds[var_name].data = vmrx_to_concx(
+        # ds[var_name].data = vmrx_to_concx(
+        #     data,
+        #     p_pascal=p0,  # pressure(MODEL_LVL137_IN_METERS),
+        #     T_kelvin=T0_STD,  # temperature(MODEL_LVL137_IN_METERS),
+        #     mmol_var=1,
+        #     vmr_unit=attrs["fromunit"],
+        #     mmol_air=1,
+        #     to_unit=UNITS[var_name],
+        # )
+
+        ds[var_name].data = mmrx_to_concx(
             data,
             p_pascal=p0,  # pressure(MODEL_LVL137_IN_METERS),
             T_kelvin=T0_STD,  # temperature(MODEL_LVL137_IN_METERS),
-            mmol_var=1,
-            vmr_unit=attrs["fromunit"],
-            mmol_air=1,
+            mmr_unit=attrs["fromunit"],
             to_unit=UNITS[var_name],
         )
+
+    for var_name, attrs in TO_VMR.items():
+        data = ds[var_name].data
+        ds[var_name].data = data * attrs["factor"]
 
     return ds
 

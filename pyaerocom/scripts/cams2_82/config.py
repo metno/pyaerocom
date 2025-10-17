@@ -3,6 +3,7 @@
 ##################################################
 from pathlib import Path
 from datetime import datetime
+import pandas as pd
 from pyaerocom.io import PyaroConfig
 
 GLOBAL_CONFIG = dict(
@@ -146,6 +147,11 @@ OPENAQ_SPECIES = [
     "concpm25",
 ]
 
+ICOS_SPECIES = [
+    "vmrch4",
+    "vmrco",
+]
+
 EPROFILE_SPECIES = ["ec1064aer"]
 
 
@@ -279,6 +285,20 @@ def make_EEA_entry(
         obs_vert_type="Surface",
         ts_type="hourly",
         obs_filters=EEA_FILTER,   
+    )
+def make_ICOS_entry(
+    start_date: datetime,
+    end_date: datetime,
+    obs_path: Path,
+) -> dict:
+
+    return  dict(
+        obs_id="ICOS",
+        web_interface_name="ICOS",
+        obs_vars=ICOS_SPECIES,
+        obs_vert_type="Surface",
+        ts_type="hourly",
+        obs_filters=BASE_FILTER,   
     )
 
 def make_Aeronet_entry(

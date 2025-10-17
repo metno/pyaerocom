@@ -11,7 +11,7 @@ from typing import Optional
 import typer
 
 from pyaerocom import change_verbosity, const
-from pyaerocom.scripts.cams2_82.config import CFG, make_Aeronet_entry, make_EEA_entry, make_model_entry, make_EPROFILE_entry, make_openAQ_entry
+from pyaerocom.scripts.cams2_82.config import CFG, make_Aeronet_entry, make_EEA_entry, make_model_entry, make_EPROFILE_entry, make_openAQ_entry, make_ICOS_entry
 from pyaerocom.io.cams2_82.reader import DATA_FOLDER_PATH
 from pyaerocom.scripts.cams2_82.evaluation import (
     runner,
@@ -29,6 +29,7 @@ DEFAULT_EEA_PATH = Path("/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA
 DEFAULT_AERONET_PATH = Path("/lustre/storeB/users/danielh/cams282/src/")
 DEFAULT_OPENAQ_PATH = Path("/lustre/storeB/users/danielh/cams282/src/openaq/")
 DEFAULT_VPROFILES_PATH = Path("/lustre/storeB/project/fou/kl/v-profiles")
+DEFAULT_ICOS_PATH = Path("/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/ICOS/download/")
 DEFAULT_MODEL_PATH = DATA_FOLDER_PATH
 
 
@@ -67,6 +68,7 @@ def make_config(
     end_date: date,
     model_path: Path,
     eea_path: Path,
+    icos_path: Path,
     aeronet_path: Path,
     openaq_path: Path,
     vprofiles_path: Path,
@@ -90,11 +92,13 @@ def make_config(
     )
 
     obs_dates = date_range(start_date, end_date)
-    cfg["obs_cfg"]["EPROFILE"] = make_EPROFILE_entry(start_date, end_date, vprofiles_path)
+    cfg["obs_cfg"]["ICOS"] = make_ICOS_entry(start_date, end_date, icos_path)
     #cfg["obs_cfg"]["openAQ"] = make_openAQ_entry(start_date, end_date, openaq_path)
     cfg["obs_cfg"]["Aeronet"] = make_Aeronet_entry(start_date, end_date, aeronet_path)
     cfg["obs_cfg"]["EEA"] = make_EEA_entry(start_date, end_date, eea_path)
     cfg["model_cfg"]["IFS"] = make_model_entry(start_date, end_date, model_path)
+    
+    cfg["obs_cfg"]["EPROFILE"] = make_EPROFILE_entry(start_date, end_date, vprofiles_path)
     cfg["obs_cfg"]["EPROFILE"]["read_opts_ungridded"]["files"] = [  # type:ignore[index]
         str(p)
         for p in vpro_subpaths(
@@ -130,6 +134,9 @@ def run(
     ),
     eea_obs_path: Path = typer.Option(
         DEFAULT_EEA_PATH, exists=True, readable=True, help="path to observation data"
+    ),
+    icos_obs_path: Path = typer.Option(
+        DEFAULT_ICOS_PATH, exists=True, readable=True, help="path to observation data"
     ),
     aeronet_obs_path: Path = typer.Option(
         DEFAULT_AERONET_PATH, exists=True, readable=True, help="path to observation data"
@@ -195,6 +202,7 @@ def run(
         
         model_path,
         eea_obs_path,
+        icos_obs_path,
         aeronet_obs_path,
         openaq_obs_path,
         vprofiles_path,

@@ -392,9 +392,9 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
             series = pd.Series(vals, dtime)
             if not series.index.is_monotonic_increasing:
-                idx = data.index.argsort()
-                data = data.iloc[idx]
-                vals_err = vals_err.iloc[idx]
+                idx = series.index.argsort()
+                series = series.iloc[idx]
+                vals_err = vals_err[idx]
             if any(~np.isnan(vals_err)):
                 sd.data_err[var] = vals_err
             if any(~np.isnan(flagged)):

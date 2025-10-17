@@ -780,6 +780,45 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, t
     return conc
 
 
+def mmrx_to_concx(data, p_pascal, T_kelvin, mmr_unit, to_unit=None):
+    """
+    Convert mass mixing ratio (mmr) to mass concentration
+
+    Parameters
+    ----------
+    data : float or ndarray
+        array containing vmr values
+    p_pascal : float
+        pressure in Pa of input data
+    T_kelvin : float
+        temperature in K of input data
+    mmr_unit : str
+        unit of input data
+    to_unit : str, optional
+        Unit to which output data is converted. If None, output unit is
+        kg m-3. The default is None.
+
+    Returns
+    -------
+    float or ndarray
+        input data converted to mass concentration
+
+    """
+
+    Rspecific = 287.058  # J kg-1 K-1
+
+    conversion_fac = 1 / Unit("kg kg-1").convert(1, mmr_unit)
+
+    airdensity = p_pascal / (Rspecific * T_kelvin)  # kg m-3
+
+    conc = data * airdensity  # kg m-3
+    if to_unit is not None:
+        conversion_fac *= Unit("kg m-3").convert(1, to_unit)
+    if not np.isclose(conversion_fac, 1, rtol=1e-7):
+        conc *= conversion_fac
+    return conc
+
+
 def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, to_unit=None):
     """
     Convert mass concentration to volume mixing ratio (vmr)
