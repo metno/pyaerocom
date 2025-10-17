@@ -96,12 +96,6 @@ def make_config(
     )
 
     obs_dates = date_range(start_date, end_date)
-    cfg["obs_cfg"]["ICOS"] = make_ICOS_entry(start_date, end_date, icos_path)
-    #cfg["obs_cfg"]["openAQ"] = make_openAQ_entry(start_date, end_date, openaq_path)
-    cfg["obs_cfg"]["Aeronet"] = make_Aeronet_entry(start_date, end_date, aeronet_path)
-    cfg["obs_cfg"]["EEA"] = make_EEA_entry(start_date, end_date, eea_path)
-    cfg["model_cfg"]["IFS"] = make_model_entry(start_date, end_date, model_path)
-    
     cfg["obs_cfg"]["EPROFILE"] = make_EPROFILE_entry(start_date, end_date, vprofiles_path)
     cfg["obs_cfg"]["EPROFILE"]["read_opts_ungridded"]["files"] = [  # type:ignore[index]
         str(p)
@@ -109,6 +103,11 @@ def make_config(
             *obs_dates, root_path=vprofiles_path,
         )
     ]
+    cfg["obs_cfg"]["ICOS"] = make_ICOS_entry(start_date, end_date, icos_path)
+    #cfg["obs_cfg"]["openAQ"] = make_openAQ_entry(start_date, end_date, openaq_path)
+    cfg["obs_cfg"]["Aeronet"] = make_Aeronet_entry(start_date, end_date, aeronet_path)
+    cfg["obs_cfg"]["EEA"] = make_EEA_entry(start_date, end_date, eea_path)
+    cfg["model_cfg"]["IFS"] = make_model_entry(start_date, end_date, model_path)
 
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
 
