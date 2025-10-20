@@ -103,6 +103,13 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
         for fp in coldata_files:
             darrs.append(self._get_dataarray(fp, to_freq, obs_name))
 
+        # make sure station_display_name is in none or all data-objects
+        has_station_display_name = any("station_display_name" in ds.coords for ds in darrs)
+        if has_station_display_name:
+            for ds in darrs:
+                if "station_display_name" not in ds.coords:
+                    ds.coords["station_display_name"] = ds.coords["station_name"]
+
         merged = xr.concat(darrs, dim="station_name")
         coldata = ColocatedData(data=merged)
         engine = ColdataToJsonEngine(self.cfg)
