@@ -4,8 +4,6 @@ from copy import deepcopy
 import iris
 
 from .griddeddata import GriddedData
-from pyaerocom.stationdata import StationData
-from pyaerocom.exceptions import DataExtractionError
 
 from pyaerocom.io.gridded_reader import GriddedReader
 

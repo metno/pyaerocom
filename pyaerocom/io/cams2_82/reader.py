@@ -11,7 +11,7 @@ import xarray as xr
 from geonum.atmosphere import T0_STD, p0  # , temperature, pressure
 from tqdm import tqdm
 
-from pyaerocom.aux_var_helpers import vmrx_to_concx, mmrx_to_concx
+from pyaerocom.aux_var_helpers import mmrx_to_concx
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.units.molecular_mass import get_molmass

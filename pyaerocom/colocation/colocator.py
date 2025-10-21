@@ -89,10 +89,10 @@ class Colocator:
         self._processing_status: list[tuple[str | None, str | None, int]] = []
         self.files_written: list[str] = []
 
-        self._model_reader: ReadGridded | ReadMscwCtm | ReadCAMS2_83 | ReadCAMS2_82 |None = None
-        self._model_readers: list[ReadGridded] | list[ReadMscwCtm] | list[ReadCAMS2_83] | list[ReadCAMS2_82] |None = (
-            None
-        )
+        self._model_reader: ReadGridded | ReadMscwCtm | ReadCAMS2_83 | ReadCAMS2_82 | None = None
+        self._model_readers: (
+            list[ReadGridded] | list[ReadMscwCtm] | list[ReadCAMS2_83] | list[ReadCAMS2_82] | None
+        ) = None
         self._obs_reader: Any | None = None
         self._obs_is_vertical_profile: bool = False
         self.obs_filters: dict = colocation_setup.obs_filters.copy()
