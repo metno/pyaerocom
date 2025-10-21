@@ -2,7 +2,12 @@ from datetime import date
 
 import pytest
 
-from pyaerocom.scripts.cams2_82.cli import date_range, make_config, make_period, vpro_subpaths
+from pyaerocom.scripts.cams2_82.cli import (
+    date_range,
+    make_config,
+    make_period,
+    vpro_subpaths,
+)
 
 
 @pytest.fixture
@@ -48,6 +53,7 @@ def test_make_config(dummy_vpro_files, tmp_path):
         end_date=end_date,
         model_path=tmp_path,
         eea_path=tmp_path,
+        icos_path=tmp_path,
         aeronet_path=tmp_path,
         openaq_path=tmp_path,
         vprofiles_path=tmp_path,
@@ -63,6 +69,21 @@ def test_make_config(dummy_vpro_files, tmp_path):
 
     assert cfg["periods"] == ["20250101-20250117"]
     assert cfg["add_model_maps"]
+    assert cfg["only_model_maps"]
+    cfg["obs_cfg"]["EEA"]["pyaro_config"].filename_or_obj_or_url == tmp_path
+    cfg["obs_cfg"]["EEA"]["pyaro_config"].filters["time_bounds"]["startend_include"][0][0] == cfg[
+        "obs_cfg"
+    ]["Aeronet"]["pyaro_config"].filters["time_bounds"]["startend_include"][0][
+        0
+    ] == start_date.strftime("%Y-%m-%d %M%H%S")
+    cfg["obs_cfg"]["EEA"]["pyaro_config"].filters["time_bounds"]["startend_include"][0][1] == cfg[
+        "obs_cfg"
+    ]["Aeronet"]["pyaro_config"].filters["time_bounds"]["startend_include"][0][
+        1
+    ] == start_date.strftime("%Y-%m-%d %M%H%S")
+    assert set(cfg["obs_cfg"]["EPROFILE"]["read_opts_ungridded"]["files"]) == set(
+        [str(p) for p in dummy_vpro_files]
+    )
     assert cfg["only_model_maps"]
     cfg["obs_cfg"]["EEA"]["pyaro_config"].filename_or_obj_or_url == tmp_path
     cfg["obs_cfg"]["EEA"]["pyaro_config"].filters["time_bounds"]["startend_include"][0][0] == cfg[
