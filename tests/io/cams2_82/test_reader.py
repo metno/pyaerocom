@@ -10,6 +10,7 @@ from pyaerocom.io.cams2_82.reader import (
     AEROCOM_NAMES,
     UNITS,
     ReadCAMS2_82,
+    check_files,
     drop_vars,
     model_paths,
     only_first_day,
@@ -17,20 +18,23 @@ from pyaerocom.io.cams2_82.reader import (
 )
 
 times3h = pd.date_range(start="2025-07-01", freq="3h", periods=12)
+timesfew = pd.date_range(start="2025-03-01", freq="3h", periods=1)
+timesdup = pd.date_range(start="2025-05-01", freq="3h", periods=2).append(
+    pd.date_range(start="2025-05-01", freq="3h", periods=2)
+)
 levels = np.arange(64, 138)
 latitudes = np.arange(20.0, -20.5, -0.5)
 longitudes = np.arange(0.0, 20.0, 0.5)
 
 
-@pytest.fixture()
-def dummy_model_data():
+def dummy_model_data_create(timeindex):
     return xr.Dataset(
         {
             "aerext1064": xr.DataArray(
-                data=np.ones(shape=(len(times3h), len(levels), len(latitudes), len(longitudes))),
+                data=np.ones(shape=(len(timeindex), len(levels), len(latitudes), len(longitudes))),
                 dims=["time", "level", "latitude", "longitude"],
                 coords={
-                    "time": times3h,
+                    "time": timeindex,
                     "level": levels,
                     "latitude": latitudes,
                     "longitude": longitudes,
@@ -38,10 +42,10 @@ def dummy_model_data():
                 attrs={"units": "m**-1"},
             ),
             "aerext532": xr.DataArray(
-                data=np.ones(shape=(len(times3h), len(levels), len(latitudes), len(longitudes))),
+                data=np.ones(shape=(len(timeindex), len(levels), len(latitudes), len(longitudes))),
                 dims=["time", "level", "latitude", "longitude"],
                 coords={
-                    "time": times3h,
+                    "time": timeindex,
                     "level": levels,
                     "latitude": latitudes,
                     "longitude": longitudes,
@@ -53,10 +57,39 @@ def dummy_model_data():
 
 
 @pytest.fixture()
+def dummy_model_data():
+    return dummy_model_data_create(times3h)
+
+
+@pytest.fixture()
+def dummy_model_data_too_few_times():
+    return dummy_model_data_create(timesfew)
+
+
+@pytest.fixture()
+def dummy_model_data_duplicates():
+    return dummy_model_data_create(timesdup)
+
+
+@pytest.fixture()
 def dummy_model_path(tmp_path, dummy_model_data):
     path = tmp_path / "2025/20250701_cIFS-00UTC_o-suite_multilev.nc"
     path.parent.mkdir(exist_ok=True, parents=True)
     dummy_model_data.to_netcdf(path)
+    return path
+
+
+@pytest.fixture()
+def dummy_model_path_duplicates(tmp_path, dummy_model_data_duplicates):
+    path = tmp_path / "2025/20250501_cIFS-00UTC_o-suite_multilev.nc"
+    dummy_model_data_duplicates.to_netcdf(path)
+    return path
+
+
+@pytest.fixture()
+def dummy_model_path_too_few_times(tmp_path, dummy_model_data_too_few_times):
+    path = tmp_path / "2025/20250301_cIFS-00UTC_o-suite_multilev.nc"
+    dummy_model_data_too_few_times.to_netcdf(path)
     return path
 
 
@@ -115,3 +148,18 @@ def test_ReadCAMS2_82_no_data_dir():
         reader.daterange = ("2025-07-01", "2025-07-01")
         reader.read_var("ec1064aer", "3hourly")
         assert "data_dir needs to be set before accessing" in e
+
+
+def test_check_files(
+    dummy_model_path, dummy_model_path_too_few_times, dummy_model_path_duplicates, caplog
+):
+    result = check_files(dummy_model_path.parent.glob("*.nc"))
+    assert (
+        f"Ambiguous time dimension: Duplicate timestamps in {str(dummy_model_path_duplicates)}. Skipping file"
+        in caplog.text
+    )
+    assert (
+        f"Too few timestamps in {str(dummy_model_path_too_few_times)}. Skipping file"
+        in caplog.text
+    )
+    assert len(result) == 1

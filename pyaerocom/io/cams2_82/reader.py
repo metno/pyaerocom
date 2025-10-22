@@ -283,7 +283,7 @@ def only_first_day(ds: xr.Dataset) -> xr.Dataset:
 
 
 def read_dataset(paths: list[Path]) -> xr.Dataset:
-    # paths = check_files(paths)
+    paths = check_files(paths)
 
     def preprocess(ds: xr.Dataset) -> xr.Dataset:
         return ds.pipe(only_first_day).pipe(drop_vars)
@@ -304,14 +304,13 @@ def check_files(paths: list[Path]) -> list[Path]:
         try:
             with xr.open_dataset(p, decode_timedelta=True) as ds:
                 if len(ds.time.data) < 2:
-                    logger.warning(f"To few timestamps in {p}. Skipping file")
+                    logger.warning(f"Too few timestamps in {p}. Skipping file")
                     continue
                 if len(set(np.array(ds.time))) != len(np.array(ds.time)):
-                    if len(np.array(ds.time)) != 24:
-                        logger.warning(
-                            f"Ambiguous time dimension: Duplicate timestamps in {p}, with less that 24 step. Skipping file"
-                        )
-                        continue
+                    logger.warning(
+                        f"Ambiguous time dimension: Duplicate timestamps in {p}. Skipping file"
+                    )
+                    continue
 
             new_paths.append(p)
         except Exception as ex:
