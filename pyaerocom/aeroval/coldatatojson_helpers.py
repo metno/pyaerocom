@@ -1040,8 +1040,9 @@ def _process_map_and_scat(
                         )
                         jsdate = subset.data.jsdate.values.tolist()
                         use_dummy = False
-                    except (DataCoverageError, TemporalResolutionError):
-                        pass
+                    except (DataCoverageError, TemporalResolutionError) as e:
+                        logger.warning(f"Could not process period {per}: {e}")
+                        continue
 
                 for i, map_stat in zip(site_indices, map_data):
                     if freq not in map_stat:
@@ -1121,7 +1122,7 @@ def _process_map_and_scat(
                             "units": units,
                         }
 
-                    new_map_data.append(map_stat)
+                    new_map_data.append(deepcopy(map_stat))
 
     return (new_map_data, scat_data)
 
