@@ -1028,7 +1028,7 @@ def _process_map_and_scat(
     stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     scat_data = {}
     scat_dummy = [np.nan]
-    new_map_data = deepcopy(map_meta)
+    map_data = deepcopy(map_meta)
     for freq, cd in data.items():
         for per in periods:
             for season in seasons:
@@ -1044,7 +1044,7 @@ def _process_map_and_scat(
                         logger.warning(f"Could not process data: {e}")
                         continue
 
-                for i, map_stat in zip(site_indices, new_map_data):
+                for i, map_stat in zip(site_indices, map_data):
                     if freq not in map_stat:
                         map_stat[freq] = {}
 
@@ -1122,7 +1122,7 @@ def _process_map_and_scat(
                             "units": units,
                         }
 
-    return (new_map_data, scat_data)
+    return (map_data, scat_data)
 
 
 def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
