@@ -11,7 +11,7 @@ from pyaerocom.io.cams2_83.reader import AEROCOM_NAMES, DATA_FOLDER_PATH
 from pyaerocom.io.cams2_83.reader import model_paths as find_model_paths
 from pyaerocom.io.cams2_83.reader import read_dataset
 
-TEST_DATE = datetime(2021, 12, 1)
+TEST_DATE = datetime(2024, 12, 1)
 TEST_DATES = [TEST_DATE + timedelta(days=d) for d in range(3)]
 
 

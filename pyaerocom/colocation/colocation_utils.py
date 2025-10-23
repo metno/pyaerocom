@@ -246,6 +246,7 @@ def colocate_gridded_gridded(
     if regrid_res_deg is not None:
         data_ref = _regrid_gridded(data_ref, regrid_scheme, regrid_res_deg)
     # perform regridding
+
     if data.lon_res < data_ref.lon_res:  # obs has lower resolution
         data = data.regrid(data_ref, scheme=regrid_scheme)
     else:

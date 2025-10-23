@@ -287,12 +287,12 @@ class GriddedDataContainer:
     @property
     @only_one_child
     def latitude_points(self):
-        return self._lat_points
+        return self.children[0].latitude.points
 
     @property
     @only_one_child
     def longitude_points(self):
-        return self._lon_points
+        return self.children[0].longitude.points
 
     @property
     def longitude_circular(self):
@@ -305,6 +305,10 @@ class GriddedDataContainer:
     @only_one_child
     def get_cube_data(self):
         return self.children[0].cube.data
+
+    @only_one_child
+    def to_xarray(self):
+        return self.children[0].to_xarray()
 
     def get_cube_data_all(self) -> list:
         return [data.cube.data for data in self.children]
@@ -334,6 +338,10 @@ class GriddedDataContainer:
             return iris.coords.DimCoord(np.array(points), var_name="time", **units, **metadata)
 
         return self.children[0].time
+
+    @property
+    def has_time_dim(self):
+        return all([data.has_time_dim for data in self.children])
 
     @property
     def has_latlon_dims(self):
@@ -496,6 +504,7 @@ class GriddedDataContainer:
         for i, data in enumerate(self.children):
             self.children[i] = data.resample_time(to_ts_type, how, min_num_obs, use_iris)
 
+        self.ts_type = to_ts_type
         return self
 
     def filter_altitude(self, alt_range=None):  # pragma: no cover
