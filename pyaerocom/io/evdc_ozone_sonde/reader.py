@@ -423,38 +423,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
 
                 # we might need to adjust the units here later on
 
-                # we might need to fill the StationData object a bit more later on
-
-                # unames = self.VAR_UNIT_NAMES[netcdf_var_name]
-                # for u in unames:
-                #     if u in arr.attrs:
-                #         unit = arr.attrs[u]
-                # if unit is None:
-                #     raise DataUnitError(f"Unit of {var} could not be accessed in file {filename}")
-                # unit_fac = None
-                # try:
-                #     to_unit = self._var_info[var].units
-                #     unit_fac = get_unit_conversion_fac(unit, to_unit)
-                #     val *= unit_fac
-                #     unit = to_unit
-                #     unit_ok = True
-                # except Exception as e:
-                #     logger.warning(
-                #         f"Failed to convert unit of {var} in file {filename} (Earlinet): "
-                #         f"Error: {repr(e)}"
-                #     )
-
-                # import errors if applicable
-                # err = np.nan
-                # if read_uncertainties and var in self.ERR_VARNAMES:
-                #     err_name = self.ERR_VARNAMES[var]
-                #     if err_name in data_in.variables:
-                #         err = np.squeeze(np.float64(data_in.variables[err_name]))
-                #         if unit_ok:
-                #             err *= unit_fac
-                #         err_read = True
-
-                # create instance of ProfileData
+                # create instance of VerticalProfile
                 profile = VerticalProfile(
                     data=val,
                     altitude=data_out[self.ALTITUDE_NAME],
@@ -700,7 +669,6 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         :param indata:
         :return:
         """
-        # get_sejd2gcal(data_in["DATETIME"].values[0])
         from datetime import datetime
 
         outdata = None

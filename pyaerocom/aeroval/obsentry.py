@@ -29,7 +29,6 @@ SUPPORTED_VERT_CODES: tuple[
     "Surface",
 )
 
-# ALT_NAMES_VERT_CODES: dict = dict(ModelLevel="Profile")
 ALT_NAMES_VERT_CODES: dict = dict(Profile="ModelLevel")
 
 

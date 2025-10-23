@@ -55,8 +55,7 @@ def test_obscollection_all_vert_types():
     entry2 = ObsEntry(obs_id="obs2", obs_vars=("var2",), obs_vert_type="Profile")
     collection.add_entry("key1", entry1)
     collection.add_entry("key2", entry2)
-    # assert set(collection.all_vert_types) == {"Surface", "Profile"}
-    # at the model level, Profile is named ModelLevel
+    # at the model level, Profile is named ModelLevel;
     assert set(collection.all_vert_types) == {"Surface", "ModelLevel"}
 
 
