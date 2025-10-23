@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 from pyaerocom import const, io
-from pyaerocom.io.evdc_ozone_sonde.reader import (
+from pyaerocom.io.sonde_like.reader import (
     ReadEvdcOzoneSondeDataHdf,
     ReadEvdcOzoneSondeDataHarp,
 )

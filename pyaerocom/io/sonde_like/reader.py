@@ -22,7 +22,7 @@ else:
 logger = logging.getLogger(__name__)
 
 
-class ReadEvdcOzoneSondeData(ReadUngriddedBase):
+class ReadSondeLikeData(ReadUngriddedBase):
     """Interface for reading of EVDC ozone sonde data data"""
 
     # in the HDF files time is store as modified julian day starting the 1. January 2000
@@ -703,7 +703,7 @@ class ReadEvdcOzoneSondeData(ReadUngriddedBase):
         return outdata
 
 
-class ReadEvdcOzoneSondeDataHarp(ReadEvdcOzoneSondeData):
+class ReadEvdcOzoneSondeDataHarp(ReadSondeLikeData):
     """
     Interface for reading of EVDC ozone sonde data in HARP format as provides by the CAMS2-82 project via
     the CAMS validation server
@@ -736,7 +736,7 @@ class ReadEvdcOzoneSondeDataHarp(ReadEvdcOzoneSondeData):
         super().__init__(data_id=data_id, data_dir=_data_dir, format="HARP")
 
 
-class ReadEvdcOzoneSondeDataHdf(ReadEvdcOzoneSondeData):
+class ReadEvdcOzoneSondeDataHdf(ReadSondeLikeData):
     """
     Interface for reading of EVDC ozone sonde data in HDF5 format
 

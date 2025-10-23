@@ -28,7 +28,7 @@ from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.io.read_airnow import ReadAirNow
 from pyaerocom.io.read_earlinet import ReadEarlinet
-from pyaerocom.io.evdc_ozone_sonde.reader import (
+from pyaerocom.io.sonde_like.reader import (
     ReadEvdcOzoneSondeDataHdf,
     ReadEvdcOzoneSondeDataHarp,
 )

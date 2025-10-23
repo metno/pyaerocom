@@ -7,11 +7,11 @@ import numpy as np
 import pytest
 
 from pyaerocom import const, VerticalProfile
-from pyaerocom.io.evdc_ozone_sonde.reader import (
+from pyaerocom.io.sonde_like.reader import (
     ReadEvdcOzoneSondeDataHdf,
     ReadEvdcOzoneSondeDataHarp,
 )
-from pyaerocom.io.evdc_ozone_sonde.jdcal import is_leap, gcal2jd, jcal2jd, jd2jcal, jd2gcal
+from pyaerocom.io.sonde_like.jdcal import is_leap, gcal2jd, jcal2jd, jd2jcal, jd2gcal
 
 ROOT_HARP: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HARP-test"])
 ROOT_HDF: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HDF-test"])
