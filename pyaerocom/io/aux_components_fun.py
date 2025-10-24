@@ -9,10 +9,9 @@ from pyaerocom.io.aux_read_cubes import (
     _check_same_units,
     add_cubes,
 )
-from pyaerocom.units.molecular_mass import get_molmass
-
 from pyaerocom.units import Unit
-
+from pyaerocom.units.constants import RSPECIFIC
+from pyaerocom.units.molecular_mass import get_molmass
 
 logger = logging.getLogger(__name__)
 
@@ -59,11 +58,10 @@ def vmr_to_conc(data, vmr_unit, var_name, to_unit, component_unit=None):
         component_unit_fac = component_mass / mmol_var
     else:
         component_unit_fac = 1
-    Rspecific = 287.058  # J kg-1 K-1
 
     conversion_fac = 1 / Unit("mol mol-1").convert(1, vmr_unit)
 
-    airdensity = p_pascal / (Rspecific * T_kelvin)  # kg m-3
+    airdensity = p_pascal / (RSPECIFIC * T_kelvin)  # kg m-3
     mulfac = mmol_var / mmol_air * airdensity  # kg m-3
 
     mult_fun = CUBE_MATHS["multiply"]

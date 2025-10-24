@@ -1,13 +1,12 @@
 import numpy as np
 
 from pyaerocom import const
+from pyaerocom.units import Unit
+from pyaerocom.units.constants import RSPECIFIC
 from pyaerocom.units.datetime import TsType
+from pyaerocom.units.molecular_mass import get_molmass
 from pyaerocom.units.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 from pyaerocom.variable_helpers import get_variable
-
-from pyaerocom.units.molecular_mass import get_molmass
-
-from pyaerocom.units import Unit
 
 
 def calc_ang4487aer(data):
@@ -734,7 +733,15 @@ def compute_wetso4pr_from_concprcpso4(data):
     return _compute_wdeppr_from_concprcp_helper(data, "wetso4pr")
 
 
-def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, to_unit=None):
+def vmrx_to_concx(
+    data: float | np.typing.ArrayLike,
+    p_pascal: float,
+    T_kelvin: float,
+    vmr_unit: str,
+    mmol_var: float,
+    mmol_air: float = None,
+    to_unit: str = None,
+):
     """
     Convert volume mixing ratio (vmr) to mass concentration
 
@@ -766,11 +773,9 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, t
     if mmol_air is None:
         mmol_air = get_molmass("air_dry")
 
-    Rspecific = 287.058  # J kg-1 K-1
-
     conversion_fac = 1 / Unit("mol mol-1").convert(1, vmr_unit)
 
-    airdensity = p_pascal / (Rspecific * T_kelvin)  # kg m-3
+    airdensity = p_pascal / (RSPECIFIC * T_kelvin)  # kg m-3
     mulfac = mmol_var / mmol_air * airdensity  # kg m-3
     conc = data * mulfac  # kg m-3
     if to_unit is not None:
@@ -780,7 +785,13 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, t
     return conc
 
 
-def mmrx_to_concx(data, p_pascal, T_kelvin, mmr_unit, to_unit=None):
+def mmrx_to_concx(
+    data: float | np.typing.ArrayLike,
+    p_pascal: float,
+    T_kelvin: float,
+    mmr_unit: str,
+    to_unit: str = None,
+):
     """
     Convert mass mixing ratio (mmr) to mass concentration
 
@@ -805,11 +816,9 @@ def mmrx_to_concx(data, p_pascal, T_kelvin, mmr_unit, to_unit=None):
 
     """
 
-    Rspecific = 287.058  # J kg-1 K-1
-
     conversion_fac = 1 / Unit("kg kg-1").convert(1, mmr_unit)
 
-    airdensity = p_pascal / (Rspecific * T_kelvin)  # kg m-3
+    airdensity = p_pascal / (RSPECIFIC * T_kelvin)  # kg m-3
 
     conc = data * airdensity  # kg m-3
     if to_unit is not None:
@@ -819,7 +828,15 @@ def mmrx_to_concx(data, p_pascal, T_kelvin, mmr_unit, to_unit=None):
     return conc
 
 
-def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, to_unit=None):
+def concx_to_vmrx(
+    data: float | np.typing.ArrayLike,
+    p_pascal: float,
+    T_kelvin: float,
+    conc_unit: str,
+    mmol_var: float,
+    mmol_air: float = None,
+    to_unit: str = None,
+):
     """
     Convert mass concentration to volume mixing ratio (vmr)
 
@@ -831,7 +848,7 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
         pressure in Pa of input data
     T_kelvin : float
         temperature in K of input data
-    vmr_unit : str
+    conc_unit : str
         unit of input data
     mmol_var : float
         molar mass of variable represented by input data
@@ -853,11 +870,9 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None, 
 
         mmol_air = get_molmass("air_dry")
 
-    Rspecific = 287.058  # J kg-1 K-1
-
     conversion_fac = 1 / Unit("kg m-3").convert(1, conc_unit)
 
-    airdensity = p_pascal / (Rspecific * T_kelvin)  # kg m-3
+    airdensity = p_pascal / (RSPECIFIC * T_kelvin)  # kg m-3
     mulfac = mmol_var / mmol_air * airdensity  # kg m-3
     vmr = data / mulfac  # unitless
     if to_unit is not None:

@@ -14,7 +14,7 @@ from tqdm import tqdm
 from pyaerocom.aux_var_helpers import mmrx_to_concx
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.gridded_reader import GriddedReader
-from pyaerocom.units.molecular_mass import get_molmass
+from pyaerocom.units.molecular_mass import get_mmr_to_vmr_fac, get_molmass
 
 MODEL_LVL137_IN_METERS = 10
 
@@ -148,8 +148,8 @@ CONVERT_UNITS = {
 }
 
 TO_VMR = {
-    "ch4_c": {"factor": 28.9644 / 16.0425 * 1e9},
-    "co": {"factor": 28.9644 / 28.0101 * 1e9},
+    "ch4_c": {"factor": get_mmr_to_vmr_fac("ch4") * 1e9},
+    "co": {"factor": get_mmr_to_vmr_fac("co") * 1e9},
 }
 
 UNITS = dict(
