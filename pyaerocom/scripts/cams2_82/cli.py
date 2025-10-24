@@ -2,23 +2,27 @@ from __future__ import annotations
 
 import logging
 import multiprocessing as mp
-from copy import deepcopy
 from collections.abc import Iterator
+from copy import deepcopy
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
 import typer
 
-from pyaerocom import change_verbosity, const
-from pyaerocom.scripts.cams2_82.config import CFG, make_Aeronet_entry, make_EEA_entry, make_model_entry, make_EPROFILE_entry, make_openAQ_entry, make_ICOS_entry
-from pyaerocom.io.cams2_82.reader import DATA_FOLDER_PATH
-from pyaerocom.scripts.cams2_82.evaluation import (
-    runner,
-)
-
-
 import pyaerocom.scripts.cams2_82.converter as converter
+from pyaerocom import change_verbosity, const
+from pyaerocom.io.cams2_82.reader import DATA_FOLDER_PATH
+from pyaerocom.scripts.cams2_82.config import (
+    CFG,
+    make_Aeronet_entry,
+    make_EEA_entry,
+    make_EPROFILE_entry,
+    make_ICOS_entry,
+    make_model_entry,
+    make_openAQ_entry,
+)
+from pyaerocom.scripts.cams2_82.evaluation import runner
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 app.add_typer(converter.app, name="convert")
@@ -107,7 +111,7 @@ def make_config(
     #cfg["obs_cfg"]["openAQ"] = make_openAQ_entry(start_date, end_date, openaq_path)
     cfg["obs_cfg"]["Aeronet"] = make_Aeronet_entry(start_date, end_date, aeronet_path)
     cfg["obs_cfg"]["EEA"] = make_EEA_entry(start_date, end_date, eea_path)
-    cfg["model_cfg"]["IFS"] = make_model_entry(start_date, end_date, model_path)
+    cfg["model_cfg"]["IFS-OSUITE"] = make_model_entry(start_date, end_date, model_path)
 
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
 

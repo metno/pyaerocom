@@ -1,9 +1,11 @@
 ##################################################
 #        The global configs
 ##################################################
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 import pandas as pd
+
 from pyaerocom.io import PyaroConfig
 
 GLOBAL_CONFIG = dict(
@@ -280,7 +282,7 @@ def make_EEA_entry(
     return  dict(
         obs_id=config_eea.name,
         pyaro_config=config_eea,
-        web_interface_name="EEA",
+        web_interface_name="EEA-rural",
         obs_vars=EEA_SPECIES,
         obs_vert_type="Surface",
         ts_type="hourly",
@@ -344,7 +346,7 @@ def make_Aeronet_entry(
     return  dict(
         obs_id=config_eea.name,
         pyaro_config=config_eea,
-        web_interface_name="Aeronet",
+        web_interface_name="AeronetL1.5",
         obs_vars=AERONET_SPECIES,
         obs_vert_type="Surface",
         ts_type="hourly",
