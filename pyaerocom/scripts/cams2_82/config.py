@@ -56,7 +56,7 @@ GLOBAL_CONFIG = dict(
     obs_remove_outliers=True,
     model_remove_outliers=False,
     harmonise_units=True,
-    regions_how="country",
+    regions_how="htap",
     annual_stats_constrained=False,
     weighted_stats=False,
     
