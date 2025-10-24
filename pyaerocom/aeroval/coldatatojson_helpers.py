@@ -1011,7 +1011,7 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
 def _process_map_and_scat(
     data: dict[str, ColocatedData | None],
-    map_meta: list[dict],
+    map_data: list[dict],
     site_indices: list[int],
     periods: list[str],
     scatter_freq: str,
@@ -1028,7 +1028,7 @@ def _process_map_and_scat(
     stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     scat_data = {}
     scat_dummy = [np.nan]
-    map_data = deepcopy(map_meta)
+    new_map_data: list[dict] = []
     for freq, cd in data.items():
         for per in periods:
             for season in seasons:
@@ -1040,13 +1040,13 @@ def _process_map_and_scat(
                         )
                         jsdate = subset.data.jsdate.values.tolist()
                         use_dummy = False
-                    except (DataCoverageError, TemporalResolutionError) as e:
-                        logger.warning(f"Could not process data: {e}")
-                        continue
+                    except (DataCoverageError, TemporalResolutionError):
+                        pass
 
                 for i, map_stat in zip(site_indices, map_data):
+                    ms = deepcopy(map_stat)
                     if freq not in map_stat:
-                        map_stat[freq] = {}
+                        ms[freq] = {}
 
                     if use_dummy:
                         stats = stats_dummy
@@ -1098,17 +1098,17 @@ def _process_map_and_scat(
                                     logger.info(msg)
 
                     perstr = f"{per}-{season}"
-                    map_stat[freq][perstr] = stats
+                    ms[freq][perstr] = stats
                     if freq == scatter_freq:
                         # add only sites to scatter data that have data available
                         # in the lowest of the input resolutions (e.g. yearly)
-                        site = map_stat["station_name"]
+                        site = ms["station_name"]
                         if site not in scat_data:
                             scat_data[site] = {}
-                            scat_data[site]["latitude"] = map_stat["latitude"]
-                            scat_data[site]["longitude"] = map_stat["longitude"]
-                            scat_data[site]["altitude"] = map_stat["altitude"]
-                            scat_data[site]["region"] = map_stat["region"]
+                            scat_data[site]["latitude"] = ms["latitude"]
+                            scat_data[site]["longitude"] = ms["longitude"]
+                            scat_data[site]["altitude"] = ms["altitude"]
+                            scat_data[site]["region"] = ms["region"]
                         if use_dummy:
                             obs = mod = jsdate = scat_dummy
                             units = None
@@ -1122,7 +1122,9 @@ def _process_map_and_scat(
                             "units": units,
                         }
 
-    return (map_data, scat_data)
+                    new_map_data.append(ms)
+
+    return (new_map_data, scat_data)
 
 
 def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
