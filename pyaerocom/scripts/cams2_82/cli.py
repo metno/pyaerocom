@@ -11,7 +11,7 @@ from typing import Optional
 import typer
 
 import pyaerocom.scripts.cams2_82.converter as converter
-from pyaerocom import change_verbosity, const
+from pyaerocom import ConfigReader, change_verbosity
 from pyaerocom.io.cams2_82.reader import DATA_FOLDER_PATH
 from pyaerocom.scripts.cams2_82.config import (
     CFG,
@@ -28,6 +28,7 @@ app = typer.Typer(add_completion=False, no_args_is_help=True)
 app.add_typer(converter.app, name="convert")
 logger = logging.getLogger(__name__)
 
+const = ConfigReader.get_instance()
 
 DEFAULT_EEA_PATH = Path("/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download")
 DEFAULT_AERONET_PATH = Path("/lustre/storeB/users/danielh/cams282/src/")

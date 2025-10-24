@@ -219,15 +219,6 @@ def fix_names(ds: xr.Dataset) -> xr.Dataset:
 def convert_units(ds: xr.Dataset) -> xr.Dataset:
     for var_name, attrs in CONVERT_UNITS.items():
         data = ds[var_name].data
-        # ds[var_name].data = vmrx_to_concx(
-        #     data,
-        #     p_pascal=p0,  # pressure(MODEL_LVL137_IN_METERS),
-        #     T_kelvin=T0_STD,  # temperature(MODEL_LVL137_IN_METERS),
-        #     mmol_var=1,
-        #     vmr_unit=attrs["fromunit"],
-        #     mmol_air=1,
-        #     to_unit=UNITS[var_name],
-        # )
 
         ds[var_name].data = mmrx_to_concx(
             data,

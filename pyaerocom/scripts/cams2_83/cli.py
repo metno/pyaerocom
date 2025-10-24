@@ -9,7 +9,7 @@ from typing import Optional
 
 import typer
 
-from pyaerocom import change_verbosity, const
+from pyaerocom import ConfigReader, change_verbosity
 from pyaerocom.io.cams2_83.models import ModelName, RunType
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
@@ -21,6 +21,8 @@ from pyaerocom.scripts.cams2_83.evaluation import (
     runner,
     runnermedianscores,
 )
+
+const = ConfigReader.get_instance()
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 logger = logging.getLogger(__name__)

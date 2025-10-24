@@ -9,7 +9,7 @@ import numpy as np
 import xarray
 from tqdm import tqdm
 
-from pyaerocom import const
+from pyaerocom import ConfigReader
 from pyaerocom.exceptions import DataDimensionError, DataUnitError, EprofileFileError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
@@ -27,6 +27,8 @@ else:
 
 
 logger = logging.getLogger(__name__)
+
+const = ConfigReader.get_instance()
 
 
 class ReadEprofile(ReadUngriddedBase):
