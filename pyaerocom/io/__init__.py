@@ -4,6 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Submodule
+from . import cams2_82
 from . import cams2_83
 
 from .aerocom_browser import AerocomBrowser
@@ -35,6 +36,7 @@ from .sonde_like.reader import (
     ReadEvdcOzoneSondeDataHdf,
     ReadIagosDataHarp,
 )
+from pyaerocom.io.cams2_82.reader import ReadCAMS2_82
 
 # Pyaro classes
 from .pyaro.read_pyaro import ReadPyaro

@@ -414,7 +414,8 @@ class ConfigReader:
 
             try:
                 with open(user_file, "w") as fh:
-                    fh.write(str(user_file))
+                    # fh.write(str(user_file))
+                    user_config.write(fh)
                 logger.info(
                     f"Update of file {user_file} was successful. The original file was retained as {backup_file_name}, You might want to check paths for validity."
                 )

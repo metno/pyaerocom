@@ -1,3 +1,4 @@
+import iris
 import pytest
 from copy import deepcopy
 
@@ -188,3 +189,30 @@ def test_only_one_child(cities_data):
         match="lat_res is not implemented for cases*",
     ):
         lat_res = mg.lat_res
+
+
+def test_only_one_child_properties(fake_model_data_with_altitude):
+    data_id = "test_id_onechild"
+    mg = GriddedDataContainer(data_id)
+
+    mg.add_griddeddata(fake_model_data_with_altitude)
+
+    longitude = mg.longitude
+    latitude = mg.latitude
+
+    assert longitude.shape == (20,)
+    assert latitude.shape == (10,)
+    altitude = mg.altitude
+    altitude_points = mg.altitude.points
+    assert altitude.shape == altitude_points.shape == (10000,)
+
+    data_layer = (
+        mg.extract(
+            iris.Constraint(coord_values={"altitude": lambda cell: 20000 < cell.point < 30000})
+        )
+        .collapsed("altitude", iris.analysis.MEAN)
+        .copy()
+    )
+    altitude_points = altitude_points[altitude_points > 20000]
+    altitude_points = altitude_points[altitude_points < 30000]
+    assert data_layer.altitude_points[0] == pytest.approx(altitude_points.mean(), rel=1e-6)

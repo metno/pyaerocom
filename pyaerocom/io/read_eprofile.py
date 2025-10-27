@@ -1,28 +1,24 @@
 import logging
 import os
 import sys
+from collections.abc import Iterator
+from glob import glob
+from pathlib import Path
 
 import numpy as np
 import xarray
-from glob import glob
 from tqdm import tqdm
 
-from pyaerocom import const
-from pyaerocom.units import convert_unit
-from collections.abc import Iterator
-from pyaerocom.exceptions import (
-    DataUnitError,
-    DataDimensionError,
-    EprofileFileError,
-)
+from pyaerocom import ConfigReader
+from pyaerocom.exceptions import DataDimensionError, DataUnitError, EprofileFileError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
+from pyaerocom.units import convert_unit
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
-from pathlib import Path
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -31,6 +27,8 @@ else:
 
 
 logger = logging.getLogger(__name__)
+
+const = ConfigReader.get_instance()
 
 
 class ReadEprofile(ReadUngriddedBase):
@@ -189,6 +187,14 @@ class ReadEprofile(ReadUngriddedBase):
         logger.debug(f"Reading file {filename}")
 
         with xarray.open_dataset(filename, engine="netcdf4", decode_timedelta=True) as data_in:
+            if not xarray.infer_freq(data_in["time"]) == "D":
+                try:
+                    data_in = data_in.where(
+                        (data_in.retrieval_scene <= 1) & (data_in.cloud_amount == 0)
+                    )
+                    data_in = data_in.resample(time="D").mean()
+                except (Exception, ValueError) as e:
+                    raise EprofileFileError(f"Daily resample failed, {e}")
             for var in vars_to_read:
                 if self.VAR_TO_WAVELENGTH[var] != data_in.attrs["l0_wavelength"]:
                     raise EprofileFileError("Wavelength of variable does not match in file")
@@ -200,9 +206,7 @@ class ReadEprofile(ReadUngriddedBase):
             )  # data_in.station_longitude.values
             data_out["station_coords"]["latitude"] = data_in.station_latitude_t0
             data_out["latitude"] = data_in.station_latitude_t0  # data_in.station_latitude.values
-            data_out["altitude"] = (
-                data_in.station_altitude_t0 + data_in.altitude.values
-            )  # Note altitude is an array for the data, station altitude is different. Moreover, EPROFILE as of 21.05.2025 gives altitude in altitude above ground level, so add the station altitude to get the altitude above sea level
+            data_out["altitude"] = data_in.altitude.values
             data_out["station_coords"]["altitude"] = data_in.station_altitude_t0
             data_out["altitude_attrs"] = (
                 data_in.altitude.attrs
@@ -250,7 +254,10 @@ class ReadEprofile(ReadUngriddedBase):
 
                 info = var_info[var]
                 arr = data_in.variables[netcdf_var_name]
-                val = np.squeeze(np.float64(arr))  # squeeze to 1D array
+
+                if not len(arr.dims) == 2:
+                    raise DataDimensionError("EPROFILE data must be two dimensional")
+                val = arr.to_numpy()
 
                 # CONVERT UNIT
                 unit = None
@@ -279,10 +286,9 @@ class ReadEprofile(ReadUngriddedBase):
                     unit_ok = True
                     unit = self._var_info[var].units
 
-                if not val.ndim == 2:
-                    raise DataDimensionError("EPROFILE data must be two dimensional")
-                elif len(val) == 0:
+                if len(val) == 0:
                     continue  # no data
+
                 # Remove NaN equivalent values
                 val[val > self._MAX_VAL_NAN] = np.nan
 
