@@ -13,6 +13,7 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
 from .jdcal import MJD_JD2000, MJD_0, jd2gcal
+from collections.abc import Iterable
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -114,6 +115,8 @@ class ReadSondeLikeData(ReadUngriddedBase):
             self.FILEMASK = self._FILEMASK_HARP
         elif format == "HDF":
             self.FILEMASK = self._FILEMASK_HDF
+        elif format == "IAGOS_HARP":
+            self.FILEMASK = self._FILEMASK_HARP
         else:
             raise NotImplementedError
 
@@ -203,10 +206,18 @@ class ReadSondeLikeData(ReadUngriddedBase):
                     str(data_in["location_name"].values.astype(str))
                 )
             else:
-                logger.error(f"file {filename} does not contain a site name. Skipping...")
-                return None
+                # the IAGOS files don't contain a field for the station name
+                # try the filename instead
+                try:
+                    # FRA is the station name
+                    # iagos-o3_asc-L1-2025091309331502-FRA-20250913T093331-20250913T111111-0100-20250920T010046.nc
+                    data_out["station_id"] = os.path.basename(filename).split("-")[4]
+                except Exception:
+                    logger.error(f"file {filename} does not contain a site name. Skipping...")
+                    return None
             data_out["data_id"] = self.data_id
             data_out["ts_type"] = self.TS_TYPE
+            data_out["station_name"] = data_out["station_id"]
 
             # create empty arrays for all variables that are supposed to be read
             # from file
@@ -223,8 +234,9 @@ class ReadSondeLikeData(ReadUngriddedBase):
                 data_in[self.LATITUDE_NAME].values[0]
             )
             # Obs: geopotential height
+            # min due to IAGOS descends data that have a decending altitude coordinate
             data_out["station_coords"][self.ALTITUDE_NAME] = np.float64(
-                data_in[self.ALTITUDE_ID_HARP].values[0]
+                np.nanmin(data_in[self.ALTITUDE_ID_HARP].values)
             )
             # these are the profile coordinates
             data_out[self.LONGITUDE_NAME] = np.float64(data_in[self.LONGITUDE_NAME].values)
@@ -449,10 +461,10 @@ class ReadSondeLikeData(ReadUngriddedBase):
     @override
     def read(
         self,
-        vars_to_retrieve=None,
-        files=None,
-        first_file=None,
-        last_file=None,
+        vars_to_retrieve: str | None = None,
+        files: Iterable[str | Path] | None = None,
+        first_file: int | None = None,
+        last_file: int | None = None,
         read_err=READ_UNCERTAINTIES,
         remove_outliers=True,
         pattern=None,
@@ -491,23 +503,25 @@ class ReadSondeLikeData(ReadUngriddedBase):
             vars_to_retrieve = [vars_to_retrieve]
 
         if files is None:
-            if len(self.files) == 0:
-                self.files = self.get_file_list(pattern=self._FILEMASK)
-            files = self.files
+            files = self.get_file_list(pattern=self.FILEMASK)
+        if len(self.files) == 0:
+            files = self.get_file_list(pattern=self.FILEMASK)
+        # files = self.files
 
         # turn files into a list because I suspect there may be a bug if you don't do this
         if isinstance(files, str):
             files = [files]
 
-        if first_file is None:
-            first_file = 0
-        if last_file is None:
-            last_file = len(files)
+        if files is not None and last_file is not None and first_file is not None:
+            files = files[
+                first_file : last_file + 1
+            ]  # think need to +1 here in order to actually get desired subset
+        elif files is not None and first_file is not None:
+            files = files[first_file:]
+        elif files is not None and last_file is not None:
+            files = files[:last_file]
 
-        files = files[
-            first_file : last_file + 1
-        ]  # think need to +1 here in order to actually get desired subset
-
+        self.files = files
         self.read_failed = []
 
         data_obj = UngriddedData()
@@ -650,13 +664,13 @@ class ReadSondeLikeData(ReadUngriddedBase):
             list containing file paths
         """
 
-        logger.info("Fetching EVDC data files. This might take a while...")
+        logger.info("Fetching sonde like data files. This might take a while...")
         searchpath = Path(self.data_dir)
         files = []
         for _file in searchpath.rglob(self.FILEMASK):
             if _file.is_file():
                 files.append(str(_file))
-        logger.info(f"Found {len(files)} EVDC data files in directory {self.data_dir}.")
+        logger.info(f"Found {len(files)} sonde like data files in directory {self.data_dir}.")
         return files
 
     def get_seconds_since_epoch_from_hdf_time(self, indata: np.ndarray) -> np.ndarray:
@@ -725,6 +739,40 @@ class ReadEvdcOzoneSondeDataHarp(ReadSondeLikeData):
         "ts3d": "temperature",
     }
 
+
+class ReadIagosDataHarp(ReadSondeLikeData):
+    """
+    Interface for reading of IAGOS data in HARP format as provides by the CAMS2-82 project via
+    the CAMS validation server
+    """
+
+    #: Name of dataset (OBS_ID)
+    DATA_ID = const.IAGOS_NAME_HARP
+
+    # IAGOS data has only one variable per file and the variable name encoded in the file name
+    # add that to the filemask at the init method
+
+    _VAR_FILE_SUFFIX = {}
+    _VAR_FILE_SUFFIX["vmro33d"] = "o3"
+    _VAR_FILE_SUFFIX["vmrco3d"] = "co"
+
+    ALTITUDE_ID_HARP = "altitude"
+
+    _FILEMASK = "iagos-*.nc"
+    _FILEMASK_HARP = "iagos-*.nc"
+    _SUFFIX_HARP = Path(_FILEMASK_HARP).suffix
+
+    #: List of all datasets supported by this interface
+    SUPPORTED_DATASETS = [DATA_ID]
+
+    VAR_NAMES_FILE_HARP = {
+        # "conco33d": "O3_volume_mixing_ratio",
+        "vmro33d": "O3_volume_mixing_ratio",
+        "vmrco3d": "O3_volume_mixing_ratio",
+        "ps3d": "pressure",
+        "ts3d": "temperature",
+    }
+
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE_HARP)
 
     def __init__(self, data_id=None, data_dir: str | Path | None = None):
@@ -733,7 +781,7 @@ class ReadEvdcOzoneSondeDataHarp(ReadSondeLikeData):
             _data_dir = str(data_dir)
         else:
             _data_dir = data_dir
-        super().__init__(data_id=data_id, data_dir=_data_dir, format="HARP")
+        super().__init__(data_id=data_id, data_dir=_data_dir, format="IAGOS_HARP")
 
 
 class ReadEvdcOzoneSondeDataHdf(ReadSondeLikeData):

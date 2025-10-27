@@ -30,7 +30,11 @@ from .read_eea_aqerep import ReadEEAAQEREP
 from .read_eea_aqerep_v2 import ReadEEAAQEREP_V2
 from .read_eprofile import ReadEprofile
 from pyaerocom.io.cams2_83.reader import ReadCAMS2_83
-from .sonde_like.reader import ReadEvdcOzoneSondeDataHarp, ReadEvdcOzoneSondeDataHdf
+from .sonde_like.reader import (
+    ReadEvdcOzoneSondeDataHarp,
+    ReadEvdcOzoneSondeDataHdf,
+    ReadIagosDataHarp,
+)
 
 # Pyaro classes
 from .pyaro.read_pyaro import ReadPyaro

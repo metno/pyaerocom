@@ -10,9 +10,11 @@ from pyaerocom import const, VerticalProfile
 from pyaerocom.io.sonde_like.reader import (
     ReadEvdcOzoneSondeDataHdf,
     ReadEvdcOzoneSondeDataHarp,
+    ReadIagosDataHarp,
 )
 from pyaerocom.io.sonde_like.jdcal import is_leap, gcal2jd, jcal2jd, jd2jcal, jd2gcal
 
+ROOT_IAGOS_HARP: Path = Path(const.OBSLOCS_UNGRIDDED["IAGOS-HARP-test"])
 ROOT_HARP: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HARP-test"])
 ROOT_HDF: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HDF-test"])
 
@@ -34,11 +36,29 @@ TEST_FILES_HDF: list[str | Path] = [
     ),
 ]
 
+TEST_FILES_IAGOS_HARP: list[str | Path] = [
+    Path(
+        f"{ROOT_IAGOS_HARP}//2025/09/13/iagos-o3_asc-L1-2025091320383902-MAA-20250913T203855-20250913T212339-0101-20250930T010019.nc"
+    ),
+    Path(
+        f"{ROOT_IAGOS_HARP}/2025/09/13/iagos-o3_desc-L1-2025091221511102-FRA-20250913T044151-20250913T061827-0100-20250924T010017.nc"
+    ),
+]
+
 SIMPLE_TEST_VAR = "conco33d"
 TEST_VAR_HDF = "vmro33d"  # this is what all files provide
 TEST_RTOL = 1.0e-4
 
 logger = logging.getLogger(__name__)
+
+
+def test_IAGOS_Data_read_harp():
+    # test reading of harp files
+    read = ReadIagosDataHarp(data_dir=ROOT_IAGOS_HARP)
+    data = read.read(vars_to_retrieve=TEST_VAR_HDF)
+    #
+    assert len(data.unique_station_names) > 1
+    assert len(data.metadata) > 1
 
 
 def test_all_files_exist():
@@ -111,6 +131,13 @@ def test_get_file_list_harp():
     assert len(read.files) >= len(TEST_FILES_HARP)
 
 
+def test_get_file_list_iagos_harp():
+    # test the get_file_list method for harp reading
+    read = ReadIagosDataHarp(data_dir=ROOT_IAGOS_HARP)
+    read.files = read.get_file_list()
+    assert len(read.files) >= len(TEST_FILES_HARP)
+
+
 def test_get_file_list_hdf():
     # test the get_file_list method for hdf reading
     read = ReadEvdcOzoneSondeDataHdf(
@@ -127,6 +154,7 @@ def test_EvdcOzoneSondeData_read_hdf():
         data_dir=ROOT_HDF,
     )
     data = read.read(vars_to_retrieve=TEST_VAR_HDF)
+    assert len(data.unique_station_names) >= 1
     assert len(data.metadata) >= 1
 
 
@@ -135,6 +163,7 @@ def test_EvdcOzoneSondeData_read_harp():
     read = ReadEvdcOzoneSondeDataHarp(data_dir=ROOT_HARP)
     data = read.read(vars_to_retrieve=SIMPLE_TEST_VAR)
     #
+    assert len(data.unique_station_names) > 1
     assert len(data.metadata) > 1
 
 

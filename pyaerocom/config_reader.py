@@ -118,6 +118,8 @@ class ConfigReader:
     #: ICOS name
     ICOS_NAME = "ICOS"
 
+    IAGOS_NAME_HARP = "IAGOS.HARP"
+
     EVDC_OZONE_SONDES_NAME_HARP = "EVDC.Ozone.Sondes.HARP"
     EVDC_OZONE_SONDES_NAME_HDF = "EVDC.Ozone.Sondes.HDF"
 
