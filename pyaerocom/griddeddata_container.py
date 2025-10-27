@@ -4,7 +4,6 @@ from copy import deepcopy
 import iris
 
 from .griddeddata import GriddedData
-from pyaerocom.stationdata import StationData
 
 from pyaerocom.io.gridded_reader import GriddedReader
 
@@ -295,6 +294,26 @@ class GriddedDataContainer:
         return self.children[0].longitude.points
 
     @property
+    @only_one_child
+    def altitude(self):
+        return self.children[0].altitude
+
+    @property
+    @only_one_child
+    def latitude(self):
+        return self.children[0].latitude
+
+    @property
+    @only_one_child
+    def longitude(self):
+        return self.children[0].longitude
+
+    @property
+    @only_one_child
+    def altitude_points(self):
+        return self.children[0].altitude.points
+
+    @property
     def longitude_circular(self):
         return all([data.longitude.circular for data in self.children])
 
@@ -377,18 +396,18 @@ class GriddedDataContainer:
         """Extract surface level from 4D field"""
         return self.children[0].extract_surface_level()
 
-    def to_time_series(
-        self,
-        sample_points=None,
-        scheme="nearest",
-        vert_scheme=None,
-        add_meta=None,
-        use_iris=False,
-        **coords,
-    ) -> list[StationData]:
-        raise NotImplementedError(
-            "to_time_series is not implemented for this container, due to problems with sorting returned stationdata (compared with the stations datas of the obs)"
-        )
+    # def to_time_series(
+    #     self,
+    #     sample_points=None,
+    #     scheme="nearest",
+    #     vert_scheme=None,
+    #     add_meta=None,
+    #     use_iris=False,
+    #     **coords,
+    # ) -> list[StationData]:
+    #     raise NotImplementedError(
+    #         "to_time_series is not implemented for this container, due to problems with sorting returned stationdata (compared with the stations datas of the obs)"
+    #     )
 
     def register_var_glob(self, delete_existing=True):  # pragma: no cover
         """
@@ -518,3 +537,45 @@ class GriddedDataContainer:
         )
 
         return self
+
+    def extract(self, constraint, inplace=False):
+        """Extract subset
+
+        Parameters
+        ----------
+        constraint : iris.Constraint
+            constraint that is to be applied
+
+        Returns
+        -------
+        GriddedData
+            new data object containing cropped data
+        """
+
+        obj = self if inplace else self.copy()
+        for i, data in enumerate(obj.children):
+            obj.children[i] = data.extract(constraint, inplace=False)
+        return obj
+
+    @only_one_child
+    def to_time_series(
+        self,
+        sample_points=None,
+        scheme="nearest",
+        vert_scheme=None,
+        add_meta=None,
+        use_iris=False,
+        **coords,
+    ):
+        return self.children[0].to_time_series(
+            sample_points, scheme, vert_scheme, add_meta, use_iris, **coords
+        )
+
+    def collapsed(self, coords, aggregator, **kwargs):
+        obj = self.copy()
+        for i, data in enumerate(obj.children):
+            obj.children[i] = data.collapsed(coords, aggregator, **kwargs)
+        return obj
+
+    def copy(self):
+        return deepcopy(self)

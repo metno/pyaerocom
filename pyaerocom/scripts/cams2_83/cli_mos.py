@@ -9,13 +9,15 @@ from typing import Optional
 
 import typer
 
-from pyaerocom import const
+from pyaerocom import ConfigReader
 from pyaerocom.scripts.cams2_83.config import CFG
 from pyaerocom.scripts.cams2_83.evaluation import (
     EvalType,
     runnermedianscores,
     runnermos,
 )
+
+const = ConfigReader.get_instance()
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 logger = logging.getLogger(__name__)
