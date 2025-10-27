@@ -39,7 +39,7 @@ GLOBAL_CONFIG = dict(
     # The size of map used to display the results
     map_zoom="World",
     # Options for time
-    freqs=["hourly", "daily"],  # Possible frequencies
+    freqs=["daily", "hourly"],  # Possible frequencies
     periods=[
         "2021-2022"
     ],  # Periods, can be single years or range, e.g. 2010-2015. EMEP only supports single years as of now
