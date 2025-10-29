@@ -16,7 +16,12 @@ from pyaerocom.io.sonde_like.reader import (
 from pyaerocom.io.sonde_like.jdcal import is_leap, gcal2jd, jcal2jd, jd2jcal, jd2gcal
 
 ROOT_IAGOS_HARP: Path = Path(const.OBSLOCS_UNGRIDDED["IAGOS-HARP-test"])
-ROOT_IAGOS_HARP_LUSTRE: Path = Path(const.OBSLOCS_UNGRIDDED["IAGOS.HARP"])
+try:
+    ROOT_IAGOS_HARP_LUSTRE: Path = Path(const.OBSLOCS_UNGRIDDED["IAGOS.HARP"])
+except KeyError:
+    ROOT_IAGOS_HARP_LUSTRE: Path = Path(
+        "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/IAGOS/HARP"
+    )
 ROOT_HARP: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HARP-test"])
 ROOT_HDF: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HDF-test"])
 
