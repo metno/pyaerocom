@@ -504,7 +504,7 @@ class ReadSondeLikeData(ReadUngriddedBase):
 
         if files is None:
             files = self.get_file_list(pattern=self.FILEMASK)
-        if len(self.files) == 0:
+        if len(files) == 0:
             files = self.get_file_list(pattern=self.FILEMASK)
         # files = self.files
 
@@ -760,20 +760,22 @@ class ReadIagosDataHarp(ReadSondeLikeData):
 
     _FILEMASK = "iagos-*.nc"
     _FILEMASK_HARP = "iagos-*.nc"
+    _FILEMASK_O3 = "iagos-o3*.nc"
+    _FILEMASK_CO = "iagos-co*.nc"
     _SUFFIX_HARP = Path(_FILEMASK_HARP).suffix
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
 
     VAR_NAMES_FILE_HARP = {
-        # "conco33d": "O3_volume_mixing_ratio",
         "vmro33d": "O3_volume_mixing_ratio",
-        "vmrco3d": "O3_volume_mixing_ratio",
+        "vmrco3d": "CO_volume_mixing_ratio",
         "ps3d": "pressure",
         "ts3d": "temperature",
     }
 
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE_HARP)
+    READ_UNCERTAINTIES = False
 
     def __init__(self, data_id=None, data_dir: str | Path | None = None):
         # initiate base class
@@ -782,6 +784,31 @@ class ReadIagosDataHarp(ReadSondeLikeData):
         else:
             _data_dir = data_dir
         super().__init__(data_id=data_id, data_dir=_data_dir, format="IAGOS_HARP")
+
+    def read(
+        self,
+        vars_to_retrieve: str | None = None,
+        files: Iterable[str | Path] | None = None,
+        first_file: int | None = None,
+        last_file: int | None = None,
+        read_err=READ_UNCERTAINTIES,
+        remove_outliers=True,
+        pattern=None,
+    ):
+        # for the IAGOS data each file contains either Ozone or CO data
+        # adjust the file mask accordingly
+
+        if "vmro33d" in vars_to_retrieve:
+            self.FILEMASK = self._FILEMASK_O3
+        elif "vmrco3d" in vars_to_retrieve:
+            self.FILEMASK = self._FILEMASK_CO
+        else:
+            # pass for now
+            pass
+
+        return super().read(
+            vars_to_retrieve, files, first_file, last_file, read_err, remove_outliers, pattern
+        )
 
 
 class ReadEvdcOzoneSondeDataHdf(ReadSondeLikeData):

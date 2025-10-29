@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +16,7 @@ from pyaerocom.io.sonde_like.reader import (
 from pyaerocom.io.sonde_like.jdcal import is_leap, gcal2jd, jcal2jd, jd2jcal, jd2gcal
 
 ROOT_IAGOS_HARP: Path = Path(const.OBSLOCS_UNGRIDDED["IAGOS-HARP-test"])
+ROOT_IAGOS_HARP_LUSTRE: Path = Path(const.OBSLOCS_UNGRIDDED["IAGOS.HARP"])
 ROOT_HARP: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HARP-test"])
 ROOT_HDF: Path = Path(const.OBSLOCS_UNGRIDDED["EVDC-HDF-test"])
 
@@ -45,11 +47,29 @@ TEST_FILES_IAGOS_HARP: list[str | Path] = [
     ),
 ]
 
+TEST_FILES_IAGOS_HARP_LUSTRE: list[str | Path] = [
+    f"{ROOT_IAGOS_HARP_LUSTRE}/2025/04/05/iagos-co_desc-L1-2025040520113616-MAD-20250405T204040-20250405T210244-0100-20250408T010022.nc",
+    f"{ROOT_IAGOS_HARP_LUSTRE}/2025/04/05/iagos-co_desc-L1-2025040517472416-BCN-20250405T181632-20250405T184252-0100-20250408T010022.nc",
+    f"{ROOT_IAGOS_HARP_LUSTRE}/2025/04/05/iagos-co_desc-L1-2025040510585616-MAD-20250405T123944-20250405T131712-0100-20250408T010021.nc",
+]
 SIMPLE_TEST_VAR = "conco33d"
 TEST_VAR_HDF = "vmro33d"  # this is what all files provide
+TEST_VAR_IAGOS_CO = "vmrco3d"  # this is what all files provide
 TEST_RTOL = 1.0e-4
 
 logger = logging.getLogger(__name__)
+
+
+def test_IAGOS_Data_read_harp_file_list():
+    # test reading of harp files
+    if os.path.exists(ROOT_IAGOS_HARP):
+        read = ReadIagosDataHarp(data_dir=ROOT_IAGOS_HARP_LUSTRE)
+        data = read.read(vars_to_retrieve=TEST_VAR_IAGOS_CO, files=TEST_FILES_IAGOS_HARP_LUSTRE)
+        #
+        assert len(data.unique_station_names) > 1
+        assert len(data.metadata) > 1
+    else:
+        assert True
 
 
 def test_IAGOS_Data_read_harp():
