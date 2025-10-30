@@ -67,7 +67,7 @@ logger = logging.getLogger(__name__)
 
 def test_IAGOS_Data_read_harp_file_list():
     # test reading of harp files
-    if os.path.exists(ROOT_IAGOS_HARP):
+    if os.path.exists(ROOT_IAGOS_HARP_LUSTRE):
         read = ReadIagosDataHarp(data_dir=ROOT_IAGOS_HARP_LUSTRE)
         data = read.read(vars_to_retrieve=TEST_VAR_IAGOS_CO, files=TEST_FILES_IAGOS_HARP_LUSTRE)
         #
