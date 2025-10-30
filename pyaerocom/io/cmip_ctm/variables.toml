@@ -1,0 +1,11 @@
+[cmip_variables]
+od550aer = "od550aer"
+od550bc = "od550bc"
+od550dust = "od550dust"
+od550lt1aer = "od550lt1aer"
+od550nh4 = "od550nh4"
+od550no3 = "od550no3"
+od550oa = "od550oa"
+od550so4 = "od550so4"
+od550ss = "od550ss"
+od870aer = "od870aer"

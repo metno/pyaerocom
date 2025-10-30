@@ -29,6 +29,7 @@ from pyaerocom.helpers import start_stop, to_datestring_YYYYMMDD
 from pyaerocom.io import ReadCAMS2_83, ReadCAMS2_82, ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
+from pyaerocom.io.cmip_ctm.reader import ReadCmipCtm
 from pyaerocom.stats.mda8.const import MDA8_INPUT_VARS
 from pyaerocom.stats.mda8.mda8 import mda8_colocated_data
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
@@ -54,6 +55,7 @@ class Colocator:
     SUPPORTED_GRIDDED_READERS: dict = {
         "ReadGridded": ReadGridded,
         "ReadMscwCtm": ReadMscwCtm,
+        "ReadCmipCtm": ReadCmipCtm,
         "ReadCAMS2_83": ReadCAMS2_83,
         "ReadCAMS2_82": ReadCAMS2_82,
     }
@@ -89,9 +91,16 @@ class Colocator:
         self._processing_status: list[tuple[str | None, str | None, int]] = []
         self.files_written: list[str] = []
 
-        self._model_reader: ReadGridded | ReadMscwCtm | ReadCAMS2_83 | ReadCAMS2_82 | None = None
+        self._model_reader: (
+            ReadGridded | ReadMscwCtm | ReadCAMS2_83 | ReadCAMS2_82 | ReadMscwCtm | None
+        ) = None
         self._model_readers: (
-            list[ReadGridded] | list[ReadMscwCtm] | list[ReadCAMS2_83] | list[ReadCAMS2_82] | None
+            list[ReadGridded]
+            | list[ReadMscwCtm]
+            | list[ReadCAMS2_83]
+            | list[ReadCAMS2_82]
+            | list[ReadMscwCtm]
+            | None
         ) = None
         self._obs_reader: Any | None = None
         self._obs_is_vertical_profile: bool = False
