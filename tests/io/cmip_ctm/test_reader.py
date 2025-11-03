@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
+
+from pyaerocom import GriddedData
 
 # from pyaerocom import config
 from pyaerocom.io.cmip_ctm.reader import ReadCmipCtm
@@ -10,69 +14,58 @@ TEST_MODEL_NAME = "MPI-ESM-1-2-HAM"
 
 @pytest.fixture()
 def reader() -> ReadCmipCtm:
-    """empty EMEP MSCW-CTM reader"""
+    """empty CMIP reader"""
     return ReadCmipCtm()
 
 
 @pytest.fixture()
 def data_dir(path_cmip_ci: str) -> str:
-    """path to EMEP test data"""
+    """path to CMIP test data"""
     return path_cmip_ci
 
 
-# def test_ReadCmipCtm__get_year_from_nc(data_dir: str):
-#     yr = ReadCmipCtm._get_year_from_nc(os.path.join(data_dir, "Base_fullrun.nc"))
-#     assert yr == 2017
-#     yr = ReadCmipCtm._get_year_from_nc(os.path.join(data_dir, "Base_day.nc"))
-#     assert yr == 2017
-#     yr = ReadCmipCtm._get_year_from_nc(os.path.join(data_dir, "Base_month.nc"))
-#     assert yr == 2017
-
-
 def test_ReadCmipCtm__init__(data_dir: str):
-    reader = ReadCmipCtm(TEST_MODEL_NAME, data_dir)
+    reader = ReadCmipCtm(data_id=TEST_MODEL_NAME, data_dir=data_dir)
     assert getattr(reader, "data_id") == TEST_MODEL_NAME
-    assert getattr(reader, "_data_dir") == data_dir
+    assert getattr(reader, "data_dir") == data_dir
 
 
-# def test_ReadCmipCtm__init___error():
-#     data_dir = "not_a_real_path"
-#     with pytest.raises(FileNotFoundError) as e:
-#         ReadCmipCtm(None, data_dir)
-#     assert str(e.value) == data_dir
+def test_ReadCmipCtm__get_file_list(data_dir: str):
+    reader = ReadCmipCtm(TEST_MODEL_NAME, data_dir)
+    files = reader.get_file_list()
+    assert len(files) > 0
 
 
-# def test_ReadCmipCtm_data_dir(data_dir: str):
-#     reader = ReadCmipCtm()
-#     reader._data_dir = data_dir
-#     assert Path(reader._data_dir) == Path(data_dir)
-#
-#
-# @pytest.mark.parametrize(
-#     "value,exception,error",
-#     [
-#         (None, ValueError, "Data dir None needs to be a dictionary or a file"),
-#         ("not_a_real_path", FileNotFoundError, "not_a_real_path"),
-#     ],
-# )
-# def test_ReadCmipCtm_data_dir_error(value, exception, error: str):
-#     reader = ReadCmipCtm(value)
-#     with pytest.raises(exception) as e:
-#         reader._data_dir = value
-#     assert str(e.value) == error
-#
-#
-# def test__ReadCmipCtm__check_files_in_data_dir(data_dir: str):
-#     reader = ReadCmipCtm()
-#     matches = reader._check_files_in_data_dir(data_dir)
-#     assert len(matches) == 3
-#
-#
-# def test__ReadCmipCtm__check_files_in_data_dir_error():
-#     reader = ReadCmipCtm()
-#     with pytest.raises(FileNotFoundError):
-#         reader._check_files_in_data_dir("/tmp")
-#
+def test_ReadCmipCtm__get_file_info(data_dir: str):
+    reader = ReadCmipCtm(TEST_MODEL_NAME, data_dir)
+    files = reader.get_file_list()
+    file_info = reader.get_file_info()
+    assert len(file_info) > 0
+    assert file_info[files[0]]["tstype"] == "monthly"
+    assert list(file_info[files[0]]["years"]) == [2012, 2013, 2014]
+
+
+def test_ReadCmipCtm__init___error():
+    data_dir = "not_a_real_path"
+    with pytest.raises(FileNotFoundError) as e:
+        ReadCmipCtm(None, data_dir)
+    assert str(e.value) == data_dir
+
+
+def test_ReadCmipCtm_data_dir(data_dir: str):
+    reader = ReadCmipCtm()
+    reader._data_dir = data_dir
+    assert Path(reader.data_dir) == Path(data_dir)
+
+
+def test_ReadCmipCtm_vars(data_dir: str):
+    reader = ReadCmipCtm()
+    reader._data_dir = data_dir
+    reader.get_file_list()
+    reader.get_file_info()
+    assert reader.vars_provided == ["od550aer"]
+
+
 #
 # def test_ReadCmipCtm_ts_type():
 #     reader = ReadCmipCtm()
@@ -95,6 +88,19 @@ def test_ReadCmipCtm__init__(data_dir: str):
 #         assert data.ts_type == ts_type
 #     assert data.ts_type is not None
 #     assert data.ts_type == reader._ts_type
+#
+def test_ReadCmipCtm_read_var(data_dir: str):
+    reader = ReadCmipCtm(data_dir=data_dir)
+    var_name = "od550aer"
+    ts_type = "monthly"
+    data = reader.read_var(var_name, ts_type)
+    assert isinstance(data, GriddedData)
+    if ts_type is not None:
+        assert data.ts_type == ts_type
+    assert data.ts_type is not None
+    # assert data.ts_type == reader._ts_type
+
+
 #
 #
 # @pytest.mark.parametrize(
