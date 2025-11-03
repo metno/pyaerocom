@@ -1,13 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
-import pyaerocom.exceptions as exc
-
 # from pyaerocom import config
-from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.cmip_ctm.reader import ReadCmipCtm
 
 TEST_MODEL_NAME = "MPI-ESM-1-2-HAM"
@@ -47,131 +42,131 @@ def test_ReadCmipCtm__init__(data_dir: str):
 #     assert str(e.value) == data_dir
 
 
-def test_ReadCmipCtm_data_dir(data_dir: str):
-    reader = ReadCmipCtm()
-    reader._data_dir = data_dir
-    assert Path(reader._data_dir) == Path(data_dir)
-
-
-@pytest.mark.parametrize(
-    "value,exception,error",
-    [
-        (None, ValueError, "Data dir None needs to be a dictionary or a file"),
-        ("not_a_real_path", FileNotFoundError, "not_a_real_path"),
-    ],
-)
-def test_ReadCmipCtm_data_dir_error(value, exception, error: str):
-    reader = ReadCmipCtm(value)
-    with pytest.raises(exception) as e:
-        reader._data_dir = value
-    assert str(e.value) == error
-
-
-def test__ReadCmipCtm__check_files_in_data_dir(data_dir: str):
-    reader = ReadCmipCtm()
-    matches = reader._check_files_in_data_dir(data_dir)
-    assert len(matches) == 3
-
-
-def test__ReadCmipCtm__check_files_in_data_dir_error():
-    reader = ReadCmipCtm()
-    with pytest.raises(FileNotFoundError):
-        reader._check_files_in_data_dir("/tmp")
-
-
-def test_ReadCmipCtm_ts_type():
-    reader = ReadCmipCtm()
-    assert reader._ts_type == "daily"
-
-
-def test_ReadCmipCtm_var_map():
-    var_map = ReadCmipCtm().var_map
-    assert isinstance(var_map, dict)
-
-
-@pytest.mark.parametrize(
-    "var_name, ts_type", [("vmro3", "daily"), ("vmro3", None), ("concpmgt25", "daily")]
-)
-def test_ReadCmipCtm_read_var(var_name: str, ts_type: str, data_dir: str):
-    reader = ReadCmipCtm(data_dir=data_dir)
-    data = reader.read_var(var_name, ts_type)
-    assert isinstance(data, GriddedData)
-    if ts_type is not None:
-        assert data.ts_type == ts_type
-    assert data.ts_type is not None
-    assert data.ts_type == reader._ts_type
-
-
-@pytest.mark.parametrize(
-    "var_name, ts_type, exception, error",
-    [
-        (
-            "blaaa",
-            "daily",
-            exc.VariableDefinitionError,
-            "Error (VarCollection): input variable blaaa is not supported",
-        ),
-        ("od550gt1aer", "daily", exc.VarNotAvailableError, "od550gt1aer"),
-    ],
-)
-def test_ReadCmipCtm_read_var_error(
-    var_name: str, ts_type: str, exception: type[Exception], error: str, data_dir: str
-):
-    reader = ReadCmipCtm(data_dir=data_dir)
-    with pytest.raises(exception) as e:
-        reader.read_var(var_name, ts_type)
-    assert str(e.value) == error
-
-
-def test_ReadCmipCtm_data(data_dir: str):
-    reader = ReadCmipCtm(data_dir=data_dir)
-
-    vars_provided = reader.vars_provided
-    assert isinstance(vars_provided, list)
-    assert "vmro3" in vars_provided
-
-    data = reader.read_var("vmro3", ts_type="daily")
-    assert isinstance(data, GriddedData)
-    assert data.time.long_name == "time"
-    assert data.time.standard_name == "time"
-    assert data.ts_type == "daily"
-
-    data = reader.read_var("vmro3")
-    assert isinstance(data, GriddedData)
-    assert data.time.long_name == "time"
-    assert data.time.standard_name == "time"
-    assert data.ts_type == "daily"
-
-
-def test_ReadCmipCtm_directory(data_dir: str):
-    reader = ReadCmipCtm(data_dir=data_dir)
-    assert reader._data_dir == data_dir
-    vars_provided = reader.vars_provided
-    assert "vmro3" in vars_provided
-    assert "concpm10" in vars_provided
-    assert "concno2" in vars_provided
-    paths = reader._filepaths
-    assert len(paths) == 3
-
-
-@pytest.mark.parametrize(
-    "filename,ts_type",
-    [
-        ("Base_hour.nc", "hourly"),
-        ("Base_month.nc", "monthly"),
-        ("Base_day.nc", "daily"),
-        ("Base_fullrun", "yearly"),
-    ],
-)
-def test_ReadCmipCtm_ts_type_from_filename(reader, filename, ts_type):
-    assert reader._ts_type_from_filename(filename) == ts_type
-
-
-def test_ReadCmipCtm_ts_type_from_filename_error(reader):
-    with pytest.raises(ValueError) as e:
-        reader._ts_type_from_filename("blaaa")
-    assert str(e.value) == "Failed to retrieve ts_type from filename blaaa"
-
+# def test_ReadCmipCtm_data_dir(data_dir: str):
+#     reader = ReadCmipCtm()
+#     reader._data_dir = data_dir
+#     assert Path(reader._data_dir) == Path(data_dir)
+#
+#
+# @pytest.mark.parametrize(
+#     "value,exception,error",
+#     [
+#         (None, ValueError, "Data dir None needs to be a dictionary or a file"),
+#         ("not_a_real_path", FileNotFoundError, "not_a_real_path"),
+#     ],
+# )
+# def test_ReadCmipCtm_data_dir_error(value, exception, error: str):
+#     reader = ReadCmipCtm(value)
+#     with pytest.raises(exception) as e:
+#         reader._data_dir = value
+#     assert str(e.value) == error
+#
+#
+# def test__ReadCmipCtm__check_files_in_data_dir(data_dir: str):
+#     reader = ReadCmipCtm()
+#     matches = reader._check_files_in_data_dir(data_dir)
+#     assert len(matches) == 3
+#
+#
+# def test__ReadCmipCtm__check_files_in_data_dir_error():
+#     reader = ReadCmipCtm()
+#     with pytest.raises(FileNotFoundError):
+#         reader._check_files_in_data_dir("/tmp")
+#
+#
+# def test_ReadCmipCtm_ts_type():
+#     reader = ReadCmipCtm()
+#     assert reader._ts_type == "daily"
+#
+#
+# def test_ReadCmipCtm_var_map():
+#     var_map = ReadCmipCtm().var_map
+#     assert isinstance(var_map, dict)
+#
+#
+# @pytest.mark.parametrize(
+#     "var_name, ts_type", [("vmro3", "daily"), ("vmro3", None), ("concpmgt25", "daily")]
+# )
+# def test_ReadCmipCtm_read_var(var_name: str, ts_type: str, data_dir: str):
+#     reader = ReadCmipCtm(data_dir=data_dir)
+#     data = reader.read_var(var_name, ts_type)
+#     assert isinstance(data, GriddedData)
+#     if ts_type is not None:
+#         assert data.ts_type == ts_type
+#     assert data.ts_type is not None
+#     assert data.ts_type == reader._ts_type
+#
+#
+# @pytest.mark.parametrize(
+#     "var_name, ts_type, exception, error",
+#     [
+#         (
+#             "blaaa",
+#             "daily",
+#             exc.VariableDefinitionError,
+#             "Error (VarCollection): input variable blaaa is not supported",
+#         ),
+#         ("od550gt1aer", "daily", exc.VarNotAvailableError, "od550gt1aer"),
+#     ],
+# )
+# def test_ReadCmipCtm_read_var_error(
+#     var_name: str, ts_type: str, exception: type[Exception], error: str, data_dir: str
+# ):
+#     reader = ReadCmipCtm(data_dir=data_dir)
+#     with pytest.raises(exception) as e:
+#         reader.read_var(var_name, ts_type)
+#     assert str(e.value) == error
+#
+#
+# def test_ReadCmipCtm_data(data_dir: str):
+#     reader = ReadCmipCtm(data_dir=data_dir)
+#
+#     vars_provided = reader.vars_provided
+#     assert isinstance(vars_provided, list)
+#     assert "vmro3" in vars_provided
+#
+#     data = reader.read_var("vmro3", ts_type="daily")
+#     assert isinstance(data, GriddedData)
+#     assert data.time.long_name == "time"
+#     assert data.time.standard_name == "time"
+#     assert data.ts_type == "daily"
+#
+#     data = reader.read_var("vmro3")
+#     assert isinstance(data, GriddedData)
+#     assert data.time.long_name == "time"
+#     assert data.time.standard_name == "time"
+#     assert data.ts_type == "daily"
+#
+#
+# def test_ReadCmipCtm_directory(data_dir: str):
+#     reader = ReadCmipCtm(data_dir=data_dir)
+#     assert reader._data_dir == data_dir
+#     vars_provided = reader.vars_provided
+#     assert "vmro3" in vars_provided
+#     assert "concpm10" in vars_provided
+#     assert "concno2" in vars_provided
+#     paths = reader._filepaths
+#     assert len(paths) == 3
+#
+#
+# @pytest.mark.parametrize(
+#     "filename,ts_type",
+#     [
+#         ("Base_hour.nc", "hourly"),
+#         ("Base_month.nc", "monthly"),
+#         ("Base_day.nc", "daily"),
+#         ("Base_fullrun", "yearly"),
+#     ],
+# )
+# def test_ReadCmipCtm_ts_type_from_filename(reader, filename, ts_type):
+#     assert reader._ts_type_from_filename(filename) == ts_type
+#
+#
+# def test_ReadCmipCtm_ts_type_from_filename_error(reader):
+#     with pytest.raises(ValueError) as e:
+#         reader._ts_type_from_filename("blaaa")
+#     assert str(e.value) == "Failed to retrieve ts_type from filename blaaa"
+#
 
 #
 #

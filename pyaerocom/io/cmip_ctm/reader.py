@@ -2,11 +2,12 @@
 import functools
 import logging
 import os
+import pathlib
 import re
-# import warnings
 
 import numpy as np
 import xarray as xr
+
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
@@ -41,7 +42,8 @@ from pyaerocom.units.units import Unit
 #     calc_ratpm25pm10,
 # )
 from .model_variables import cmip_variables
-import pathlib
+
+# import warnings
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +66,7 @@ class ReadCmipCtm(GriddedReader):
     """
 
     #: supported filename template, freq-placeholder is for frequencies
-    FILE_FREQ_TEMPLATE = "Base_{freq}.nc"
+    FILE_FREQ_TEMPLATE = "*.nc"
 
     #: frequencies encoded in filenames
     FREQ_CODES = {
@@ -158,70 +160,70 @@ class ReadCmipCtm(GriddedReader):
         with xr.open_dataset(filename, decode_timedelta=True) as nc:
             return np.mean(nc["time"][:]).data.astype("datetime64[Y]").astype(int) + 1970
 
-    def _get_yrs_from_filepaths(self) -> list[str]:
-        """Get available years of data from the filepaths. The year of the first
-        Base_*.nc dataset in the filepath is read from the time-variable of the nc-file.
+    # def _get_yrs_from_filepaths(self) -> list[str]:
+    #     """Get available years of data from the filepaths. The year of the first
+    #     Base_*.nc dataset in the filepath is read from the time-variable of the nc-file.
+    #
+    #     :return: list of years as str
+    #     """
+    #     fps = self._filepaths
+    #     yrs = []
+    #     for fp in fps:
+    #         try:
+    #             yr = ReadCmipCtm._get_year_from_nc(fp)
+    #         except Exception as ex:
+    #             raise ValueError(f"Could not find any year in {fp}: {ex}")
+    #         yrs.append(str(yr))
+    #
+    #     return sorted(list(set(yrs)))
 
-        :return: list of years as str
-        """
-        fps = self._filepaths
-        yrs = []
-        for fp in fps:
-            try:
-                yr = ReadCmipCtm._get_year_from_nc(fp)
-            except Exception as ex:
-                raise ValueError(f"Could not find any year in {fp}: {ex}")
-            yrs.append(str(yr))
+    # def _get_tst_from_file(self, file: str):
+    #     _, fname = os.path.split(file)
+    #
+    #     # Note: This is to maintain previous functionality which would raise error if file did not match
+    #     # Base_{freq} template. I am not sure if this should be the responsibility of this function, and
+    #     # alternatively this can be removed (including the test).
+    #     if self._private.file_pattern.match(file) is None:
+    #         raise ValueError(
+    #             f"The file '{file}' does not match file_pattern '{self._private.file_pattern}'"
+    #         )
+    #
+    #     for freq, tst in self.FREQ_CODES.items():
+    #         if freq in fname:
+    #             return tst
 
-        return sorted(list(set(yrs)))
-
-    def _get_tst_from_file(self, file: str):
-        _, fname = os.path.split(file)
-
-        # Note: This is to maintain previous functionality which would raise error if file did not match
-        # Base_{freq} template. I am not sure if this should be the responsibility of this function, and
-        # alternatively this can be removed (including the test).
-        if self._private.file_pattern.match(file) is None:
-            raise ValueError(
-                f"The file '{file}' does not match file_pattern '{self._private.file_pattern}'"
-            )
-
-        for freq, tst in self.FREQ_CODES.items():
-            if freq in fname:
-                return tst
-
-    def _clean_filepaths(self, filepaths: list[str], yrs: list[str], ts_type: str):
-        clean_paths: set[str] = set()
-        found_yrs: set[str] = set()
-
-        yrs = [int(yr) for yr in yrs]
-        for path in filepaths:
-            file = os.path.split(path)[1]
-
-            if self._get_tst_from_file(file) != ts_type:
-                logger.debug(f"ignoring file {path}: not of type {ts_type}")
-                continue
-
-            try:
-                yr = ReadCmipCtm._get_year_from_nc(path)
-            except Exception as ex:
-                raise ValueError(f"Could not find any year in {path}: {ex}")
-
-            clean_paths.add(path)
-            if yr not in yrs:
-                raise ValueError(f"The year {yr} of {path} is not in {yrs}")
-
-            if yr in found_yrs:
-                continue
-
-            found_yrs.add(yr)
-
-        if len(found_yrs) != len(yrs):
-            raise ValueError(
-                f"A different amount of years {found_yrs} were found compared to {yrs} in {filepaths}"
-            )
-
-        return list(clean_paths)
+    # def _clean_filepaths(self, filepaths: list[str], yrs: list[str], ts_type: str):
+    #     clean_paths: set[str] = set()
+    #     found_yrs: set[str] = set()
+    #
+    #     yrs = [int(yr) for yr in yrs]
+    #     for path in filepaths:
+    #         file = os.path.split(path)[1]
+    #
+    #         if self._get_tst_from_file(file) != ts_type:
+    #             logger.debug(f"ignoring file {path}: not of type {ts_type}")
+    #             continue
+    #
+    #         try:
+    #             yr = ReadCmipCtm._get_year_from_nc(path)
+    #         except Exception as ex:
+    #             raise ValueError(f"Could not find any year in {path}: {ex}")
+    #
+    #         clean_paths.add(path)
+    #         if yr not in yrs:
+    #             raise ValueError(f"The year {yr} of {path} is not in {yrs}")
+    #
+    #         if yr in found_yrs:
+    #             continue
+    #
+    #         found_yrs.add(yr)
+    #
+    #     if len(found_yrs) != len(yrs):
+    #         raise ValueError(
+    #             f"A different amount of years {found_yrs} were found compared to {yrs} in {filepaths}"
+    #         )
+    #
+    #     return list(clean_paths)
 
     @property
     def data_id(self) -> str | None:

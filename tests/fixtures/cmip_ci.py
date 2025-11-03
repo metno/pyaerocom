@@ -24,5 +24,6 @@ def data_cmip_ci() -> GriddedData:
     return data
 
 
+@pytest.fixture(scope="session")
 def path_cmip_ci() -> str:
     return CMIP_CI_DATA_PATH
