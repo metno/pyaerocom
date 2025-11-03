@@ -48,7 +48,6 @@ OC_EC_RESAMPLE_CONSTRAINTS_DAILY = dict(
 
 @functools.cache
 def _get_ignore_stations_from_file(omit_stations_path):
-    breakpoint()
     if os.path.exists(omit_stations_path):
         filename = os.path.abspath(omit_stations_path)
         logger.info(f"reading omit_stations.yaml from {filename}")
