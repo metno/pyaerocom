@@ -14,6 +14,9 @@ from pyaerocom.data import resources
 logger = logging.getLogger(__name__)
 
 
+DEFAULT_OMIT_STATION_PATH = "./omit_stations.yaml"
+
+
 # Constraints
 DEFAULT_RESAMPLE_CONSTRAINTS = dict(
     yearly=dict(monthly=9),
@@ -44,9 +47,10 @@ OC_EC_RESAMPLE_CONSTRAINTS_DAILY = dict(
 
 
 @functools.cache
-def _get_ignore_stations_from_file():
-    if os.path.exists("./omit_stations.yaml"):
-        filename = os.path.abspath("./omit_stations.yaml")
+def _get_ignore_stations_from_file(omit_stations_path):
+    breakpoint()
+    if os.path.exists(omit_stations_path):
+        filename = os.path.abspath(omit_stations_path)
         logger.info(f"reading omit_stations.yaml from {filename}")
         with open(filename) as fh:
             stations = yaml.safe_load(fh)
@@ -68,7 +72,7 @@ def _get_ignore_stations_from_file():
     return rows
 
 
-def _get_ignore_stations(specy, year):
+def _get_ignore_stations(specy, year, omit_stations_path):
     """
     Read the ignore stations from either omit_stations.tsv in the local eller in the lib-folder
 
@@ -79,7 +83,7 @@ def _get_ignore_stations(specy, year):
     """
     retvals = []
     year = int(year)
-    stations = _get_ignore_stations_from_file()
+    stations = _get_ignore_stations_from_file(omit_stations_path)
     for yearstart, yearend, comp, station in stations:
         if comp == "ALL" or comp == specy:
             if yearstart <= year <= yearend:
@@ -87,7 +91,7 @@ def _get_ignore_stations(specy, year):
     return retvals
 
 
-def get_CFG(reportyear, year, model_dir) -> dict:
+def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION_PATH) -> dict:
     """Get a configuration usable for emep reporting
 
     :param reportyear: year of reporting
@@ -611,7 +615,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
     EBAS_FILTER = {
         key: dict(
             **EBAS_FILTER,
-            station_id=_get_ignore_stations(key, year) + height_ignore_ebas,
+            station_id=_get_ignore_stations(key, year, omit_stations_path) + height_ignore_ebas,
             negate="station_id",
         )
         for key in ebas_species
