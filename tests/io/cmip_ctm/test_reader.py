@@ -55,7 +55,7 @@ def test_ReadCmipCtm__init___error():
 
 def test_ReadCmipCtm_data_dir(data_dir: str):
     reader = ReadCmipCtm()
-    reader._data_dir = data_dir
+    reader.data_dir = data_dir
     assert Path(reader.data_dir) == Path(data_dir)
 
 
@@ -97,8 +97,8 @@ def test_ReadCmipCtm_read_var_start_stop_single_file(data_dir: str):
 def test_ReadCmipCtm_read_var_start_stop_multi_file(data_dir: str):
     # testing actual model reading with providing start and stop dates
     # data is in several files
-    start_time = pd.Timestamp("2013-06-01")
-    stop_time = pd.Timestamp("2014-06-01")
+    start_time = "2013-06-01"
+    stop_time = "2014-06-01"
     reader = ReadCmipCtm(data_dir=data_dir, data_id=TEST_MODEL_NAME)
     var_name = "od550lt1aer"
     ts_type = "monthly"

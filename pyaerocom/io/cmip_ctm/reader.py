@@ -128,7 +128,8 @@ class ReadCmipCtm(GriddedReader):
                 self._last_file_data["time"].data.max(),
             ]
             self._file_info[_file]["years"] = np.unique(
-                self._last_file_data["time"].data.astype("datetime64[Y]").astype(int) + 1970
+                self._last_file_data[self.TIME_NAME].data.astype("datetime64[Y]").astype(int)
+                + 1970
             )
             _years.extend(self._file_info[_file]["years"])
             _dummy = os.path.basename(_file).split("_")
@@ -141,7 +142,7 @@ class ReadCmipCtm(GriddedReader):
                 self._file_info[_file]["grid"],
             ) = _dummy[:6]
             self._file_info[_file]["tstype"] = self._get_time_resolution(
-                self._last_file_data["time"].data
+                self._last_file_data[self.TIME_NAME].data
             )
             _vars.append(self._file_info[_file]["variable"])
             _ts_types.append(self._file_info[_file]["tstype"])
@@ -261,6 +262,7 @@ class ReadCmipCtm(GriddedReader):
         """
         _start = None
         _stop = None
+        # start and stop can either be a valid pandas.Timestamp or a string that pandas.Timestamp understands
         if "start" in kwargs:
             if isinstance(kwargs["start"], pd.Timestamp):
                 _start = kwargs["start"]
@@ -291,16 +293,14 @@ class ReadCmipCtm(GriddedReader):
                     f"Stop time argument {kwargs['stop']} given, but is not a valid type. Using the entire file instead."
                 )
 
+        # create an iris.Constraint if the user gave a start and a stop date for reading
         date_range = None
         if _start is not None and _stop is not None:
             date_range = iris.Constraint(time=lambda cell: _start <= cell.point <= _stop)
-            # cube = cube.extract(date_range)
         elif _start is not None:
             date_range = iris.Constraint(time=lambda cell: _start <= cell.point)
-            # cube = cube.extract(date_range)
         elif _stop is not None:
             date_range = iris.Constraint(time=lambda cell: cell.point <= _stop)
-            # cube = cube.extract(date_range)
 
         self.get_file_list()
         self.get_file_info()
@@ -343,37 +343,11 @@ class ReadCmipCtm(GriddedReader):
             check_unit=True,
             convert_unit_on_init=True,
         )
-        #
-        # # At this point a GriddedData object with name gridded should exist
-        #
+        # add some more metadata
         _last_rev = self._file_info[_files_to_read[-1]]["realization"]
         gridded.metadata["data_id"] = self._data_id
         gridded.metadata["from_files"] = _files_to_read
         gridded.metadata["data_revision"] = _last_rev
-        #
+        # not sure if this is needed
         gridded.convert_unit(get_standard_unit(var_name))
         return gridded
-
-    # @staticmethod
-    # def _preprocess_units(units: str, prefix: str | None = None):
-    #     """
-    #     Update units for certain variables
-    #
-    #     Parameters
-    #     ----------
-    #     units : str
-    #         Current unit of data
-    #     prefix : str, optional
-    #         Variable prefix (e.g. AOD, AbsCoeff).
-    #
-    #     Returns
-    #     -------
-    #     str
-    #         updated unit (where applicable)
-    #
-    #     """
-    #     if units == "" and prefix == "AOD":  #
-    #         return "1"
-    #     elif units == "" and prefix == "AbsCoef":
-    #         return "m-1"
-    #     return units
