@@ -7,6 +7,7 @@ import iris
 import numpy as np
 import pandas as pd
 import xarray as xr
+from iris.util import equalise_attributes
 
 from pyaerocom import const, GriddedData
 from pyaerocom.exceptions import VarNotAvailableError
@@ -109,18 +110,19 @@ class ReadCmipCtm(GriddedReader):
         logger.info(
             f"Found {len(self._files)} sonde like data files in directory {self.data_dir}."
         )
+        self._files = sorted(self._files)
         return self._files
 
     def get_file_info(self):
         # get some info out of a file
         # time coverage and time resolution for now
-        for _file in self._files:
+        _years = []
+        _vars = []
+        _ts_types = []
+        for _file in sorted(self._files):
             logger.info(f"Fetching file info for file {_file}...")
             self._last_file_data = xr.open_dataset(_file, decode_timedelta=True)
             self._file_info[_file] = {}
-            _years = []
-            _vars = []
-            _ts_types = []
             self._file_info[_file]["time_cover"] = [
                 self._last_file_data["time"].data.min(),
                 self._last_file_data["time"].data.max(),
@@ -310,27 +312,30 @@ class ReadCmipCtm(GriddedReader):
         if self._data_dir is None:  # pragma: no cover
             raise ValueError("data_dir must be set before reading.")
 
+        # determine which files to read
+        _files_to_read = []
         for _file in self._file_info:
             if var_name != self._file_info[_file]["variable"]:
                 logging.info(f"Variable {var_name} not available for {_file}")
                 continue
             else:
-                logging.info(f"opening file{_file}...")
-                # _file_data = xr.open_dataset(_file, decode_timedelta=True)
-                cube = iris.load_cube(
-                    _file,
-                    var_name,
-                )
-                if date_range is not None:
-                    cube = cube.extract(date_range)
-                # read the first file for now
-                _last_file = _file
-                _last_rev = self._file_info[_file]["realization"]
-                break
+                logging.info(f"adding file{_file} to list of files to read...")
+                _files_to_read.append(_file)
 
-        #
-        # if ts_type == "hourly":
-        #     cube.coord("time").convert_units("hours since 1900-01-01")
+        cubelist = iris.load(
+            _files_to_read,
+            var_name,
+        )
+        # extract the interesting dates
+        if date_range is not None:
+            cubelist = cubelist.extract(date_range)
+
+        if len(cubelist) > 1:
+            # GriddedData can handle only a single cube, not a CubeList
+            equalise_attributes(cubelist)
+            cube = cubelist.concatenate_cube()
+        else:
+            cube = cubelist[0]
         gridded = GriddedData(
             cube,
             var_name=var_name_aerocom,
@@ -341,8 +346,9 @@ class ReadCmipCtm(GriddedReader):
         #
         # # At this point a GriddedData object with name gridded should exist
         #
+        _last_rev = self._file_info[_files_to_read[-1]]["realization"]
         gridded.metadata["data_id"] = self._data_id
-        gridded.metadata["from_files"] = _last_file
+        gridded.metadata["from_files"] = _files_to_read
         gridded.metadata["data_revision"] = _last_rev
         #
         gridded.convert_unit(get_standard_unit(var_name))

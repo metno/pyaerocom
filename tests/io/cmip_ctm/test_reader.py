@@ -64,7 +64,7 @@ def test_ReadCmipCtm_vars(data_dir: str):
     reader._data_dir = data_dir
     reader.get_file_list()
     reader.get_file_info()
-    assert reader.vars_provided == ["od550aer"]
+    assert sorted(reader.vars_provided) == ["od550aer", "od550lt1aer"]
 
 
 def test_ReadCmipCtm_read_var(data_dir: str):
@@ -82,12 +82,25 @@ def test_ReadCmipCtm_read_var(data_dir: str):
     # assert data.ts_type == reader._ts_type
 
 
-def test_ReadCmipCtm_read_var_start_stop(data_dir: str):
+def test_ReadCmipCtm_read_var_start_stop_single_file(data_dir: str):
     # testing actual model reading with providing start and stop dates
+    # data is in a single multiyear file
     start_time = pd.Timestamp("2013-01-01")
     stop_time = pd.Timestamp("2014-01-01")
     reader = ReadCmipCtm(data_dir=data_dir, data_id=TEST_MODEL_NAME)
     var_name = "od550aer"
+    ts_type = "monthly"
+    data = reader.read_var(var_name, ts_type, start=start_time, stop=stop_time)
+    assert data.shape == (12, 96, 192)
+
+
+def test_ReadCmipCtm_read_var_start_stop_multi_file(data_dir: str):
+    # testing actual model reading with providing start and stop dates
+    # data is in several files
+    start_time = pd.Timestamp("2013-06-01")
+    stop_time = pd.Timestamp("2014-06-01")
+    reader = ReadCmipCtm(data_dir=data_dir, data_id=TEST_MODEL_NAME)
+    var_name = "od550lt1aer"
     ts_type = "monthly"
     data = reader.read_var(var_name, ts_type, start=start_time, stop=stop_time)
     assert data.shape == (12, 96, 192)
