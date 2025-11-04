@@ -5,12 +5,15 @@ import pathlib
 
 import iris
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 from pyaerocom import const, GriddedData
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.io.gridded_reader import GriddedReader
+from pyaerocom.units.helpers import get_standard_unit
 
+# from pyaerocom.units.units import Unit
 # from .additional_variables import (
 #     add_dataarrays,
 #     calc_concNhno3,
@@ -60,39 +63,8 @@ class ReadCmipCtm(GriddedReader):
         ID of model
     """
 
-    #: supported filename template, freq-placeholder is for frequencies
-    # FILE_FREQ_TEMPLATE = "*.nc"
-
-    #: frequencies encoded in filenames
-    # FREQ_CODES = {
-    #     "hour": "hourly",
-    #     "day": "daily",
-    #     "month": "monthly",
-    #     "fullrun": "yearly",
-    # }
-
-    # REVERSE_FREQ_CODES = {
-    #     "hourly": "hour",
-    #     "daily": "day",
-    #     "monthly": "month",
-    #     "yearly": "fullrun",
-    # }
-
-    # DEFAULT_FILE_NAME = "Base_day.nc"
-
-    #: pattern for 4-digit years for 19XX and 20XX used for trend subdirectories
-    # YEAR_PATTERN = r".*((?:19|20)\d\d).*"
     FILEMASK = "*_*_*_*_*_*_*.nc"
 
-    # class _PrivateFields:
-    #     filename: str | None = None
-    #     filedata: xr.Dataset | None = None
-    #     filepaths: list[str] | None = None
-    #     files: list[str] | None = None
-    #     data_dir: str | None = None
-    #     file_pattern: re.Pattern
-    #     ts_type: str | None = None
-    #
     TIME_NAME = "time"
 
     # max allowed time step sizes (we allow for 10% error)
@@ -108,10 +80,6 @@ class ReadCmipCtm(GriddedReader):
         file_pattern: str | None = FILEMASK,
         **kwargs,
     ):
-        # opened dataset (for performance boost), will be reset if data_dir is
-        # changed
-        # self._private = self._PrivateFields()
-
         self.var_map = cmip_variables()
 
         if data_dir is not None:
@@ -251,47 +219,6 @@ class ReadCmipCtm(GriddedReader):
         """Variables provided by this dataset"""
         return list(set(self._vars))
 
-    #
-    # def _open_file(self):
-    #     """
-    #     Open current netcdf file
-    #
-    #     Returns
-    #     -------
-    #     dict(xarray.Dataset)
-    #         Dict with years as keys and Datasets as items
-    #
-    #     """
-    #     fps = self._filepaths
-    #     ds = {}
-    #     yrs = self._get_yrs_from_filepaths()
-    #
-    #     ts_type = self._ts_type
-    #     fps = self._clean_filepaths(fps, yrs, ts_type)
-    #
-    #     if ts_type == "hourly" and len(fps) > 1:
-    #         start_date = None
-    #         end_date = None
-    #         for fp in fps:
-    #             with xr.open_dataset(fp, decode_timedelta=True) as nc:
-    #                 file_start_date = nc["time"][:].data.min()
-    #                 file_end_date = nc["time"][:].data.max()
-    #
-    #             start_date = min([x for x in [start_date, file_start_date] if x is not None])
-    #             end_date = max([x for x in [end_date, file_end_date] if x is not None])
-    #
-    #         if (end_date - start_date) / np.timedelta64(1, "h") > (366 * 24):
-    #             raise ValueError(
-    #                 f"ts_type {ts_type} can not be hourly when using multiple years ({start_date} - {end_date})"
-    #             )
-    #
-    #     logger.info(f"Opening {fps}")
-    #     ds = xr.open_mfdataset(fps, chunks={"time": 24}, decode_timedelta=True)
-    #
-    #     self._private.filedata = ds
-    #
-    #     return ds
-    #
     def __repr__(self):
         return self.__str__()
 
@@ -330,11 +257,48 @@ class ReadCmipCtm(GriddedReader):
         -------
         GriddedData
         """
-        pass
+        _start = None
+        _stop = None
         if "start" in kwargs:
-            pass
+            if isinstance(kwargs["start"], pd.Timestamp):
+                _start = kwargs["start"]
+            elif isinstance(kwargs["start"], str):
+                try:
+                    _start = pd.Timestamp(kwargs["start"])
+                except ValueError:
+                    logging.error(
+                        f"Start time {kwargs['start']} is not valid. Using the entire file instead."
+                    )
+            else:
+                logging.info(
+                    f"Start time argument {kwargs['start']} given, but is not a valid type. Using the entire file instead."
+                )
+
         if "stop" in kwargs:
-            pass
+            if isinstance(kwargs["stop"], pd.Timestamp):
+                _stop = kwargs["stop"]
+            elif isinstance(kwargs["stop"], str):
+                try:
+                    _stop = pd.Timestamp(kwargs["stop"])
+                except ValueError:
+                    logging.error(
+                        f"Start time {kwargs['stop']} is not valid. Using the entire file instead."
+                    )
+            else:
+                logging.info(
+                    f"Stop time argument {kwargs['stop']} given, but is not a valid type. Using the entire file instead."
+                )
+
+        date_range = None
+        if _start is not None and _stop is not None:
+            date_range = iris.Constraint(time=lambda cell: _start <= cell.point <= _stop)
+            # cube = cube.extract(date_range)
+        elif _start is not None:
+            date_range = iris.Constraint(time=lambda cell: _start <= cell.point)
+            # cube = cube.extract(date_range)
+        elif _stop is not None:
+            date_range = iris.Constraint(time=lambda cell: cell.point <= _stop)
+            # cube = cube.extract(date_range)
 
         self.get_file_list()
         self.get_file_info()
@@ -353,12 +317,17 @@ class ReadCmipCtm(GriddedReader):
             else:
                 logging.info(f"opening file{_file}...")
                 # _file_data = xr.open_dataset(_file, decode_timedelta=True)
-                cube = iris.load_cube(_file, var_name)
+                cube = iris.load_cube(
+                    _file,
+                    var_name,
+                )
+                if date_range is not None:
+                    cube = cube.extract(date_range)
+                # read the first file for now
+                _last_file = _file
+                _last_rev = self._file_info[_file]["realization"]
+                break
 
-            # try:
-            #     cube = _file_data.to_iris()
-            # except MemoryError as e:  # pragma: no cover
-            #     raise NotImplementedError from e
         #
         # if ts_type == "hourly":
         #     cube.coord("time").convert_units("hours since 1900-01-01")
@@ -373,13 +342,10 @@ class ReadCmipCtm(GriddedReader):
         # # At this point a GriddedData object with name gridded should exist
         #
         gridded.metadata["data_id"] = self._data_id
-        # gridded.metadata["from_files"] = self._filepaths
+        gridded.metadata["from_files"] = _last_file
+        gridded.metadata["data_revision"] = _last_rev
         #
-        # gridded.convert_unit(get_standard_unit(var_name))
-        # Remove unnecessary metadata. Better way to do this?
-        # for metadata in ["current_date_first", "current_date_last"]:
-        #     if metadata in gridded.metadata.keys():
-        #         del gridded.metadata[metadata]
+        gridded.convert_unit(get_standard_unit(var_name))
         return gridded
 
     # @staticmethod

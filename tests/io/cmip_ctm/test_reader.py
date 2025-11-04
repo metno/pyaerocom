@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 from pyaerocom import GriddedData
@@ -66,6 +67,36 @@ def test_ReadCmipCtm_vars(data_dir: str):
     assert reader.vars_provided == ["od550aer"]
 
 
+def test_ReadCmipCtm_read_var(data_dir: str):
+    reader = ReadCmipCtm(data_dir=data_dir, data_id=TEST_MODEL_NAME)
+    var_name = "od550aer"
+    ts_type = "monthly"
+    data = reader.read_var(var_name, ts_type)
+    assert isinstance(data, GriddedData)
+    if ts_type is not None:
+        assert data.ts_type == ts_type
+    assert data.ts_type is not None
+    assert data.metadata["data_id"] is not None
+    assert data.metadata["data_id"] == TEST_MODEL_NAME
+    assert data.shape == (25, 96, 192)
+    # assert data.ts_type == reader._ts_type
+
+
+def test_ReadCmipCtm_read_var_start_stop(data_dir: str):
+    # testing actual model reading with providing start and stop dates
+    start_time = pd.Timestamp("2013-01-01")
+    stop_time = pd.Timestamp("2014-01-01")
+    reader = ReadCmipCtm(data_dir=data_dir, data_id=TEST_MODEL_NAME)
+    var_name = "od550aer"
+    ts_type = "monthly"
+    data = reader.read_var(var_name, ts_type, start=start_time, stop=stop_time)
+    assert data.shape == (12, 96, 192)
+
+    # assert data.metadata.data_id is not None
+    # assert data.metadata.data_id == TEST_MODEL_NAME
+    # # assert data.ts_type == reader._ts_type
+
+
 #
 # def test_ReadCmipCtm_ts_type():
 #     reader = ReadCmipCtm()
@@ -89,18 +120,6 @@ def test_ReadCmipCtm_vars(data_dir: str):
 #     assert data.ts_type is not None
 #     assert data.ts_type == reader._ts_type
 #
-def test_ReadCmipCtm_read_var(data_dir: str):
-    reader = ReadCmipCtm(data_dir=data_dir)
-    var_name = "od550aer"
-    ts_type = "monthly"
-    data = reader.read_var(var_name, ts_type)
-    assert isinstance(data, GriddedData)
-    if ts_type is not None:
-        assert data.ts_type == ts_type
-    assert data.ts_type is not None
-    # assert data.ts_type == reader._ts_type
-
-
 #
 #
 # @pytest.mark.parametrize(
