@@ -6,8 +6,6 @@ import copy
 import logging
 from pathlib import Path
 
-from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
-
 logger = logging.getLogger(__name__)
 
 # Constraints
@@ -26,23 +24,25 @@ DEFAULT_RESAMPLE_CONSTRAINTS_DAILY = dict(
 
 HOMEDIR = Path.home()
 MYPYAEROCOM_DIR = Path.home() / "MyPyaerocom"
-TMP_DIR = Path.home() / "tmp"
-JSON_DIR = Path.home() / "tmp" / "data"
-COLDATA_DIR = Path.home() / "tmp" / "coldata"
-
+TMP_DIR = MYPYAEROCOM_DIR / "tmp"
+JSON_DIR = MYPYAEROCOM_DIR / "tmp" / "data"
+COLDATA_DIR = MYPYAEROCOM_DIR / "tmp" / "coldata"
 
 # data directory for test data
 TEST_DATA_DIR = MYPYAEROCOM_DIR / "testdata-minimal" / "obsdata" / "diurnal_test_data"
 
 IO_AUX_FILE = MYPYAEROCOM_DIR / "testdata-minimal" / "config" / "gridded_io_aux.py"
-MODELDIR = MYPYAEROCOM_DIR / "testdata-minimal" / "obsdata" / "CMIP6"
+MODELDIR = MYPYAEROCOM_DIR / "testdata-minimal" / "modeldata" / "CMIP6"
+START_TIME = "2013-06-01"
+STOP_TIME = "2014-06-01"
+PERIODS = ["2014", "2015"]
 
 
 def get_CFG(
-    year,
+    start=START_TIME,
+    stop=STOP_TIME,
 ) -> dict:
     """create aeroval configuration dict to run the variable
-    ratpm10pm25 (ratio pm10 vspm25)
 
     :returns: a dict of a model configuration usable for EvalSetup
     """
@@ -50,7 +50,7 @@ def get_CFG(
     TMP_DIR.mkdir(exist_ok=True)
     JSON_DIR.mkdir(exist_ok=True)
     COLDATA_DIR.mkdir(exist_ok=True)
-    reportyear = year
+    # reportyear = year
 
     CFG = dict(
         json_basedir=JSON_DIR,
@@ -61,33 +61,33 @@ def get_CFG(
         only_json=False,
         add_model_maps=False,
         only_model_maps=False,
-        modelmaps_opts=dict(maps_freq="monthly", maps_res_deg=5),
+        # modelmaps_opts=dict(maps_freq="monthly", maps_res_deg=5),
         clear_existing_json=False,
         # if True, the analysis will stop whenever an error occurs (else, errors that
         # occurred will be written into the logfiles)
-        raise_exceptions=False,
+        raise_exceptions=True,
         # Regional filter for analysis
         filter_name="ALL-wMOUNTAINS",
         # colocation frequency (no statistics in higher resolution can be computed)
-        ts_type="hourly",
-        map_zoom="Europe",
+        ts_type="monthly",
+        # map_zoom="Europe",
         freqs=[
             "monthly",
             "daily",
         ],
-        periods=[f"{year}"],
-        main_freq="daily",
+        periods=PERIODS,
+        main_freq="monthly",
         zeros_to_nan=False,
-        use_diurnal=True,
+        use_diurnal=False,
         min_num_obs=DEFAULT_RESAMPLE_CONSTRAINTS,
         colocate_time=False,
         obs_remove_outliers=False,
         model_remove_outliers=False,
         harmonise_units=True,
-        regions_how="country",
+        regions_how="default",
         # annual_stats_constrained=True,
         proj_id="CMIPCI",
-        exp_id=f"CMIP{reportyear}-reporting",
+        exp_id="CMIP testing reporting",
         exp_name="Evaluation of CMIP data ",
         exp_descr="Evaluation of CMIP runs",
         exp_pi="jan.griesfeller@met.no",
@@ -138,9 +138,11 @@ def get_CFG(
     CFG["model_cfg"] = {
         "CMIPCI": dict(
             model_id="MPI-ESM-1-2-HAM",
-            model_ts_type_read="hourly",
-            model_data_dir=MODELDIR,
+            model_ts_type_read="monthly",
+            model_data_dir=str(MODELDIR),
             gridded_reader_id={"model": "ReadCmipCtm"},
+            start=start,
+            stop=stop,
         ),
     }
 
@@ -148,29 +150,13 @@ def get_CFG(
     Filters
     """
 
-    data_name = "CITestData"
-    data_id = "harp"
-
-    config = PyaroConfig(
-        name=data_name,
-        reader_id=data_id,
-        filename_or_obj_or_url=TEST_DATA_DIR,
-        filters={"variables": {"include": ["O3_density"]}},
-        name_map={"O3_density": "vmro3"},
-    )
-
     OBS_GROUNDBASED = {
-        ################
-        #    Pyaro
-        ################
-        "Pyaro-h": dict(
-            obs_id=config.name,
-            pyaro_config=config,
-            web_interface_name=data_name,
-            obs_name=data_name,
-            obs_vars=["vmro3"],
-            obs_vert_type="Surface",
-            ts_type="hourly",
+        "AeronetSubset": dict(
+            # obs_id="AeronetSunV3L2Subset.daily",
+            obs_id="AeronetSunV3Lev2.daily",
+            obs_vars=["od550aer"],
+            obs_vert_type="Column",
+            min_num_obs={"monthly": {"daily": 3}},
         ),
     }
 
