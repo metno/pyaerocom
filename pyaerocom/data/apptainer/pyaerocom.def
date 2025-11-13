@@ -2,7 +2,7 @@ BootStrap: docker
 From: python:3.12
 
 %post
-   apt-get -y update
+   apt -y update
    apt -y upgrade
    pip install pyaerocom
    pip install pyaro-readers
