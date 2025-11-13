@@ -89,7 +89,7 @@ To create the container, run the command::
 
     apptainer build pyaerocom_python3.12.sif <name of definition file>
 
-To add data, you need to mount data paths using apptainer's ``--bind`` ooption like ::
+To add data, you need to mount data paths using apptainer's ``--bind`` option like ::
 
     apptainer shell --bind /lustre/storeB:/lustre/storeB pyaerocom_python3.12.sif
 
