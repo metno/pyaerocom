@@ -68,7 +68,7 @@ installation into a new virtual environment instead.
 Use PyAerocom in an Apptainer container
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following definition file will create a container with Python 3.12 and a usable pyaerocom installation:: container
+The following definition file will create a container with Python 3.12 and a usable pyaerocom installation::
 
     BootStrap: docker
     From: python:3.12
@@ -89,7 +89,7 @@ To create the container, run the command::
 
     apptainer build pyaerocom_python3.12.sif <name of definition file>
 
-To add data, you need to mount data paths using apptainer's --bind syntax like ::
+To add data, you need to mount data paths using apptainer's ``--bind`` ooption like ::
 
     apptainer shell --bind /lustre/storeB:/lustre/storeB pyaerocom_python3.12.sif
 
