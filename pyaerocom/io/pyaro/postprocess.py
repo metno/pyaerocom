@@ -107,7 +107,7 @@ TRANSFORMATIONS = {
         OUT_UNIT="ppb",
         SCALING_FACTOR=0.5229,  # 20C and 1013 hPa
         OUT_VARNAME="vmrno2",
-        NOTE="The vmrno2_from_conco3 transform is only valid at T=20C, p=1013hPa",
+        NOTE="The vmrno2_from_concno2 transform is only valid at T=20C, p=1013hPa",
     ),
     "vmrox_from_vmrno2_vmro3": VariableCombiner(
         REQ_VARS=("vmrno2", "vmro3"),
