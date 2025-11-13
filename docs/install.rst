@@ -74,7 +74,7 @@ The following definition file will create a container with Python 3.12 and the l
     From: python:3.12
 
     %post
-       apt-get -y update
+       apt -y update
        apt -y upgrade
        pip install pyaerocom
        pip install pyaro-readers
