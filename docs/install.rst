@@ -119,6 +119,17 @@ Which should return the following::
     │ init            init ~/MyPyaerocom directory and copy the default paths.ini there                                                                                                                               │
     ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
+To run the container based python interpreter that has pyaerocom installed just run::
+
+    apptainer exec --bind /lustre/storeB:/lustre/storeB pyaerocom_python3.12.sif python
+
+To run an aeroval analysis via the container please use (for python config files)::
+
+    apptainer exec --bind /lustre/storeB:/lustre/storeB pyaerocom_python3.12.sif python <aeroval_config>.py
+
+or (for json config files)::
+
+    apptainer exec --bind /lustre/storeB:/lustre/storeB pyaerocom_python3.12.sif pya aeroval <aeroval_config>.json
 
 
 Change the default paths
