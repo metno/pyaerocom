@@ -68,7 +68,7 @@ installation into a new virtual environment instead.
 Use PyAerocom in an Apptainer container
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following definition file will create a container with Python 3.12 and a usable pyaerocom installation::
+The following definition file will create a container with Python 3.12 and the latest pyaerocom installation::
 
     BootStrap: docker
     From: python:3.12
