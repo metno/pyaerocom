@@ -99,6 +99,10 @@ class ReadCmipCtm(GriddedReader):
         self._vars = []
         # self._last_file_data = None
         # self._private.filename = self.DEFAULT_FILE_NAME
+        # pyaerocom.colocation.colocator needs variable and time coverage after init
+        # fill the needed fields
+        self.get_file_list()
+        self.get_file_info()
 
     def get_file_list(self):
         # search for nc files recursively
@@ -266,6 +270,8 @@ class ReadCmipCtm(GriddedReader):
         if "start" in kwargs:
             if isinstance(kwargs["start"], pd.Timestamp):
                 _start = kwargs["start"]
+            elif isinstance(kwargs["start"], int):
+                _start = pd.Timestamp(f"{kwargs['start']}-01-01")
             elif isinstance(kwargs["start"], str):
                 try:
                     _start = pd.Timestamp(kwargs["start"])
@@ -281,6 +287,8 @@ class ReadCmipCtm(GriddedReader):
         if "stop" in kwargs:
             if isinstance(kwargs["stop"], pd.Timestamp):
                 _stop = kwargs["stop"]
+            elif isinstance(kwargs["stop"], int):
+                _stop = pd.Timestamp(f"{kwargs['stop']}-01-01")
             elif isinstance(kwargs["stop"], str):
                 try:
                     _stop = pd.Timestamp(kwargs["stop"])

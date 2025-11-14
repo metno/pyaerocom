@@ -1,17 +1,34 @@
+from pathlib import Path
+
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.aeroval.config.ciconfigs.cmip_config import get_CFG
 
+MYPYAEROCOM_DIR = Path.home() / "MyPyaerocom"
+JSON_DIR = MYPYAEROCOM_DIR / "tmp" / "data"
+COLDATA_DIR = MYPYAEROCOM_DIR / "tmp" / "coldata"
+
+MODELDIR = MYPYAEROCOM_DIR / "testdata-minimal" / "modeldata" / "CMIP6"
+PROJECT_ID = "CMIPCI"
+EXP_ID = "CMIP-testing-reporting"
+
 
 def test_cmip_config():
-    """short test if the example configuration for pm ratios is still in the code"""
+    """run quick CMIP data based aeroval analysis"""
 
-    # start_time = "2013-06-01"
-    # stop_time = "2014-06-01"
     CFG = get_CFG()
-    assert not CFG["raise_exceptions"]
     stp = EvalSetup(**CFG)
-
-    # stp = EvalSetup(proj_id='BLA', exp_id='blub',obs_cfg=OBS)
-
     ana = ExperimentProcessor(stp)
     ana.run()
+    assert JSON_DIR.exists()
+    assert COLDATA_DIR.exists()
+    assert JSON_DIR.joinpath("CMIPCI").exists()
+    assert JSON_DIR.joinpath("CMIPCI", EXP_ID).exists()
+    ts_path = JSON_DIR.joinpath("CMIPCI", EXP_ID, "ts")
+    assert ts_path.exists()
+    # count the number of json files in there
+    # the expected number is 232
+    files_found = 0
+    for _file in ts_path.rglob("*.json"):
+        if _file.is_file():
+            files_found += 1
+    assert files_found > 230

@@ -35,7 +35,9 @@ IO_AUX_FILE = MYPYAEROCOM_DIR / "testdata-minimal" / "config" / "gridded_io_aux.
 MODELDIR = MYPYAEROCOM_DIR / "testdata-minimal" / "modeldata" / "CMIP6"
 START_TIME = "2013-06-01"
 STOP_TIME = "2014-06-01"
-PERIODS = ["2014", "2015"]
+PERIODS = ["2013", "2014"]
+PROJECT_ID = "CMIPCI"
+EXP_ID = "CMIP-testing-reporting"
 
 
 def get_CFG(
@@ -86,8 +88,8 @@ def get_CFG(
         harmonise_units=True,
         regions_how="default",
         # annual_stats_constrained=True,
-        proj_id="CMIPCI",
-        exp_id="CMIP testing reporting",
+        proj_id=PROJECT_ID,
+        exp_id=EXP_ID,
         exp_name="Evaluation of CMIP data ",
         exp_descr="Evaluation of CMIP runs",
         exp_pi="jan.griesfeller@met.no",
