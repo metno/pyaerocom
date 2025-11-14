@@ -154,8 +154,8 @@ def get_CFG(
 
     OBS_GROUNDBASED = {
         "AeronetSubset": dict(
-            # obs_id="AeronetSunV3L2Subset.daily",
-            obs_id="AeronetSunV3Lev2.daily",
+            obs_id="AeronetSunV3L2Subset.daily",
+            # obs_id="AeronetSunV3Lev2.daily",
             obs_vars=["od550aer"],
             obs_vert_type="Column",
             min_num_obs={"monthly": {"daily": 3}},

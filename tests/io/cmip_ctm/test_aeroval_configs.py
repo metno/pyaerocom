@@ -26,9 +26,9 @@ def test_cmip_config():
     ts_path = JSON_DIR.joinpath("CMIPCI", EXP_ID, "ts")
     assert ts_path.exists()
     # count the number of json files in there
-    # the expected number is 232
+    # the expected number is 16
     files_found = 0
     for _file in ts_path.rglob("*.json"):
         if _file.is_file():
             files_found += 1
-    assert files_found > 230
+    assert files_found >= 15
