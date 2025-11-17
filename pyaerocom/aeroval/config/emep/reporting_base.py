@@ -6,8 +6,11 @@ import copy
 import functools
 import logging
 import os
+import fnmatch
 
 import yaml
+
+import configparser
 
 from pyaerocom.data import resources
 
@@ -15,6 +18,45 @@ logger = logging.getLogger(__name__)
 
 
 DEFAULT_OMIT_STATION_PATH = "./omit_stations.yaml"
+
+EXTRA_EBAS_SPECIES = [
+    "concNhno3",
+    "concNtno3",
+    "concNtnh",
+    "concNnh3",
+    "concnh4",
+    "prmm",
+    "concpm10",
+    "concpm25",
+    "concSso2",
+    "concNno2",
+    "vmrco",
+    "vmro3max",
+    "vmro3",
+    "concNno",
+    "concCecpm25",
+    "concCocpm25",
+    "concom1",
+    "concCecpm10",
+    "concCocpm10",
+    #        "concnh4pm10", # no output in the model
+    "concnh4pm25",
+    "concnh4pm1",
+    #        "concso4pm10", # no output in the model
+    "concso4pm25",
+    "concso4pm1",
+    "concno3pm10",
+    "concno3pm25",
+    "concno3pm1",
+    "concsspm10",
+    "concsspm25",
+    "concso4t",
+    "concso4c",
+    "wetoxs",
+    "wetoxn",
+    "wetrdn",
+    "vmrox",
+]
 
 
 # Constraints
@@ -88,6 +130,36 @@ def _get_ignore_stations(specy, year, omit_stations_path):
             if yearstart <= year <= yearend:
                 retvals.append(station)
     return retvals
+
+
+def _get_ebas_species():
+    with resources.path(__package__, "../../../data/ebas_config.ini") as filename:
+        config = configparser.ConfigParser()
+        config.read(filename.resolve())
+        ebas_species = config.sections()
+    complete_list = ebas_species + EXTRA_EBAS_SPECIES
+    return list(set(complete_list))
+
+
+def clean_filters(cfg: dict, obs_pattern: str) -> dict:
+    CFG = copy.deepcopy(cfg)
+
+    for network in CFG["obs_cfg"]:
+        if fnmatch.fnmatchcase(network, obs_pattern):
+            vs = CFG["obs_cfg"][network]["obs_vars"]
+            new_filters = {}
+            for v in vs:
+                if v not in CFG["obs_cfg"][network]["obs_filters"]:
+                    raise KeyError(f"Could not find filter for {v}")
+                new_filters[v] = CFG["obs_cfg"][network]["obs_filters"][v]
+
+            CFG["obs_cfg"][network]["obs_filters"] = copy.deepcopy(new_filters)
+            assert (
+                list(CFG["obs_cfg"][network]["obs_filters"].keys())
+                == CFG["obs_cfg"][network]["obs_vars"]
+            )
+
+    return CFG
 
 
 def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION_PATH) -> dict:
@@ -456,45 +528,6 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
 
     # Station filters
 
-    ebas_species = [
-        "concNhno3",
-        "concNtno3",
-        "concNtnh",
-        "concNnh3",
-        "concnh4",
-        "prmm",
-        "concpm10",
-        "concpm25",
-        "concSso2",
-        "concNno2",
-        "vmrco",
-        "vmro3max",
-        "vmro3",
-        "concNno",
-        "concCecpm25",
-        "concCocpm25",
-        "concom1",
-        "concCecpm10",
-        "concCocpm10",
-        #        "concnh4pm10", # no output in the model
-        "concnh4pm25",
-        "concnh4pm1",
-        #        "concso4pm10", # no output in the model
-        "concso4pm25",
-        "concso4pm1",
-        "concno3pm10",
-        "concno3pm25",
-        "concno3pm1",
-        "concsspm10",
-        "concsspm25",
-        "concso4t",
-        "concso4c",
-        "wetoxs",
-        "wetoxn",
-        "wetrdn",
-        "vmrox",
-    ]
-
     # This list of stations was generated using the script found here:
     # https://gist.github.com/thorbjoernl/b7946882f1696722742053406d056e12.
     # It excludes stations with a relative altitude (Elevation difference to the lowest
@@ -617,7 +650,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
             station_id=_get_ignore_stations(key, year, omit_stations_path) + height_ignore_ebas,
             negate="station_id",
         )
-        for key in ebas_species
+        for key in _get_ebas_species()
     }
 
     EEA_FILTER = {
