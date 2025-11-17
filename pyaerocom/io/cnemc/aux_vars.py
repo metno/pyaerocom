@@ -28,3 +28,7 @@ def vmro3max_from_ds(ds: xr.Dataset) -> xr.DataArray:
 
 def vmrno2_from_ds(ds: xr.Dataset) -> xr.DataArray:
     return conc_to_vmr(ds["concno2"], vmr="vmrno2")
+
+
+def vmrso2_from_ds(ds: xr.Dataset) -> xr.DataArray:
+    return conc_to_vmr(ds["concso2"], vmr="vmrso2")
