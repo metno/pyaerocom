@@ -117,6 +117,14 @@ TRANSFORMATIONS = {
         OUT_VARNAME="vmrso2",
         NOTE="The vmrso2_from_concso2 transform is only valid at T=20C, p=1013hPa",
     ),
+    "vmrco_from_concco": VariableScaling(
+        REQ_VAR="concco",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ppb",
+        SCALING_FACTOR=0.8589,  # 20C and 1013 hPa
+        OUT_VARNAME="vmrco",
+        NOTE="The vmrco_from_concco transform is only valid at T=20C, p=1013hPa",
+    ),
     "vmrox_from_vmrno2_vmro3": VariableCombiner(
         REQ_VARS=("vmrno2", "vmro3"),
         IN_UNITS=("nmol mol-1", "nmol mol-1"),
