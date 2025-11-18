@@ -1,3 +1,7 @@
+# The left hand side is the aerocom variable name, the right hand side is the CMIP variable name
+# names with "3d" in them indicate a 3d variable
+# for pyaerocom 2d fields and CMIP 3d fields, pyaerocom will try to determine the ground level and return that
+# using the same CMIP variable for serveral pyaerocom variables is possible
 [cmip_variables]
 od550aer = "od550aer"
 od550bc = "od550bc"
@@ -9,3 +13,6 @@ od550oa = "od550oa"
 od550so4 = "od550so4"
 od550ss = "od550ss"
 od870aer = "od870aer"
+vmro3 = "o3"
+# profile
+vmro33d = "o3"
