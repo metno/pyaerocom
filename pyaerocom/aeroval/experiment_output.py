@@ -265,6 +265,8 @@ class ExperimentOutput(ProjectOutput):
                         if obs not in hm[vardisp]:
                             hm[vardisp][obs] = {}
                         for vert_code, mdict in vdict.items():
+                            if vert_code == "longname":
+                                continue
                             if vert_code not in hm[vardisp][obs]:
                                 hm[vardisp][obs][vert_code] = {}
                             for mod, minfo in mdict.items():
@@ -794,12 +796,23 @@ class ExperimentOutput(ProjectOutput):
 
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
                 mcfg = self.cfg.model_cfg.get_entry(mod_name)
+                for src_name in self.cfg.obs_cfg.keylist():
+                    ocfg = self.cfg.obs_cfg.get_entry(src_name)
+                    if ocfg.web_interface_name == obs_name:
+                        longname = ocfg.longname
+                        break
+                else:
+                    logger.info(
+                        f"Could not find any entry for {obs_name}, setting longname to blank"
+                    )
+                    longname = ""
+
                 var = mcfg.get_varname_web(mod_var, obs_var)
                 if var not in new:
                     new[var] = self._init_menu_entry(var)
 
                 if obs_name not in new[var]["obs"]:
-                    new[var]["obs"][obs_name] = {}
+                    new[var]["obs"][obs_name] = {"longname": longname}
 
                 if vert_code not in new[var]["obs"][obs_name]:
                     new[var]["obs"][obs_name][vert_code] = {}
@@ -808,6 +821,7 @@ class ExperimentOutput(ProjectOutput):
 
                 new[var]["obs"][obs_name][vert_code][mod_name] = {
                     "model_id": mcfg.model_id,
+                    "longname": mcfg.longname,
                     "model_var": mod_var,
                     "obs_var": obs_var,
                 }
@@ -850,6 +864,8 @@ class ExperimentOutput(ProjectOutput):
                 vert_codes_sorted = sort_dict_by_name(vert_codes)
                 new_sorted[var]["obs"][obs_name] = vert_codes_sorted
                 for vert_code, models in vert_codes_sorted.items():
+                    if vert_code == "longname":
+                        continue
                     model_order = self.get_model_order_menu()
                     models_sorted = sort_dict_by_name(models, pref_list=model_order)
                     new_sorted[var]["obs"][obs_name][vert_code] = models_sorted

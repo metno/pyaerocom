@@ -57,7 +57,9 @@ class ModelEntry(BaseModel):
     model_rename_vars: dict = {}
     flex_ts_type: bool = True
     model_data_dir: str | list[str] | None = None
-    model_description: str = ""  # Description of the model entry, only used by the front end
+    longname: str = (
+        ""  # Description of the model entry, added to menu.json for the frontend to use
+    )
 
     # attributes previously given as kwargs used in CAMS2_83
     gridded_reader_id: dict[str, str] = {"model": "ReadGridded", "obs": "ReadGridded"}

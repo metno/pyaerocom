@@ -144,7 +144,9 @@ class ObsEntry(BaseModel):
     profile_layer_limits: tuple[LayerLimits, ...] | None = None
     web_interface_name: str | None = None
 
-    obs_description: str = ""  # Description of the observation entry, only used by the front end
+    longname: str = (
+        ""  # Description of the observation entry, added to menu.json for the frontend to use
+    )
     diurnal_only: bool = False
     obs_type: str | None = None
 
