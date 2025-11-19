@@ -11,6 +11,10 @@ from pyaerocom import GriddedData
 from pyaerocom.io.cmip_ctm.reader import ReadCmipCtm
 
 TEST_MODEL_NAME = "MPI-ESM-1-2-HAM"
+PYAEROCOM_UNIT_TEST_DATA_DIR = (
+    "/lustre/storeB/project/aerocom/aerocom-users-database/HYway/NorESM2-LM-C/transient2010s/"
+)
+PYAEROCOM_UNIT_TEST_DATA_MODEL = "NorESM2-LM-C"
 
 
 @pytest.fixture()
@@ -25,6 +29,24 @@ def data_dir(path_cmip_ci: str) -> str:
     return path_cmip_ci
 
 
+@pytest.fixture()
+def data_dir_pya(path_cmip_ci: str) -> str:
+    """path to CMIP pyaerocom unit testing test data"""
+    return PYAEROCOM_UNIT_TEST_DATA_DIR
+
+
+def test_ReadCmipCtm_read_var_pyaerocom_unit(data_dir_pya: str):
+    # testing actual model reading with providing start and stop dates
+    # data is in a single multiyear file
+    start_time = pd.Timestamp("2013-01-01")
+    stop_time = pd.Timestamp("2014-01-01")
+    reader = ReadCmipCtm(data_dir=data_dir_pya, data_id=PYAEROCOM_UNIT_TEST_DATA_MODEL)
+    var_name = "concso4"
+    ts_type = "monthly"
+    data = reader.read_var(var_name, ts_type, start=start_time, stop=stop_time)
+    assert data.shape == (12, 96, 192)
+
+
 def test_ReadCmipCtm__init__(data_dir: str):
     reader = ReadCmipCtm(data_id=TEST_MODEL_NAME, data_dir=data_dir)
     assert getattr(reader, "data_id") == TEST_MODEL_NAME
@@ -33,14 +55,15 @@ def test_ReadCmipCtm__init__(data_dir: str):
 
 def test_ReadCmipCtm__get_file_list(data_dir: str):
     reader = ReadCmipCtm(TEST_MODEL_NAME, data_dir)
-    files = reader.get_file_list()
+    # files = reader.get_file_list()
+    files = reader._files
     assert len(files) > 0
 
 
 def test_ReadCmipCtm__get_file_info(data_dir: str):
     reader = ReadCmipCtm(TEST_MODEL_NAME, data_dir)
-    files = reader.get_file_list()
-    file_info = reader.get_file_info()
+    files = reader._files
+    file_info = reader._file_info
     assert len(file_info) > 0
     assert file_info[files[0]]["tstype"] == "monthly"
     assert list(file_info[files[0]]["years"]) == [2012, 2013, 2014]
@@ -60,8 +83,6 @@ def test_ReadCmipCtm_data_dir(data_dir: str):
 
 def test_ReadCmipCtm_vars(data_dir: str):
     reader = ReadCmipCtm(data_dir=data_dir, data_id=TEST_MODEL_NAME)
-    reader.get_file_list()
-    reader.get_file_info()
     assert sorted(reader.vars_provided) == ["od550aer", "od550lt1aer"]
 
 

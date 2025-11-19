@@ -14,5 +14,33 @@ od550so4 = "od550so4"
 od550ss = "od550ss"
 od870aer = "od870aer"
 vmro3 = "o3"
+concso2 = "so2"
+#concso4 = "mmrso4"
+concno2 = "no2"
+concno = "no"
+concnh3 = "nh3"
+#conc = ""
 # profile
 vmro33d = "o3"
+
+# the following defines which additional variables are needed for a given aerocom variable
+# to adjust the CMIP units to pyaerocom units
+[aux_info]
+[aux_info.concso4]
+aux_vars = ["mmrso4", "ps", "ts"]
+units = "ug m-3"
+# Not sure if we need this. This is at 15 degrees C
+formula = "(x.ps/287.0/x.ts)*x.mmrso4[:,{LL},:,:]*1e9"
+
+[aux_info.ts]
+aux_vars = ["ta"]
+units = "K"
+how = "surface layer"
+# Not sure if we need this.
+formula = "x.ts[:,{LL},:,:]"
+
+# aliases for CMIP variables
+[cmip_aliases]
+[cmip_aliases.ts]
+alias = ["ta"]
+layer = "lowest"

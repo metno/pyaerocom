@@ -10,7 +10,6 @@ import xarray as xr
 from iris.util import equalise_attributes
 
 from pyaerocom import const, GriddedData
-from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.units.helpers import get_standard_unit
 
@@ -40,7 +39,7 @@ from pyaerocom.units.helpers import get_standard_unit
 #     calc_ratpm10pm25,
 #     calc_ratpm25pm10,
 # )
-from .model_variables import cmip_variables
+from .model_variables import cmip_variables, cmip_aux_info, cmip_aliases
 
 # import warnings
 
@@ -82,6 +81,8 @@ class ReadCmipCtm(GriddedReader):
         **kwargs,
     ):
         self.var_map = cmip_variables()
+        self.aux_info = cmip_aux_info()
+        self.cmip_aliases = cmip_aliases()
 
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
@@ -97,6 +98,8 @@ class ReadCmipCtm(GriddedReader):
         self._tstypes = []
         self._years = []
         self._vars = []
+        # some info on how to read data
+        self._var_info = {}
         # self._last_file_data = None
         # self._private.filename = self.DEFAULT_FILE_NAME
         # pyaerocom.colocation.colocator needs variable and time coverage after init
@@ -249,7 +252,13 @@ class ReadCmipCtm(GriddedReader):
             return True
         return False
 
-    def read_var(self, var_name: str, ts_type: str | None = None, **kwargs):
+    def read_var(
+        self,
+        var_name: str,
+        ts_type: str | None = None,
+        for_computation_flag: bool = False,
+        **kwargs,
+    ):
         """Load data for given variable.
 
         Parameters
@@ -259,6 +268,9 @@ class ReadCmipCtm(GriddedReader):
         ts_type : str
             Temporal resolution of data to read. Supported are
             "hourly", "daily", "monthly" , "yearly".
+        for_computation_flag : bool
+            flag to indicate if the data used for computation of another variable only
+            Will prevent the creation of a GriddedData object at the end
 
         Returns
         -------
@@ -266,6 +278,11 @@ class ReadCmipCtm(GriddedReader):
         """
         _start = None
         _stop = None
+        # this method is used recursively...
+        if var_name not in self._var_info:
+            self._var_info[var_name] = {}
+            self._var_info[var_name]["to_read"] = []
+            self._var_info[var_name]["to_compute"] = []
         # start and stop can either be a valid pandas.Timestamp or a string that pandas.Timestamp understands
         if "start" in kwargs:
             if isinstance(kwargs["start"], pd.Timestamp):
@@ -310,10 +327,13 @@ class ReadCmipCtm(GriddedReader):
         elif _stop is not None:
             date_range = iris.Constraint(time=lambda cell: cell.point <= _stop)
 
-        self.get_file_list()
-        self.get_file_info()
+        # test if var can be directly read
         if not self.has_var(var_name):
-            raise VarNotAvailableError(var_name)
+            # check for alias
+            if var_name not in self.cmip_aliases:
+                # additional_vars_needed = self.check_var_computable(var_name)
+                pass
+            # raise VarNotAvailableError(var_name)
         var = const.VARS[var_name]
         var_name_aerocom = var.var_name_aerocom
         #
@@ -344,18 +364,74 @@ class ReadCmipCtm(GriddedReader):
             cube = cubelist.concatenate_cube()
         else:
             cube = cubelist[0]
-        gridded = GriddedData(
-            cube,
-            var_name=var_name_aerocom,
-            ts_type=ts_type,
-            check_unit=True,
-            convert_unit_on_init=True,
-        )
-        # add some more metadata
-        _last_rev = self._file_info[_files_to_read[-1]]["realization"]
-        gridded.metadata["data_id"] = self._data_id
-        gridded.metadata["from_files"] = _files_to_read
-        gridded.metadata["data_revision"] = _last_rev
-        # not sure if this is needed
-        gridded.convert_unit(get_standard_unit(var_name))
-        return gridded
+
+        if not for_computation_flag:
+            gridded = GriddedData(
+                cube,
+                var_name=var_name_aerocom,
+                ts_type=ts_type,
+                check_unit=True,
+                convert_unit_on_init=True,
+            )
+            # add some more metadata
+            _last_rev = self._file_info[_files_to_read[-1]]["realization"]
+            gridded.metadata["data_id"] = self._data_id
+            gridded.metadata["from_files"] = _files_to_read
+            gridded.metadata["data_revision"] = _last_rev
+            # not sure if this is needed
+            gridded.convert_unit(get_standard_unit(var_name))
+            return gridded
+        else:
+            return cube
+
+    def check_var_computable(self, var_name: str):
+        # check if a given variable can be computed from the found data files
+        logger.info(f"checking if var {var_name} is computable")
+        if var_name in self.aux_info:
+            # formula for variable computation is defined
+            # check if the necessary variables are available
+            logger.info(
+                f"need vars {','.join(self.aux_info[var_name]['aux_vars'])} for computation of var {var_name}"
+            )
+            for _var_needed in self.aux_info[var_name]["aux_vars"]:
+                compute_vars = self.check_var_computable(_var_needed)
+                alias_needed = self.check_aliases_available(_var_needed)
+                if _var_needed in self._vars:
+                    logger.info(f"found var {_var_needed} in data dir")
+                    self._var_info[var_name]["to_read"] = _var_needed
+                    continue
+                elif compute_vars:
+                    logger.info(f"found var {_var_needed} as computable using vars {compute_vars}")
+                    self._var_info["vars_to_read"]["to_compute"] = _var_needed
+                    continue
+                elif alias_needed:
+                    logger.info(f"found var {_var_needed} as alias {alias_needed}")
+                    continue
+                else:
+                    logging.info(
+                        f"missing variable {_var_needed} in provided model data directory nad var is not computable"
+                    )
+                    return False
+        else:
+            logging.info(f"var {var_name} is not computable")
+            return False
+
+        return self.aux_info[var_name]["aux_vars"]
+
+    def check_aliases_available(self, var_name: str):
+        logger.info(f"checking if alias for var {var_name} is available in dataset...")
+        if var_name in self.cmip_aliases:
+            logger.info(f"alias for var {var_name} is {self.cmip_aliases[var_name]['alias']}...")
+            if self.cmip_aliases[var_name]["alias"] in self._vars:
+                logger.info(
+                    f"var {self.cmip_aliases[var_name]['alias']} is available in dataset..."
+                )
+                return self.cmip_aliases[var_name]["alias"]
+            else:
+                logger.info(
+                    f"var {self.cmip_aliases[var_name]['alias']} is NOT available in dataset..."
+                )
+                return False
+        else:
+            logger.info(f"no alias for var {var_name} defined.")
+            return False
