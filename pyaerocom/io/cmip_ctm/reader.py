@@ -4,9 +4,11 @@ import os
 import pathlib
 
 import iris
+import iris.time
 import numpy as np
 import pandas as pd
 import xarray as xr
+from cf_units import Unit
 from iris.util import equalise_attributes
 
 from pyaerocom import const, GriddedData
@@ -83,6 +85,8 @@ class ReadCmipCtm(GriddedReader):
         self.var_map = cmip_variables()
         self.aux_info = cmip_aux_info()
         self.cmip_aliases = cmip_aliases()
+        # will contain info about what variables to read from files
+        self.read_info = {}
 
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
@@ -100,12 +104,12 @@ class ReadCmipCtm(GriddedReader):
         self._vars = []
         # some info on how to read data
         self._var_info = {}
-        # self._last_file_data = None
-        # self._private.filename = self.DEFAULT_FILE_NAME
-        # pyaerocom.colocation.colocator needs variable and time coverage after init
-        # fill the needed fields
         self.get_file_list()
         self.get_file_info()
+        # dictionary with temporary data for computed variables
+        self._temp_data = {}
+        # will store the time base iris.Contraint of the data set
+        self.date_range = None
 
     def get_file_list(self):
         # search for nc files recursively
@@ -276,56 +280,58 @@ class ReadCmipCtm(GriddedReader):
         -------
         GriddedData
         """
-        _start = None
-        _stop = None
         # this method is used recursively...
         if var_name not in self._var_info:
             self._var_info[var_name] = {}
             self._var_info[var_name]["to_read"] = []
             self._var_info[var_name]["to_compute"] = []
-        # start and stop can either be a valid pandas.Timestamp or a string that pandas.Timestamp understands
-        if "start" in kwargs:
-            if isinstance(kwargs["start"], pd.Timestamp):
-                _start = kwargs["start"]
-            elif isinstance(kwargs["start"], int):
-                _start = pd.Timestamp(f"{kwargs['start']}-01-01")
-            elif isinstance(kwargs["start"], str):
-                try:
-                    _start = pd.Timestamp(kwargs["start"])
-                except ValueError:
-                    logging.error(
-                        f"Start time {kwargs['start']} is not valid. Using the entire file instead."
-                    )
-            else:
-                logging.info(
-                    f"Start time argument {kwargs['start']} given, but is not a valid type. Using the entire file instead."
-                )
 
-        if "stop" in kwargs:
-            if isinstance(kwargs["stop"], pd.Timestamp):
-                _stop = kwargs["stop"]
-            elif isinstance(kwargs["stop"], int):
-                _stop = pd.Timestamp(f"{kwargs['stop']}-01-01")
-            elif isinstance(kwargs["stop"], str):
-                try:
-                    _stop = pd.Timestamp(kwargs["stop"])
-                except ValueError:
-                    logging.error(
-                        f"Start time {kwargs['stop']} is not valid. Using the entire file instead."
-                    )
-            else:
-                logging.info(
-                    f"Stop time argument {kwargs['stop']} given, but is not a valid type. Using the entire file instead."
-                )
+        if self.date_range is None:
+            _start = None
+            _stop = None
+            # start and stop can either be a valid pandas.Timestamp or a string that pandas.Timestamp understands
+            if "start" in kwargs:
+                if isinstance(kwargs["start"], pd.Timestamp):
+                    _start = kwargs["start"]
+                elif isinstance(kwargs["start"], int):
+                    _start = iris.time.PartialDateTime(f"{kwargs['start']}-01-01")
 
-        # create an iris.Constraint if the user gave a start and a stop date for reading
-        date_range = None
-        if _start is not None and _stop is not None:
-            date_range = iris.Constraint(time=lambda cell: _start <= cell.point <= _stop)
-        elif _start is not None:
-            date_range = iris.Constraint(time=lambda cell: _start <= cell.point)
-        elif _stop is not None:
-            date_range = iris.Constraint(time=lambda cell: cell.point <= _stop)
+                elif isinstance(kwargs["start"], str):
+                    try:
+                        _start = pd.Timestamp(kwargs["start"])
+                    except ValueError:
+                        logging.error(
+                            f"Start time {kwargs['start']} is not valid. Using the entire file instead."
+                        )
+                else:
+                    logging.info(
+                        f"Start time argument {kwargs['start']} given, but is not a valid type. Using the entire file instead."
+                    )
+
+            if "stop" in kwargs:
+                if isinstance(kwargs["stop"], pd.Timestamp):
+                    _stop = kwargs["stop"]
+                elif isinstance(kwargs["stop"], int):
+                    _stop = pd.Timestamp(f"{kwargs['stop']}-01-01")
+                elif isinstance(kwargs["stop"], str):
+                    try:
+                        _stop = pd.Timestamp(kwargs["stop"])
+                    except ValueError:
+                        logging.error(
+                            f"Start time {kwargs['stop']} is not valid. Using the entire file instead."
+                        )
+                else:
+                    logging.info(
+                        f"Stop time argument {kwargs['stop']} given, but is not a valid type. Using the entire file instead."
+                    )
+
+            # create an iris.Constraint if the user gave a start and a stop date for reading
+            if _start is not None and _stop is not None:
+                self.date_range = iris.Constraint(time=lambda cell: _start <= cell.point <= _stop)
+            elif _start is not None:
+                self.date_range = iris.Constraint(time=lambda cell: _start <= cell.point)
+            elif _stop is not None:
+                self.date_range = iris.Constraint(time=lambda cell: cell.point <= _stop)
 
         # test if var can be directly read
         if not self.has_var(var_name):
@@ -350,20 +356,33 @@ class ReadCmipCtm(GriddedReader):
                 logging.info(f"adding file{_file} to list of files to read...")
                 _files_to_read.append(_file)
 
-        cubelist = iris.load(
-            _files_to_read,
-            var_name,
-        )
-        # extract the interesting dates
-        if date_range is not None:
-            cubelist = cubelist.extract(date_range)
-
-        if len(cubelist) > 1:
-            # GriddedData can handle only a single cube, not a CubeList
-            equalise_attributes(cubelist)
-            cube = cubelist.concatenate_cube()
+        if len(_files_to_read) == 0:
+            # the pyaerocom variable can't be read directly; check if it can be computed
+            # and read the necessary temporary data if possible
+            needs_computation_flag = self.check_and_read_aux_vars(var_name)
+            assert needs_computation_flag
         else:
-            cube = cubelist[0]
+            cubelist = iris.load(
+                _files_to_read,
+                var_name,
+            )
+            # extract the interesting dates
+            if isinstance(self.date_range, iris.Constraint):
+                # some hacking for noleap calendars
+                try:
+                    cubelist = cubelist.extract(self.date_range)
+                except TypeError:
+                    tcoord = cubelist[0].coord("time")
+
+                    tcoord.units = Unit(tcoord.units.origin, calendar="gregorian")
+                    cubelist = cubelist.extract(self.date_range)
+
+            if len(cubelist) > 1:
+                # GriddedData can handle only a single cube, not a CubeList
+                equalise_attributes(cubelist)
+                cube = cubelist.concatenate_cube()
+            else:
+                cube = cubelist[0]
 
         if not for_computation_flag:
             gridded = GriddedData(
@@ -384,39 +403,46 @@ class ReadCmipCtm(GriddedReader):
         else:
             return cube
 
-    def check_var_computable(self, var_name: str):
+    def check_and_read_aux_vars(self, var_name: str):
         # check if a given variable can be computed from the found data files
+        # and read the data into self.read_info
         logger.info(f"checking if var {var_name} is computable")
         if var_name in self.aux_info:
             # formula for variable computation is defined
             # check if the necessary variables are available
             logger.info(
-                f"need vars {','.join(self.aux_info[var_name]['aux_vars'])} for computation of var {var_name}"
+                f"need var(s) {','.join(self.aux_info[var_name]['aux_vars'])} for computation of var {var_name}"
             )
             for _var_needed in self.aux_info[var_name]["aux_vars"]:
-                compute_vars = self.check_var_computable(_var_needed)
-                alias_needed = self.check_aliases_available(_var_needed)
                 if _var_needed in self._vars:
                     logger.info(f"found var {_var_needed} in data dir")
-                    self._var_info[var_name]["to_read"] = _var_needed
+                    self._temp_data[_var_needed] = self.read_var(
+                        _var_needed, for_computation_flag=True
+                    )
+                    # self._var_info[var_name]["to_read"] = _var_needed
                     continue
-                elif compute_vars:
+                compute_vars = self.check_and_read_aux_vars(_var_needed)
+                if compute_vars:
                     logger.info(f"found var {_var_needed} as computable using vars {compute_vars}")
-                    self._var_info["vars_to_read"]["to_compute"] = _var_needed
+                    self._var_info["vars_to_read"]["to_compute"] = compute_vars
+                    for _compute_var in compute_vars:
+                        self.read_var(_compute_var, for_computation_flag=True)
                     continue
-                elif alias_needed:
+                alias_needed = self.check_aliases_available(_var_needed)
+                if alias_needed:
                     logger.info(f"found var {_var_needed} as alias {alias_needed}")
+                    self.read_var(alias_needed, for_computation_flag=True)
                     continue
                 else:
                     logging.info(
-                        f"missing variable {_var_needed} in provided model data directory nad var is not computable"
+                        f"missing variable {_var_needed} in provided model data directory and var is not computable"
                     )
                     return False
         else:
             logging.info(f"var {var_name} is not computable")
             return False
 
-        return self.aux_info[var_name]["aux_vars"]
+        return True
 
     def check_aliases_available(self, var_name: str):
         logger.info(f"checking if alias for var {var_name} is available in dataset...")
