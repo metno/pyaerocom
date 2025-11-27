@@ -27,7 +27,7 @@ vmro33d = "o3"
 # to adjust the CMIP units to pyaerocom units
 [aux_info]
 [aux_info.concso4]
-aux_vars = ["mmrso4", "ps", "tas"]
+aux_vars = ["mmrso4_surf", "ps", "tas"]
 units = "ug m-3"
 # Not sure if we need this. This is at 15 degrees C
 formula = "(x.ps/287.0/x.tas)*x.mmrso4[:,{LL},:,:]*1e9"
@@ -38,6 +38,13 @@ units = "K"
 how = "surface layer"
 # Not sure if we need this.
 formula = "x.ts[:,{LL},:,:]"
+
+[aux_info.mmrso4_surf]
+aux_vars = ["mmrso4"]
+units = "kg kg-1"
+how = "surface layer"
+# Not sure if we need this.
+formula = "x.mmrso4[:,{LL},:,:]"
 
 # aliases for CMIP variables
 [cmip_aliases]

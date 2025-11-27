@@ -4,6 +4,7 @@ import os
 import pathlib
 
 import iris
+import iris.cube
 import iris.time
 import numpy as np
 import pandas as pd
@@ -107,7 +108,12 @@ class ReadCmipCtm(GriddedReader):
         self.get_file_list()
         self.get_file_info()
         # dictionary with temporary data for computed variables
-        self._temp_data = {}
+        self._temp_data = iris.cube.CubeList()
+        # because iris uses standard_names for the variable naming, we need a mapping between aerocom and
+        # standard names
+        self._temp_var_mapping = {}
+        self._model_vars_read = []
+        self._model_vars_computed = []
         # will store the time base iris.Contraint of the data set
         self.date_range = None
 
@@ -350,7 +356,7 @@ class ReadCmipCtm(GriddedReader):
         _files_to_read = []
         for _file in self._file_info:
             if var_name != self._file_info[_file]["variable"]:
-                logging.info(f"Variable {var_name} not available for {_file}")
+                # logging.info(f"Variable {var_name} not available for {_file}")
                 continue
             else:
                 logging.info(f"adding file{_file} to list of files to read...")
@@ -359,8 +365,16 @@ class ReadCmipCtm(GriddedReader):
         if len(_files_to_read) == 0:
             # the pyaerocom variable can't be read directly; check if it can be computed
             # and read the necessary temporary data if possible
-            needs_computation_flag = self.check_and_read_aux_vars(var_name)
-            assert needs_computation_flag
+            # needs_computation_flag = self.check_and_read_aux_vars(var_name)
+            aux_vars = self.check_and_read_aux_vars(var_name)
+            # if for_computation_flag and len(self._temp_data.keys()) > 0:
+            if not for_computation_flag and len(aux_vars) > 0:
+                # calculate computed variable
+                pass
+                assert True
+                # concatenate all data into single cube
+                # perform the calculation
+
         else:
             cubelist = iris.load(
                 _files_to_read,
@@ -372,6 +386,9 @@ class ReadCmipCtm(GriddedReader):
                 try:
                     cubelist = cubelist.extract(self.date_range)
                 except TypeError:
+                    logger.info(
+                        "Info: forcing leap year calendar to non leap year model data. Necessary date corrections are still missing at this point."
+                    )
                     tcoord = cubelist[0].coord("time")
 
                     tcoord.units = Unit(tcoord.units.origin, calendar="gregorian")
@@ -384,7 +401,7 @@ class ReadCmipCtm(GriddedReader):
             else:
                 cube = cubelist[0]
 
-        if not for_computation_flag:
+        if not for_computation_flag and len(_files_to_read) > 0:
             gridded = GriddedData(
                 cube,
                 var_name=var_name_aerocom,
@@ -414,19 +431,33 @@ class ReadCmipCtm(GriddedReader):
                 f"need var(s) {','.join(self.aux_info[var_name]['aux_vars'])} for computation of var {var_name}"
             )
             for _var_needed in self.aux_info[var_name]["aux_vars"]:
-                if _var_needed in self._vars:
+                logger.info(f"working on var {_var_needed} ")
+
+                if _var_needed in self._vars and _var_needed not in self._model_vars_read:
                     logger.info(f"found var {_var_needed} in data dir")
-                    self._temp_data[_var_needed] = self.read_var(
-                        _var_needed, for_computation_flag=True
-                    )
+                    self._temp_data.append(self.read_var(_var_needed, for_computation_flag=True))
+                    self._temp_var_mapping[_var_needed] = self._temp_data[-1].name()
+                    self._model_vars_read.append(_var_needed)
                     # self._var_info[var_name]["to_read"] = _var_needed
                     continue
                 compute_vars = self.check_and_read_aux_vars(_var_needed)
-                if compute_vars:
+                if len(compute_vars) > 0:
                     logger.info(f"found var {_var_needed} as computable using vars {compute_vars}")
-                    self._var_info["vars_to_read"]["to_compute"] = compute_vars
+                    # self._var_info["vars_to_read"]["to_compute"] = compute_vars
                     for _compute_var in compute_vars:
-                        self.read_var(_compute_var, for_computation_flag=True)
+                        if self.aux_info[_var_needed]["how"] == "surface layer":
+                            # We work on the last element of the cube list
+                            z_coordinate_name = self._temp_data[-1].dim_coords[1].name()
+                            p_max = max(self._temp_data[-1].dim_coords[1].points)
+                            constraint = iris.Constraint(
+                                coord_values={z_coordinate_name: lambda cell: cell == p_max}
+                            )
+                            self._temp_data.append(self._temp_data[-1].extract(constraint))
+                        else:
+                            raise NotImplementedError(
+                                'only implemented the "surface_layer" how method for now'
+                            )
+
                     continue
                 alias_needed = self.check_aliases_available(_var_needed)
                 if alias_needed:
@@ -437,12 +468,12 @@ class ReadCmipCtm(GriddedReader):
                     logging.info(
                         f"missing variable {_var_needed} in provided model data directory and var is not computable"
                     )
-                    return False
+                    return []
         else:
             logging.info(f"var {var_name} is not computable")
-            return False
+            return []
 
-        return True
+        return self.aux_info[var_name]["aux_vars"]
 
     def check_aliases_available(self, var_name: str):
         logger.info(f"checking if alias for var {var_name} is available in dataset...")
