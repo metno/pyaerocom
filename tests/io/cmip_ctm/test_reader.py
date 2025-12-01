@@ -44,7 +44,7 @@ def test_ReadCmipCtm_read_var_pyaerocom_unit(data_dir_pya: str):
     var_name = "concso4"
     ts_type = "monthly"
     data = reader.read_var(var_name, ts_type, start=start_time, stop=stop_time)
-    assert data.shape == (12, 96, 192)
+    assert data.shape == (12, 96, 144)
 
 
 def test_ReadCmipCtm__init__(data_dir: str):

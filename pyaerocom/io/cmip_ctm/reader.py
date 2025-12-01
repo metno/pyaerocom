@@ -16,7 +16,6 @@ from pyaerocom import const, GriddedData
 from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.units.helpers import get_standard_unit
 
-# from pyaerocom.units.units import Unit
 # from .additional_variables import (
 #     add_dataarrays,
 #     calc_concNhno3,
@@ -43,6 +42,9 @@ from pyaerocom.units.helpers import get_standard_unit
 #     calc_ratpm25pm10,
 # )
 from .model_variables import cmip_variables, cmip_aux_info, cmip_aliases
+
+# from pyaerocom.units.units import Unit
+from .var_calculations_iris import calc_concso4
 
 # import warnings
 
@@ -370,10 +372,12 @@ class ReadCmipCtm(GriddedReader):
             # if for_computation_flag and len(self._temp_data.keys()) > 0:
             if not for_computation_flag and len(aux_vars) > 0:
                 # calculate computed variable
-                pass
-                assert True
                 # concatenate all data into single cube
                 # perform the calculation
+                if var_name == "concso4":
+                    cube = calc_concso4(self._temp_data[0], self._temp_data[1], self._temp_data[2])
+                else:
+                    raise NotImplementedError(f"variable {var_name} not implemented yet.")
 
         else:
             cubelist = iris.load(
@@ -453,6 +457,8 @@ class ReadCmipCtm(GriddedReader):
                                 coord_values={z_coordinate_name: lambda cell: cell == p_max}
                             )
                             self._temp_data.append(self._temp_data[-1].extract(constraint))
+                            self._temp_data[-1].var_name = _var_needed
+                            del self._temp_data[-2]
                         else:
                             raise NotImplementedError(
                                 'only implemented the "surface_layer" how method for now'
