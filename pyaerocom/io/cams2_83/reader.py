@@ -101,7 +101,7 @@ def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:
     date = data.date + timedelta(days=day)
     first_date = data.date
 
-    select_date = datetime(date.year, date.month, date.day, 0, 0, 0)
+    select_date = datetime(date.year, date.month, date.day, 0, 30, 0)
 
     dateselect = pd.date_range(select_date, select_date + timedelta(hours=23), freq="h")
 
