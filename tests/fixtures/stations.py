@@ -85,10 +85,54 @@ def station_data2() -> StationData:
     return stat
 
 
+def station_data_mangled() -> StationData:
+    """Create an example synthetic instance of StationData class"""
+    stat = StationData()
+    d = dict(
+        latitude=33.01,
+        longitude=15,
+        altitude=300,
+        dataset_name="test (alt)",
+        PI="Frantz",
+        instrument_name="test instr",
+        station_id=42,
+        station_name="test station mangled",
+        ts_type="daily",
+        revision_date="20190513",
+        data_level=0,
+        country="norway",
+        data_version=0,
+    )
+
+    stat.update(d)
+
+    START = "2024"
+    NUM_DAYS = 50
+
+    # the time series is duplicated, something is wrong with this data
+    stat.dtime = np.concatenate(
+        (
+            np.datetime64(START) + np.arange(NUM_DAYS / 2).astype("timedelta64[D]"),
+            np.datetime64(START) + np.arange(NUM_DAYS / 2).astype("timedelta64[D]"),
+        ),
+        axis=0,
+    )
+
+    stat.od550aer = np.ones(NUM_DAYS)
+
+    stat.var_info["od550aer"] = {"units": "1"}
+
+    return stat
+
+
 class FakeStationDataAccess:
     """Factory for loading and accessing of data objects"""
 
-    _LOADERS = dict(station_data1=station_data1, station_data2=station_data2)
+    _LOADERS = dict(
+        station_data1=station_data1,
+        station_data2=station_data2,
+        station_data_mangled=station_data_mangled,
+    )
 
     def __getitem__(self, key):
         if key in self.__dict__:  # item is loaded

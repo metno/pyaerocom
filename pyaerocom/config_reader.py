@@ -118,6 +118,11 @@ class ConfigReader:
     #: ICOS name
     ICOS_NAME = "ICOS"
 
+    IAGOS_NAME_HARP = "IAGOS.HARP"
+
+    EVDC_OZONE_SONDES_NAME_HARP = "EVDC.Ozone.Sondes.HARP"
+    EVDC_OZONE_SONDES_NAME_HDF = "EVDC.Ozone.Sondes.HDF"
+
     # TROPOMI access names
     TROPOMI_XEMEP_R01x01_NAME = "TROPOMI_XEMEP_R01x01"
 
@@ -409,7 +414,8 @@ class ConfigReader:
 
             try:
                 with open(user_file, "w") as fh:
-                    fh.write(str(user_file))
+                    # fh.write(str(user_file))
+                    user_config.write(fh)
                 logger.info(
                     f"Update of file {user_file} was successful. The original file was retained as {backup_file_name}, You might want to check paths for validity."
                 )

@@ -30,7 +30,7 @@ from pyaerocom.region import (
     find_closest_region_coord,
     get_all_default_region_ids,
 )
-from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
+from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS, EU_CITIES_REGIONS
 from pyaerocom.stats.stats import _init_stats_dummy, calculate_statistics
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import (
@@ -78,6 +78,10 @@ def _prepare_htap_regions_json():
     return _prepare_regions_json_helper(HTAP_REGIONS_DEFAULT)
 
 
+def _prepare_cities_regions_json():
+    return _prepare_regions_json_helper(EU_CITIES_REGIONS)
+
+
 def _prepare_country_regions(region_ids):
     regs = {}
     for regid in region_ids:
@@ -106,6 +110,12 @@ def init_regions_web(coldata, regions_how):
         coldata.check_set_countries()
         regborders.update(coldata.get_country_codes())
         add_regs = _prepare_country_regions(coldata.get_country_codes().keys())
+        regs.update(add_regs)
+    elif regions_how == "cities":
+        regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
+        regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
+        add_borders, add_regs = _prepare_cities_regions_json()
+        regborders.update(add_borders)
         regs.update(add_regs)
     else:
         raise ValueError("Invalid input for regions_how", regions_how)
@@ -1001,7 +1011,7 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
 def _process_map_and_scat(
     data: dict[str, ColocatedData | None],
-    map_data: list[dict],
+    map_meta: list[dict],
     site_indices: list[int],
     periods: list[str],
     scatter_freq: str,
@@ -1018,7 +1028,7 @@ def _process_map_and_scat(
     stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     scat_data = {}
     scat_dummy = [np.nan]
-    new_map_data: list[dict] = []
+    map_data = deepcopy(map_meta)
     for freq, cd in data.items():
         for per in periods:
             for season in seasons:
@@ -1030,8 +1040,9 @@ def _process_map_and_scat(
                         )
                         jsdate = subset.data.jsdate.values.tolist()
                         use_dummy = False
-                    except (DataCoverageError, TemporalResolutionError):
-                        pass
+                    except (DataCoverageError, TemporalResolutionError) as e:
+                        logger.warning(f"Could not process data: {e}")
+                        continue
 
                 for i, map_stat in zip(site_indices, map_data):
                     if freq not in map_stat:
@@ -1111,9 +1122,7 @@ def _process_map_and_scat(
                             "units": units,
                         }
 
-                    new_map_data.append(map_stat)
-
-    return (new_map_data, scat_data)
+    return (map_data, scat_data)
 
 
 def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):

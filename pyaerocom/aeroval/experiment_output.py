@@ -1139,6 +1139,8 @@ class ExperimentOutput(ProjectOutput):
             current = recursive_defaultdict(current)
 
             for freq, coldata in data.items():
+                if coldata is None:
+                    continue
                 model_name = coldata.model_name
 
                 midpoint = (

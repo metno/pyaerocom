@@ -108,7 +108,7 @@ def _colocate_vertical_profile_gridded(
                     iris.Constraint(
                         coord_values={
                             "altitude": lambda cell: vertical_layer["start"]
-                            < cell
+                            < cell.point
                             < vertical_layer["end"]
                         }
                     )

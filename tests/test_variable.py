@@ -48,7 +48,7 @@ def test_Variable_error(var_name: str | None, cfg, error: str):
 @pytest.mark.parametrize(
     "var_name,var_name_aerocom",
     [
-        ("od550aer3D", "od550aer"),
+        ("od550aer3D", "od550aer3D"),
         ("od550aer", "od550aer"),
         ("od550du", "od550dust"),
         ("od550csaer", "od550aer"),

@@ -14,7 +14,7 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
-from .aux_vars import vmrno2_from_ds, vmro3_from_ds, vmro3max_from_ds
+from .aux_vars import vmrso2_from_ds, vmrno2_from_ds, vmro3_from_ds, vmro3max_from_ds
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +83,7 @@ class ReadCNEMC(ReadUngriddedBase):
         "vmro3": vmro3_from_ds,
         "vmro3max": vmro3max_from_ds,
         "vmrno2": vmrno2_from_ds,
+        "vmrso2": vmrso2_from_ds,
     }
 
     VAR_MAPPING = {

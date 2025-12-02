@@ -12,6 +12,7 @@ from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
+from pyaerocom.stationdata import StationData
 from pyaerocom._lowlevel_helpers import RegridResDeg
 from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.exceptions import (
@@ -24,6 +25,8 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.filter import Filter
 from pyaerocom.griddeddata import GriddedData
+from pyaerocom.griddeddata_container import GriddedDataContainer
+
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
 from pyaerocom.helpers import (
@@ -243,6 +246,7 @@ def colocate_gridded_gridded(
     if regrid_res_deg is not None:
         data_ref = _regrid_gridded(data_ref, regrid_scheme, regrid_res_deg)
     # perform regridding
+
     if data.lon_res < data_ref.lon_res:  # obs has lower resolution
         data = data.regrid(data_ref, scheme=regrid_scheme)
     else:
@@ -306,8 +310,8 @@ def colocate_gridded_gridded(
         data_ref_np = data_ref_np.filled(np.nan)
     arr = np.asarray((data_ref_np, data_np))
     time = data.time_stamps().astype("datetime64[ns]")
-    lats = data.latitude.points
-    lons = data.longitude.points
+    lats = data.latitude_points
+    lons = data.longitude_points
 
     # create coordinates of DataArray
     coords = {
@@ -320,13 +324,6 @@ def colocate_gridded_gridded(
     dims = ["data_source", "time", "latitude", "longitude"]
 
     coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=data.var_name, attrs=meta)
-
-    # add correct units for lat / lon dimensions
-    coldata.latitude.attrs["standard_name"] = data.latitude.standard_name
-    coldata.latitude.attrs["units"] = str(data.latitude.units)
-
-    coldata.longitude.attrs["standard_name"] = data.longitude.standard_name
-    coldata.longitude.attrs["units"] = str(data.longitude.units)
 
     if data_ts_type != ts_type:
         coldata = coldata.resample_time(
@@ -593,7 +590,7 @@ def _colocate_site_data_helper_timecol(
 
 
 def colocate_gridded_ungridded(
-    data: GriddedData,
+    data: GriddedDataContainer,
     data_ref: UngriddedDataContainer,
     ts_type=None,
     start=None,
@@ -736,6 +733,7 @@ def colocate_gridded_ungridded(
 
     # check time overlap and crop model data if needed
     start, stop = check_time_ival(data, start, stop)
+
     data = data.crop(time_range=(start, stop))
 
     if regrid_res_deg is not None:
@@ -762,8 +760,10 @@ def colocate_gridded_ungridded(
     # colocation frequency
     col_tst = TsType(col_freq)
 
-    # use only sites that are within model domain
-    # find projection and axes-ranges
+    # Gets tiles and ranges from GriddedDataContainer
+    tiles, xranges, yranges = data.get_tiles()
+
+    # Defines a projection and filters ref by above ranges with proj
     if data.proj_info is None:
         # lat-lon data, define unity-projection
         def latlon_proj(lat, lon):
@@ -771,26 +771,12 @@ def colocate_gridded_ungridded(
             return (lon, lat)
 
         proj = latlon_proj
-        latitude = data.latitude.points
-        longitude = data.longitude.points
-        xrange = [np.min(longitude), np.max(longitude)]
-        yrange = [np.min(latitude), np.max(latitude)]
     else:
-        # gridded data with projection,
         proj = data.proj_info.to_proj
-        # add x/y information to ungridded
-        for coord in data.cube.dim_coords:
-            if coord.var_name == data.proj_info.x_axis:
-                vals = coord.points
-                xrange = (np.min(vals), np.max(vals))
-            if coord.var_name == data.proj_info.y_axis:
-                vals = coord.points
-                yrange = (np.min(vals), np.max(vals))
-        if xrange is None or yrange is None:
-            raise VariableDefinitionError(
-                f"x/y axis not found in cube: {data.proj_info.x_axis}, {data.proj_info.y_axis}"
-            )
-    data_ref = data_ref.filter_by_projection(proj, xrange, yrange)
+
+    grid_stat_data = []
+
+    data_ref = data_ref.filter_by_projection(proj, xranges, yranges)
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
@@ -803,17 +789,22 @@ def colocate_gridded_ungridded(
         **kwargs,
     )
 
-    obs_stat_data = all_stats["stats"]
-    ungridded_lons = all_stats["longitude"]
-    ungridded_lats = all_stats["latitude"]
+    unsorted_obs_stat_data = all_stats["stats"]
+    # ungridded_lons = all_stats["longitude"]
+    # ungridded_lats = all_stats["latitude"]
 
-    if len(obs_stat_data) == 0:
-        raise VarNotAvailableError(
-            f"Variable {var_ref} is not available in specified time interval ({start}-{stop})"
-        )
+    # Goes through each tile, gets lats/lons for stations in that tile, then finds obs and mod stat data for the tile
 
-    # to read
-    grid_stat_data = data.to_time_series(longitude=ungridded_lons, latitude=ungridded_lats)
+    grid_stat_data, obs_stat_data = _get_stat_data_vec(
+        start,
+        stop,
+        var_ref,
+        tiles,
+        xranges,
+        yranges,
+        proj,
+        unsorted_obs_stat_data,
+    )
 
     pd_freq = col_tst.to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)
@@ -835,6 +826,7 @@ def colocate_gridded_ungridded(
     data_unit = str(data.units)
 
     # loop over all stations and append to colocated data object
+
     for i, obs_stat in enumerate(obs_stat_data):
         # Add coordinates to arrays required for xarray.DataArray below
         lons[i] = obs_stat.longitude
@@ -906,21 +898,27 @@ def colocate_gridded_ungridded(
             # can end up resulting in incorrect number of timestamps after resampling
             # (the error was discovered using EBASMC, concpm10, 2019 and colocation
             # frequency monthly)
+
             try:
                 # assign the unified timeseries data to the colocated data array
                 arr[0, :, i] = _df["ref"].values
                 arr[1, :, i] = _df["data"].values
             except ValueError:
-                try:
-                    mask = _df.index.intersection(time_idx)
-                    _df = _df.loc[mask]
-                    arr[0, :, i] = _df["ref"].values
-                    arr[1, :, i] = _df["data"].values
-                except ValueError as e:
-                    logger.warning(
-                        f"Failed to colocate time for station {obs_stat.station_name}. "
-                        f"This station will be skipped (error: {e})"
-                    )
+                if len(time_idx) > len(_df.index):
+                    mask = np.intersect1d(time_idx, _df.index, return_indices=True)
+                    arr[0, mask[1], i] = _df["ref"].values
+                    arr[1, mask[1], i] = _df["data"].values
+                else:
+                    try:
+                        mask = _df.index.intersection(time_idx)
+                        _df = _df.loc[mask]
+                        arr[0, :, i] = _df["ref"].values
+                        arr[1, :, i] = _df["data"].values
+                    except ValueError as e:
+                        logger.warning(
+                            f"Failed to colocate time for station {obs_stat.station_name}. "
+                            f"This station will be skipped (error: {e})"
+                        )
         except TemporalResolutionError as e:
             # resolution of obsdata is too low
             logger.warning(
@@ -971,14 +969,61 @@ def colocate_gridded_ungridded(
     dims = ["data_source", "time", "station_name"]
     coldata = ColocatedData(data=arr, coords=coords, dims=dims, name=var, attrs=meta)
 
-    # add correct units for lat / lon dimensions
-    coldata.latitude.attrs["standard_name"] = data.latitude.standard_name
-    coldata.latitude.attrs["units"] = str(data.latitude.units)
-
-    coldata.longitude.attrs["standard_name"] = data.longitude.standard_name
-    coldata.longitude.attrs["units"] = str(data.longitude.units)
-
     return coldata
+
+
+def _get_stat_data_vec(
+    start,
+    stop,
+    var_ref,
+    tiles,
+    xranges,
+    yranges,
+    proj,
+    unsorted_obs_stat_data,
+) -> tuple[list[StationData], list[StationData]]:
+    obs_stat_pos = np.array(
+        [
+            (*proj(station.latitude, station.longitude), station.latitude, station.longitude)
+            for station in unsorted_obs_stat_data
+        ],
+        np.dtype([("x", "f8"), ("y", "f8"), ("lat", "f8"), ("lon", "f8")]),
+    )
+
+    obs_stat_data = []
+    grid_stat_data = []
+
+    for i, tile in enumerate(tiles):
+        xrange = xranges[i]
+        yrange = yranges[i]
+
+        found_id = np.where(
+            np.logical_and(
+                np.logical_and(obs_stat_pos["x"] >= xrange[0], obs_stat_pos["x"] <= xrange[1]),
+                np.logical_and(obs_stat_pos["y"] >= yrange[0], obs_stat_pos["y"] <= yrange[1]),
+            )
+        )[0]
+
+        found_stations = [unsorted_obs_stat_data[i] for i in found_id]
+
+        if len(found_stations) == 0:
+            print(f"Could not find any stations for tile {tile.from_files}")
+            logger.info(f"Could not find any stations for tile {tile.from_files}")
+            continue
+
+        ungridded_lats = obs_stat_pos["lat"][found_id]
+        ungridded_lons = obs_stat_pos["lon"][found_id]
+
+        grid_stat_data += tile.to_time_series(longitude=ungridded_lons, latitude=ungridded_lats)
+
+        obs_stat_data += found_stations
+
+    if len(obs_stat_data) == 0:
+        raise VarNotAvailableError(
+            f"Variable {var_ref} is not available in specified time interval ({start}-{stop})"
+        )
+
+    return grid_stat_data, obs_stat_data
 
 
 def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):

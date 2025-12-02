@@ -25,6 +25,15 @@ See: [https://ebas.nilu.no/](https://ebas.nilu.no/)
 
 Under "Data policy".
 
+### LCS data
+
+Small subset of [LCS data](https://www.sciencedirect.com/science/article/pii/S030147972501076X?via%3Dihub#sec9) with some changes
+- None/NaNs removed
+- Changes to formatting of time and quality
+
+See [Figshare entry for data](https://figshare.com/articles/dataset/_i_Harmonized_Standardized_and_Corrected_Crowd-Sourced_Low-Cost_Sensor_i_PM_sub_2_5_sub_i_Data_f_i_i_rom_i_i_Sensor_community_and_PurpleAir_Networks_i_i_Across_Europe_i_/27195720/1), and license https://creativecommons.org/licenses/by/4.0/
+
+
 ### Model data
 
 - TM5 :Courtesy of Twan van Noije (KNMI)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import getpass
 import logging
-import os.path
+import os
 from pathlib import Path
 
 import pytest
