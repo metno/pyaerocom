@@ -1,54 +1,20 @@
 import logging
 
 import iris.cube
-import xarray as xr
 
 logger = logging.getLogger(__name__)
 
+"""
+This module contains calculations for new variables using iris
 
-def add_dataarrays(arr0: xr.DataArray, *arrs: xr.DataArray) -> xr.DataArray:
-    """
-    Add a bunch of :class:`xarray.DataArray` instances
+IMPORTANT:
+One has to set the variable name and the unit to something pyaerocom understands by setting
+var_name and units.
+For new properties, setting the standard name is not strictly necessary, but helpful for understanding
 
-    Parameters
-    ----------
-    *arr0
-        first input array (instance of :class:`xarray.DataArray` with same shape).
-    *arrs
-        Additional input arrays (instances of :class:`xarray.DataArray` with same shape)
-
-    Returns
-    -------
-    xarray.DataArray
-        Added array
-    """
-    result = arr0.copy(deep=True)
-    for arr in arrs:
-        result += arr
-    return result
-
-
-def subtract_dataarrays(arr0: xr.DataArray, *arrs: xr.DataArray) -> xr.DataArray:
-    """
-    Subtract a bunch of :class:`xarray.DataArray` instances from an array
-
-    Parameters
-    ----------
-    arr0
-        Input array (instance of :class:`xarray.DataArray` with same shape).
-    *arrs
-        input arrays (instances of :class:`xarray.DataArray` with same shape).
-        Subtraction is performed with respect to `arr0`.
-
-    Returns
-    -------
-    xarray.DataArray
-        Diff array (all additional ones are subtracted from `arr0`)
-    """
-    result = arr0.copy(deep=True)
-    for arr in arrs:
-        result -= arr
-    return result
+The result has to be of the type iris.cube.Cube because that is the only thing pyaerocom's 
+GriddedData object understands at the moment
+"""
 
 
 def calc_concso4(
@@ -60,4 +26,13 @@ def calc_concso4(
     res_cube.standard_name = "mass_concentration_of_sulfate_ambient_aerosol_particles_in_air"
     res_cube.var_name = "concso4"
     res_cube.units = "ug m-3"
+    return res_cube
+
+
+def calc_vmro3(o3_surf: iris.cube.Cube) -> iris.cube.Cube:
+    # the climate models store vmro3 in the unit mol mol-1
+    # only the factor of 1.E9 is missing
+    res_cube = o3_surf * 1.0e9
+    res_cube.var_name = "vmro3"
+    res_cube.units = "nmol mol-1"
     return res_cube

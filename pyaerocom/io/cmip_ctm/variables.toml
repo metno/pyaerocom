@@ -13,7 +13,7 @@ od550oa = "od550oa"
 od550so4 = "od550so4"
 od550ss = "od550ss"
 od870aer = "od870aer"
-vmro3 = "o3"
+#vmro3 = "o3"
 concso2 = "so2"
 #concso4 = "mmrso4"
 concno2 = "no2"
@@ -26,25 +26,34 @@ vmro33d = "o3"
 # the following defines which additional variables are needed for a given aerocom variable
 # to adjust the CMIP units to pyaerocom units
 [aux_info]
+[aux_info.vmro3]
+# the climate models store vmro3 in the unit mol mol-1 while pyaerocom uses nmol mol-1
+# so there's only a factor of 1.E9 missing
+aux_vars = ["o3_surf"]
+units = "nmol mol-1"
+
+[aux_info.o3_surf]
+aux_vars = ["o3"]
+units = "mol mol-1"
+how = "surface layer"
+
 [aux_info.concso4]
 aux_vars = ["mmrso4_surf", "ps", "tas"]
 units = "ug m-3"
-# Not sure if we need this. This is at 15 degrees C
-formula = "(x.ps/287.0/x.tas)*x.mmrso4[:,{LL},:,:]*1e9"
+
+[aux_info.concno2]
+aux_vars = ["no2_surf", "ps", "tas"]
+units = "ug m-3"
 
 [aux_info.tas]
 aux_vars = ["ta"]
 units = "K"
 how = "surface layer"
-# Not sure if we need this.
-formula = "x.ts[:,{LL},:,:]"
 
 [aux_info.mmrso4_surf]
 aux_vars = ["mmrso4"]
 units = "kg kg-1"
 how = "surface layer"
-# Not sure if we need this.
-formula = "x.mmrso4[:,{LL},:,:]"
 
 # aliases for CMIP variables
 [cmip_aliases]

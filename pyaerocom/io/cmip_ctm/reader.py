@@ -44,7 +44,7 @@ from pyaerocom.units.helpers import get_standard_unit
 from .model_variables import cmip_variables, cmip_aux_info, cmip_aliases
 
 # from pyaerocom.units.units import Unit
-from .var_calculations_iris import calc_concso4
+from .var_calculations_iris import calc_concso4, calc_vmro3
 
 # import warnings
 
@@ -320,7 +320,8 @@ class ReadCmipCtm(GriddedReader):
                 if isinstance(kwargs["stop"], pd.Timestamp):
                     _stop = kwargs["stop"]
                 elif isinstance(kwargs["stop"], int):
-                    _stop = pd.Timestamp(f"{kwargs['stop']}-01-01")
+                    # _stop = pd.Timestamp(f"{kwargs['stop']}-01-01")
+                    _stop = iris.time.PartialDateTime(f"{kwargs['stop']}-01-01")
                 elif isinstance(kwargs["stop"], str):
                     try:
                         _stop = pd.Timestamp(kwargs["stop"])
@@ -348,8 +349,6 @@ class ReadCmipCtm(GriddedReader):
                 # additional_vars_needed = self.check_var_computable(var_name)
                 pass
             # raise VarNotAvailableError(var_name)
-        var = const.VARS[var_name]
-        var_name_aerocom = var.var_name_aerocom
         #
         if self._data_dir is None:  # pragma: no cover
             raise ValueError("data_dir must be set before reading.")
@@ -376,6 +375,8 @@ class ReadCmipCtm(GriddedReader):
                 # perform the calculation
                 if var_name == "concso4":
                     cube = calc_concso4(self._temp_data[0], self._temp_data[1], self._temp_data[2])
+                elif var_name == "vmro3":
+                    cube = calc_vmro3(self._temp_data[0])
                 else:
                     raise NotImplementedError(f"variable {var_name} not implemented yet.")
 
@@ -406,6 +407,9 @@ class ReadCmipCtm(GriddedReader):
                 cube = cubelist[0]
 
         if not for_computation_flag and len(_files_to_read) > 0:
+            var = const.VARS[var_name]
+            var_name_aerocom = var.var_name_aerocom
+
             gridded = GriddedData(
                 cube,
                 var_name=var_name_aerocom,

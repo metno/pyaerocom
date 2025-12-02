@@ -16,6 +16,7 @@ PYAEROCOM_UNIT_TEST_DATA_DIR = (
     "/lustre/storeB/project/aerocom/aerocom-users-database/HYway/NorESM2-LM-C/transient2010s/"
 )
 PYAEROCOM_UNIT_TEST_DATA_MODEL = "NorESM2-LM-C"
+VARS_TO_TEST = ["concso4", "vmro3"]
 
 
 @pytest.fixture()
@@ -39,16 +40,16 @@ def data_dir_pya(path_cmip_ci: str) -> str:
 def test_ReadCmipCtm_read_var_pyaerocom_unit(data_dir_pya: str):
     # testing actual model reading with providing start and stop dates
     # data is in a single multiyear file
-    if not os.path.exists(PYAEROCOM_UNIT_TEST_DATA_MODEL):
+    if not os.path.exists(data_dir_pya):
         assert True
     else:
         start_time = pd.Timestamp("2013-01-01")
         stop_time = pd.Timestamp("2014-01-01")
-        reader = ReadCmipCtm(data_dir=data_dir_pya, data_id=PYAEROCOM_UNIT_TEST_DATA_MODEL)
-        var_name = "concso4"
-        ts_type = "monthly"
-        data = reader.read_var(var_name, ts_type, start=start_time, stop=stop_time)
-        assert data.shape == (12, 96, 144)
+        for var_name in VARS_TO_TEST:
+            reader = ReadCmipCtm(data_dir=data_dir_pya, data_id=PYAEROCOM_UNIT_TEST_DATA_MODEL)
+            ts_type = "monthly"
+            data = reader.read_var(var_name, ts_type, start=start_time, stop=stop_time)
+            assert data.shape == (12, 96, 144)
 
 
 def test_ReadCmipCtm__init__(data_dir: str):
