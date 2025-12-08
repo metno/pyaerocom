@@ -24,6 +24,7 @@ from pyaerocom.aeroval.glob_defaults import (
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
+from pyaerocom.aeroval.output_model import Menu
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS
@@ -795,24 +796,24 @@ class ExperimentOutput(ProjectOutput):
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
                 mcfg = self.cfg.model_cfg.get_entry(mod_name)
 
-                obs_longname = {}
+                obs_longnames = {}
                 for src_name in self.cfg.obs_cfg.keylist():
                     ocfg = self.cfg.obs_cfg.get_entry(src_name)
                     longname = ocfg.longname
                     webname = ocfg.web_interface_name
 
-                    if webname in obs_longname:
-                        if longname != obs_longname[webname]:
+                    if webname in obs_longnames:
+                        if longname != obs_longnames[webname]:
                             raise ValueError(
                                 f"Different longnames given for same web interface name: {longname} != {obs_longname[webname]}"
                             )
                     else:
-                        obs_longname[webname] = longname
+                        obs_longnames[webname] = longname
 
                 var = mcfg.get_varname_web(mod_var, obs_var)
                 if var not in new:
                     new[var] = self._init_menu_entry(var)
-                    new[var]["obs_longnames"] = obs_longname
+                    new[var]["obs_longnames"] = obs_longnames
 
                 if obs_name not in new[var]["obs"]:
                     new[var]["obs"][obs_name] = {}
@@ -832,7 +833,8 @@ class ExperimentOutput(ProjectOutput):
                 logger.warning(
                     f"Invalid entry: model {mod_name} ({mod_var}), obs {obs_name} ({obs_var}) ⚠️"
                 )
-        return new
+
+        return Menu.model_validate(new).model_dump()
 
     def _sort_menu_entries(self, avail: dict) -> dict:
         """
