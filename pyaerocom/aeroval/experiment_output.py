@@ -801,6 +801,8 @@ class ExperimentOutput(ProjectOutput):
                     ocfg = self.cfg.obs_cfg.get_entry(src_name)
                     longname = ocfg.longname
                     webname = ocfg.web_interface_name
+                    if webname is None:
+                        continue
 
                     if webname in obs_longnames:
                         if longname != obs_longnames[webname]:
