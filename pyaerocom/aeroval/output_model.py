@@ -8,7 +8,7 @@ class MenuModelEntry(BaseModel):
     model_id: str
     model_var: str
     obs_var: str
-    longname: str
+    longname: str = ""
 
 
 class MenuModel(RootModel[dict[str, MenuModelEntry]]):
@@ -23,7 +23,7 @@ class MenuEntry(BaseModel):
     type: str
     cat: str
     name: str
-    obs_longnames: dict[str, str]
+    obs_longnames: dict[str, str] | None = None
     obs: dict[str, MenuLevel]
 
 
