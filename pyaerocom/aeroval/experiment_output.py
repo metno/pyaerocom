@@ -805,7 +805,7 @@ class ExperimentOutput(ProjectOutput):
                     if webname in obs_longnames:
                         if longname != obs_longnames[webname]:
                             raise ValueError(
-                                f"Different longnames given for same web interface name: {longname} != {obs_longname[webname]}"
+                                f"Different longnames given for same web interface name: {longname} != {obs_longnames[webname]}"
                             )
                     else:
                         obs_longnames[webname] = longname
