@@ -1,10 +1,12 @@
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel, RootModel, ConfigDict
 
 
 # Pydantic models for menu.json
 
 
 class MenuModelEntry(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     model_id: str
     model_var: str
     obs_var: str
