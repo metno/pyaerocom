@@ -184,49 +184,60 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             cmapinfo = var_ranges_defaults["default"]
             varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
 
-        data = self._check_dimensions(data)
+        if var == "conco3" and isinstance(data, list):
+            datalist = data
+        else:
+            datalist = [data]
 
-        freq = self._get_maps_freq()
-        tst = TsType(data.ts_type)
+        idx = 0
+        for data in datalist:
+            data = self._check_dimensions(data)
 
-        if tst < freq:
-            raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
-        elif tst > freq:
-            data = data.resample_time(str(freq))
+            freq = self._get_maps_freq()
+            tst = TsType(data.ts_type)
 
-        data.check_unit()
+            if tst < freq:
+                raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
+            elif tst > freq:
+                data = data.resample_time(str(freq))
 
-        if not reanalyse_existing:
-            # check if all files have already been produced
-            # if even just one is missing, all is gonna be recomputed
-            ts = _jsdate_list(data)
+            data.check_unit()
 
-            uris_contour = self.avdb.query(
-                aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
-                project=self.exp_output.proj_id,
-                experiment=self.exp_output.exp_id,
-            )
-            all_times = [int(uri.meta["timestep"]) for uri in uris_contour]
+            if not reanalyse_existing:
+                # check if all files have already been produced
+                # if even just one is missing, all is gonna be recomputed
+                ts = _jsdate_list(data)
 
-            if all([date in all_times for date in ts]):
-                logger.info(
-                    f"Skipping contour processing of {var}_{model_name}: data already exists {uris_contour}."
+                uris_contour = self.avdb.query(
+                    aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                    project=self.exp_output.proj_id,
+                    experiment=self.exp_output.exp_id,
                 )
-                return
+                all_times = [int(uri.meta["timestep"]) for uri in uris_contour]
 
-        # first calculate and save geojson with contour levels
-        contourjson = calc_contour_json(data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins)
+                if all([date in all_times for date in ts]):
+                    logger.info(
+                        f"Skipping contour processing of {var}_{model_name}: data already exists {uris_contour}."
+                    )
+                    return
 
-        with self.avdb.lock():
-            for time, contour in contourjson.items():
-                self.avdb.put_contour(
-                    contour,
-                    self.exp_output.proj_id,
-                    self.exp_output.exp_id,
-                    self.cfg.model_cfg.get_entry(model_name).model_rename_vars.get(var, var),
-                    model_name,
-                    timestep=time,
-                )
+            # first calculate and save geojson with contour levels
+            contourjson = calc_contour_json(data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins)
+
+            if idx == 1:  # it's conco3mda8
+                var = "conco3mda8"
+            with self.avdb.lock():
+                for time, contour in contourjson.items():
+                    self.avdb.put_contour(
+                        contour,
+                        self.exp_output.proj_id,
+                        self.exp_output.exp_id,
+                        self.cfg.model_cfg.get_entry(model_name).model_rename_vars.get(var, var),
+                        model_name,
+                        timestep=time,
+                    )
+
+            idx += 1
 
     def _process_overlay_map_var(self, model_name, var, reanalyse_existing):  # pragma: no cover
         """Process overlay map (pixels) for either model or obserations
@@ -383,7 +394,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         logger.info(f"Found coarsest freq available as model data: {freq}")
         return freq
 
-    def _read_model_data(self, model_name: str, var: str) -> GriddedDataContainer:
+    def _read_model_data(
+        self, model_name: str, var: str
+    ) -> GriddedDataContainer | list[GriddedDataContainer]:
         """
         Function for reading the model data without going through the colocation object.
         This means that none of the checks normally done in the colocation class are run.
@@ -452,11 +465,17 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     self.cfg.colocation_opts.ts_type
                 )  # emulates the old way closer than None
 
+        if var == "conco3":
+            conco3mda8formaps = True
+        else:
+            conco3mda8formaps = False
+
         data = reader.read_var(
             var,
             start=start,
             stop=stop,
             ts_type=ts_type_read,
+            conco3mda8formaps=conco3mda8formaps,
             vert_which=self.cfg.colocation_opts.obs_vert_type,
             flex_ts_type=self.cfg.colocation_opts.flex_ts_type,
             **kwargs,
@@ -464,6 +483,10 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         rm_outliers = self.cfg.colocation_opts.model_remove_outliers
         outlier_ranges = self.cfg.colocation_opts.model_outlier_ranges
+
+        if conco3mda8formaps:
+            datao3mda8 = data[1]
+            data = data[0]
 
         if rm_outliers:
             if var in outlier_ranges:
@@ -473,9 +496,15 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 low, high = var_info.minimum, var_info.maximum
 
             data.remove_outliers(low, high, inplace=True)
+            if conco3mda8formaps:
+                datao3mda8.remove_outliers(low, high, inplace=True)
 
         data.convert_unit(get_standard_unit(data.var_name))
-        return data
+        if conco3mda8formaps:
+            datao3mda8.convert_unit(get_standard_unit(data.var_name))
+            return [data, datao3mda8]
+        else:
+            return data
 
     def _check_ts_for_only_model_maps(
         self, name: str, var: str, dates: list[int], data: xr.Dataset
