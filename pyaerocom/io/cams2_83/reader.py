@@ -14,6 +14,7 @@ from tqdm import tqdm
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.cams2_83.models import ModelData, ModelName, RunType
 from pyaerocom.io.gridded_reader import GriddedReader
+from pyaerocom.stats.mda8.mda8 import min_periods_max
 
 """
 TODO:
@@ -450,11 +451,12 @@ class ReadCAMS2_83(GriddedReader):
 
         if conco3mda8formaps and var_name == "conco3" and ts_type == "hourly":
             ds = self.filedata[var_name].copy()
+            breakpoint()
             o3mda8 = (
-                ds.rolling(time=8, min_periods=6)
+                ds.rolling(time=8, center=False, min_periods=6)
                 .mean("time")
-                .resample(time="D")
-                .max()
+                .resample(time="24h", origin="start_day", label="left", offset="1h")
+                .reduce(lambda x, axis: np.apply_along_axis(min_periods_max, 0, x, min_periods=18))
                 .rename("conco3mda8")
                 .assign_attrs(
                     long_name="conco3mda8",
