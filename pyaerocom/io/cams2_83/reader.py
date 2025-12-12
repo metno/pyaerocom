@@ -451,7 +451,6 @@ class ReadCAMS2_83(GriddedReader):
 
         if conco3mda8formaps and var_name == "conco3" and ts_type == "hourly":
             ds = self.filedata[var_name].copy()
-            breakpoint()
             o3mda8 = (
                 ds.rolling(time=8, center=False, min_periods=6)
                 .mean("time")
