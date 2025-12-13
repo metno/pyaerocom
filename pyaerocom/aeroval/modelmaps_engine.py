@@ -4,7 +4,14 @@ import logging
 import aerovaldb
 import xarray as xr
 
-from pyaerocom import ColocatedData, GriddedData, GriddedDataContainer, TsType, __version__, const
+from pyaerocom import (
+    ColocatedData,
+    GriddedData,
+    GriddedDataContainer,
+    TsType,
+    __version__,
+    const,
+)
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelmaps_helpers import (
@@ -28,7 +35,6 @@ from pyaerocom.exceptions import (
     VarNotAvailableError,
 )
 from pyaerocom.units.helpers import get_standard_unit
-
 
 logger = logging.getLogger(__name__)
 
@@ -176,21 +182,25 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 f"Cannot read data for model {model_name} (variable {var}): {e}"
             )
 
-        var_ranges_defaults = self.cfg.var_scale_colmap
-        if var in var_ranges_defaults.keys():
-            cmapinfo = var_ranges_defaults[var]
-            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
-        else:
-            cmapinfo = var_ranges_defaults["default"]
-            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
-
         if var == "conco3" and isinstance(data, list):
             datalist = data
         else:
             datalist = [data]
 
+        var_ranges_defaults = self.cfg.var_scale_colmap
+
         idx = 0
         for data in datalist:
+            if idx == 1:  # it's conco3mda8
+                var = "conco3mda8"
+
+            if var in var_ranges_defaults.keys():
+                cmapinfo = var_ranges_defaults[var]
+                varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
+            else:
+                cmapinfo = var_ranges_defaults["default"]
+                varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
+
             data = self._check_dimensions(data)
 
             freq = self._get_maps_freq()
@@ -224,8 +234,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             # first calculate and save geojson with contour levels
             contourjson = calc_contour_json(data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins)
 
-            if idx == 1:  # it's conco3mda8
-                var = "conco3mda8"
             with self.avdb.lock():
                 for time, contour in contourjson.items():
                     self.avdb.put_contour(
@@ -646,6 +654,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 "whereas the coldata_dir does not."
             )
 
+        coldata = ColocatedData(data=file_to_convert[0])
+        data = coldata.data.sel(data_source=model_name)
+        data = data.drop_vars("data_source")
+        data = data.transpose("time", "latitude", "longitude")
+        data = data.sortby(["latitude", "longitude"])
+        return data
         coldata = ColocatedData(data=file_to_convert[0])
         data = coldata.data.sel(data_source=model_name)
         data = data.drop_vars("data_source")
