@@ -462,6 +462,9 @@ class ReadCAMS2_83(GriddedReader):
                     species="O3 MDA8",
                 )
             )
+            o3mda8.coords.update(
+                {"time": o3mda8.get_index("time") + pd.tseries.frequencies.to_offset("12h")}
+            )
             cubeo3mda8 = o3mda8.to_iris()
             griddedo3mda8 = GriddedData(
                 cubeo3mda8,
