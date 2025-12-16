@@ -1,5 +1,6 @@
 import glob
 import logging
+from datetime import datetime, timedelta
 
 import aerovaldb
 import xarray as xr
@@ -236,6 +237,10 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
             with self.avdb.lock():
                 for time, contour in contourjson.items():
+                    if var == "conco3mda8":
+                        # we need to shift 1 h because the frontend expects coherence with the timeseries in ts, which have 13:00 as hour
+                        newtime = datetime.fromtimestamp(int(time) / 1000) + timedelta(hours=1)
+                        time = str(int(newtime.timestamp() * 1000))
                     self.avdb.put_contour(
                         contour,
                         self.exp_output.proj_id,
