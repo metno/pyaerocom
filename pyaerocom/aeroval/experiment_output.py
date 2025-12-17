@@ -780,7 +780,7 @@ class ExperimentOutput(ProjectOutput):
                     )
                     if not first_with_mod_name:  # should already be taken care of in new
                         continue
-                    obs_name = first_with_mod_name[0]
+                    obs_name = self.cfg.obs_cfg.get_entry(first_with_mod_name[0]).obs_name
                     all_combinations.remove(first_with_mod_name)
                 else:
                     logger.warning(
