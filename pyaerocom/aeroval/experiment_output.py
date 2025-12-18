@@ -764,8 +764,8 @@ class ExperimentOutput(ProjectOutput):
                         if var in self.cfg.obs_cfg.get_entry(o).obs_vars:
                             vert_code = self.cfg.obs_cfg.get_entry(o).obs_vert_type
                     if not vert_code:
-                        if var == "conco3mda8":
-                            vert_code = "Surface"
+                        if var == "conco3mda8":  # computation happened in the map engine
+                            vert_code = self.cfg.obs_cfg.get_entry("conco3").obs_vert_type
                         else:
                             raise ValueError(
                                 "Failed to infer vert_code in an only_model_maps experiment"
