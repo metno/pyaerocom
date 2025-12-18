@@ -764,9 +764,12 @@ class ExperimentOutput(ProjectOutput):
                         if var in self.cfg.obs_cfg.get_entry(o).obs_vars:
                             vert_code = self.cfg.obs_cfg.get_entry(o).obs_vert_type
                     if not vert_code:
-                        raise ValueError(
-                            "Failed to infer vert_code in an only_model_maps experiment"
-                        )
+                        if var == "conco3mda8":  # computation happened in the map engine
+                            vert_code = self.cfg.obs_cfg.get_entry("conco3").obs_vert_type
+                        else:
+                            raise ValueError(
+                                "Failed to infer vert_code in an only_model_maps experiment"
+                            )
                     first_with_mod_name = next(
                         (
                             item
@@ -777,7 +780,7 @@ class ExperimentOutput(ProjectOutput):
                     )
                     if not first_with_mod_name:  # should already be taken care of in new
                         continue
-                    obs_name = first_with_mod_name[0]
+                    obs_name = self.cfg.obs_cfg.get_entry(first_with_mod_name[0]).obs_name
                     all_combinations.remove(first_with_mod_name)
                 else:
                     logger.warning(
