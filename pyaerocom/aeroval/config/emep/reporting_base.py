@@ -644,10 +644,16 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
         "VN0001R",
     ]
 
+    urban_ignore_ebas = [
+        "*U",
+    ]
+
     EBAS_FILTER = {
         key: dict(
             **EBAS_FILTER,
-            station_id=_get_ignore_stations(key, year, omit_stations_path) + height_ignore_ebas,
+            station_id=_get_ignore_stations(key, year, omit_stations_path)
+            + height_ignore_ebas
+            + urban_ignore_ebas,
             negate="station_id",
         )
         for key in _get_ebas_species()
