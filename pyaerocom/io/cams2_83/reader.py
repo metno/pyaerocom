@@ -414,7 +414,7 @@ class ReadCAMS2_83(GriddedReader):
         return var_name in AEROCOM_NAMES.values()
 
     def read_var(
-        self, var_name: str, ts_type: str | None = None, conco3mda8formaps: bool = False, **kwargs
+        self, var_name: str, ts_type: str | None = None, from_map_engine: bool = False, **kwargs
     ) -> GriddedData | list[GriddedData]:
         """Load data for given variable.
 
@@ -449,7 +449,7 @@ class ReadCAMS2_83(GriddedReader):
         )
         gridded.metadata["data_id"] = self.data_id
 
-        if conco3mda8formaps and var_name == "conco3" and ts_type == "hourly":
+        if from_map_engine and var_name == "conco3":
             ds = self.filedata[var_name].copy()
             o3mda8 = (
                 ds.rolling(time=8, center=False, min_periods=6)

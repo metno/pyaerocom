@@ -478,28 +478,30 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                     self.cfg.colocation_opts.ts_type
                 )  # emulates the old way closer than None
 
-        if var == "conco3":
-            conco3mda8formaps = True
-        else:
-            conco3mda8formaps = False
-
         data = reader.read_var(
             var,
             start=start,
             stop=stop,
             ts_type=ts_type_read,
-            conco3mda8formaps=conco3mda8formaps,
             vert_which=self.cfg.colocation_opts.obs_vert_type,
             flex_ts_type=self.cfg.colocation_opts.flex_ts_type,
+            from_map_engine=True,
             **kwargs,
         )
 
         rm_outliers = self.cfg.colocation_opts.model_remove_outliers
         outlier_ranges = self.cfg.colocation_opts.model_outlier_ranges
 
-        if conco3mda8formaps:
-            datao3mda8 = data[1]
-            data = data[0]
+        conco3mda8formaps = False
+        if var == "conco3" and isinstance(data, list):
+            try:
+                datao3mda8 = data[1]
+                data = data[0]
+                conco3mda8formaps = True
+            except IndexError as e:
+                logger.error(
+                    f"Reader is expected to return a list with data for o3 and o3mda8 in this case: {e}"
+                )
 
         if rm_outliers:
             if var in outlier_ranges:

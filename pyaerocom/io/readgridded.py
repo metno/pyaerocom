@@ -1222,6 +1222,7 @@ class ReadGridded(GriddedReader):
         try_convert_units=True,
         aux_add_args=None,
         rename_var=None,
+        from_map_engine=False,
         **kwargs,
     ):
         """Compute auxiliary variable
@@ -1317,6 +1318,7 @@ class ReadGridded(GriddedReader):
                 prefer_longer=prefer_longer,
                 try_convert_units=try_convert_units,
                 rename_var=None,
+                from_map_engine=from_map_engine,
                 **kwargs,
             )
             data.append(aux_data)
@@ -1584,6 +1586,7 @@ class ReadGridded(GriddedReader):
         constraints=None,
         try_convert_units=True,
         rename_var=None,
+        from_map_engine=False,
         **kwargs,
     ):
         """Read model data for a specific variable
@@ -1686,6 +1689,7 @@ class ReadGridded(GriddedReader):
             prefer_longer,
             try_convert_units=try_convert_units,
             rename_var=rename_var,
+            from_map_engine=from_map_engine,
             **kwargs,
         )
 
@@ -1849,6 +1853,7 @@ class ReadGridded(GriddedReader):
         prefer_longer,
         try_convert_units,
         rename_var,
+        from_map_engine,
         **kwargs,
     ):
         """Helper method used in :func:`read_var`
@@ -1867,6 +1872,7 @@ class ReadGridded(GriddedReader):
                 prefer_longer=prefer_longer,
                 try_convert_units=try_convert_units,
                 rename_var=rename_var,
+                from_map_engine=from_map_engine,
                 **kwargs,
             )
 
@@ -1883,6 +1889,7 @@ class ReadGridded(GriddedReader):
                 prefer_longer=prefer_longer,
                 try_convert_units=try_convert_units,
                 rename_var=rename_var,
+                from_map_engine=from_map_engine,
                 **kwargs,
             )
 
@@ -1899,6 +1906,7 @@ class ReadGridded(GriddedReader):
                     prefer_longer=prefer_longer,
                     try_convert_units=try_convert_units,
                     rename_var=rename_var,
+                    from_map_engine=from_map_engine,
                     **kwargs,
                 )
         # this input variable was explicitly set to be computed, in which
@@ -2107,6 +2115,7 @@ class ReadGridded(GriddedReader):
         prefer_longer,
         try_convert_units,
         rename_var,
+        from_map_engine,
         **kwargs,
     ):
         """Find files corresponding to input specs and load into GriddedData
