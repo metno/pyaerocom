@@ -162,7 +162,13 @@ def clean_filters(cfg: dict, obs_pattern: str) -> dict:
     return CFG
 
 
-def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION_PATH) -> dict:
+def get_CFG(
+    reportyear,
+    year,
+    model_dir,
+    omit_stations_path=DEFAULT_OMIT_STATION_PATH,
+    remove_urban_stations=True,
+) -> dict:
     """Get a configuration usable for emep reporting
 
     :param reportyear: year of reporting
@@ -644,9 +650,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
         "VN0001R",
     ]
 
-    urban_ignore_ebas = [
-        "*U",
-    ]
+    urban_ignore_ebas = ["*U"] if remove_urban_stations else []
 
     EBAS_FILTER = {
         key: dict(
