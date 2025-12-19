@@ -25,7 +25,7 @@ def test__process_map_var(cfg: dict):
     stp = EvalSetup(**cfg)
     engine = ModelMapsEngine(stp)
     with pytest.raises(ModelVarNotAvailable) as excinfo:
-        engine._process_contour_map_var("LOTOS", "concco", False)
+        engine._process_contour_map_var("LOTOS", "concco", False, False)
 
     assert "Cannot read data for model LOTOS" in str(excinfo.value)
 

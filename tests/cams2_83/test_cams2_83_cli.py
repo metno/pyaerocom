@@ -136,6 +136,7 @@ def test_make_config(
         models=models,
         add_map=True,
         only_map=True,
+        conco3mda8_contours=False,
         add_seasons=True,
         fairmode=True,
         medianscores=True,
