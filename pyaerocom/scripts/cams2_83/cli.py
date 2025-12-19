@@ -63,6 +63,7 @@ def make_config(
     only_map: bool,
     add_map: bool,
     add_seasons: bool,
+    conco3mda8_contours: bool,
     fairmode: bool,
     medianscores: bool,
     useanalysisobsset: bool,
@@ -118,6 +119,9 @@ def make_config(
 
     if only_map:
         cfg.update(add_model_maps=True, only_model_maps=True)
+
+    if conco3mda8_contours and (add_map or only_map):
+        cfg.update(compute_conco3mda8_contours=True)
 
     if add_seasons:
         cfg.update(add_seasons=True)
@@ -179,6 +183,7 @@ def main(
         False, "--onlymap", help="set add_model_maps and only_model_maps"
     ),
     add_seasons: bool = typer.Option(False, "--addseasons", help="set add_seasons"),
+    conco3mda8_contours: bool = typer.Option(False, "--conco3mda8contours", help="set compute_conco3mda8_contours"),
     fairmode: bool = typer.Option(False, "--fairmode", help="set use_fairmode"),
     medianscores: bool = typer.Option(
         False,
@@ -229,6 +234,7 @@ def main(
         only_map,
         add_map,
         add_seasons,
+        conco3mda8_contours,
         fairmode,
         medianscores,
         useanalysisobsset,

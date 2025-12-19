@@ -151,7 +151,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                         model_name, False
                     )
                 if CONTOUR in self.cfg.modelmaps_opts.plot_types or make_contour:
-                    self._process_contour_map_var(model_name, var, self.reanalyse_existing)
+                    self._process_contour_map_var(
+                        model_name,
+                        var,
+                        self.reanalyse_existing,
+                        self.cfg.processing_opts.compute_conco3mda8_contours,
+                    )
 
                 if OVERLAY in self.cfg.modelmaps_opts.plot_types or make_overlay:
                     # create overlay (pixel) plots
@@ -179,7 +184,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             data = data.extract_surface_level()
         return data
 
-    def _process_contour_map_var(self, model_name, var, reanalyse_existing):  # pragma: no cover
+    def _process_contour_map_var(
+        self, model_name, var, reanalyse_existing, compute_conco3mda8_contours
+    ):  # pragma: no cover
         """
         Process model data to create map geojson files
 
@@ -203,7 +210,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             If model/var data cannot be read
         """
         try:
-            data = self._read_model_data(model_name, var)
+            read_data = self._read_model_data(model_name, var)
         except Exception as e:
             raise ModelVarNotAvailable(
                 f"Cannot read data for model {model_name} (variable {var}): {e}"
@@ -212,10 +219,10 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         var_ranges_defaults = self.cfg.var_scale_colmap
         freq = self._get_maps_freq()
 
-        if var == "conco3" and data.ts_type == "hourly":
-            datalist = calco3mda8(data)
+        if var == "conco3" and read_data.ts_type == "hourly" and compute_conco3mda8_contours:
+            datalist = calco3mda8(read_data)
         else:
-            datalist = [data]
+            datalist = [read_data]
 
         idx = 0
         for data in datalist:
