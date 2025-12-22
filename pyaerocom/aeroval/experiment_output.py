@@ -295,7 +295,11 @@ class ExperimentOutput(ProjectOutput):
             infos = ["name", "ovar", "per"]
             res = [[], [], []]
 
-            for uri in self.avdb.query(aerovaldb.routes.Route.CONTOUR_TIMESPLIT):
+            for uri in self.avdb.query(
+                aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                project=self.proj_id,
+                experiment=self.exp_id,
+            ):
                 for i, key in enumerate(["model", "obsvar", "timestep"]):
                     res[i].append(uri.meta[key])
 
@@ -465,8 +469,7 @@ class ExperimentOutput(ProjectOutput):
             return var_ranges_defaults[var]
         try:
             varinfo = VarinfoWeb(var)
-            # TODO: get unit from pyaerocom/data/variables.ini
-            info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap, unit=varinfo.unit)
+            info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap)
         except (VariableDefinitionError, AttributeError):
             info = var_ranges_defaults["default"]
             logger.info(
