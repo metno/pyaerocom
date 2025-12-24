@@ -3,10 +3,17 @@ import logging
 from datetime import datetime, timedelta
 
 import aerovaldb
-import xarray as xr
 import numpy as np
+import xarray as xr
 
-from pyaerocom import ColocatedData, GriddedData, GriddedDataContainer, TsType, __version__, const
+from pyaerocom import (
+    ColocatedData,
+    GriddedData,
+    GriddedDataContainer,
+    TsType,
+    __version__,
+    const,
+)
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelmaps_helpers import (
@@ -29,9 +36,8 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VarNotAvailableError,
 )
-from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.stats.mda8.mda8 import min_periods_max
-
+from pyaerocom.units.helpers import get_standard_unit
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +56,7 @@ def calco3mda8(data: GriddedData) -> list[GriddedData]:
         .mean("time")
         .resample(time="24h", origin="start_day", label="left", offset="1h")
         .reduce(lambda x, axis: np.apply_along_axis(min_periods_max, 0, x, min_periods=18))
+        .dropna("time")
         .rename("conco3mda8")
         .assign_attrs(
             long_name="conco3mda8",
@@ -674,6 +681,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 "whereas the coldata_dir does not."
             )
 
+        coldata = ColocatedData(data=file_to_convert[0])
+        data = coldata.data.sel(data_source=model_name)
+        data = data.drop_vars("data_source")
+        data = data.transpose("time", "latitude", "longitude")
+        data = data.sortby(["latitude", "longitude"])
+        return data
         coldata = ColocatedData(data=file_to_convert[0])
         data = coldata.data.sel(data_source=model_name)
         data = data.drop_vars("data_source")
