@@ -152,7 +152,7 @@ def fake_modelmapengine_readmodeldata(monkeypatch, fake_hourly_conco3_model_data
 
 
 @pytest.mark.usefixtures("fake_modelmapengine_readmodeldata")
-def test__process_contour_map_var(patched_config, tmp_path):
+def test__process_contour_map_var_conco3mda8calc(patched_config, tmp_path):
     model_name = "EMEP"
     var = "conco3"
     stp = EvalSetup(**patched_config)

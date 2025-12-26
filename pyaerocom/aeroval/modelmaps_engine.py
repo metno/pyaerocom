@@ -45,11 +45,7 @@ MODELREADERS_USE_MAP_FREQ = ["ReadMscwCtm"]  # , "ReadCAMS2_83"]
 
 
 def calco3mda8(data: GriddedData) -> list[GriddedData]:
-    try:
-        data2 = data.to_xarray()
-    except Exception as e:
-        logger.warning(f"Could not convert data to xarray: {e}")
-        return [data]
+    data2 = data.to_xarray()
 
     o3mda8 = (
         data2.rolling(time=8, center=False, min_periods=6)
@@ -226,7 +222,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         var_ranges_defaults = self.cfg.var_scale_colmap
         freq = self._get_maps_freq()
 
-        if var == "conco3" and read_data.ts_type == "hourly" and compute_conco3mda8_contours:
+        if (
+            var == "conco3"
+            and isinstance(read_data, GriddedData)
+            and read_data.ts_type == "hourly"
+            and compute_conco3mda8_contours
+        ):
             datalist = calco3mda8(read_data)
         else:
             datalist = [read_data]
