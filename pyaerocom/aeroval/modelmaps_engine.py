@@ -52,7 +52,7 @@ def calco3mda8(data: GriddedData) -> list[GriddedData]:
         .mean("time")
         .resample(time="24h", origin="start_day", label="left", offset="1h")
         .reduce(lambda x, axis: np.apply_along_axis(min_periods_max, 0, x, min_periods=18))
-        .dropna("time")
+        # .dropna("time") # this is too slow
         .rename("conco3mda8")
         .assign_attrs(
             long_name="conco3mda8",
