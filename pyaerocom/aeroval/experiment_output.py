@@ -836,7 +836,7 @@ class ExperimentOutput(ProjectOutput):
                     f"Invalid entry: model {mod_name} ({mod_var}), obs {obs_name} ({obs_var}) ⚠️"
                 )
 
-        return Menu.model_validate(new).model_dump()
+        return Menu.return_validated(new)
 
     def _sort_menu_entries(self, avail: dict) -> dict:
         """
