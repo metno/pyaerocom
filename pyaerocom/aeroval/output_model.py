@@ -30,5 +30,6 @@ class MenuEntry(BaseModel):
 
 
 class Menu(RootModel[dict[str, MenuEntry]]):
-    def return_validated(self, val: dict) -> dict:
-        return self.model_validate(val).model_dump()
+    @classmethod
+    def return_validated(cls, val: dict) -> dict:
+        return cls.model_validate(val).model_dump()
