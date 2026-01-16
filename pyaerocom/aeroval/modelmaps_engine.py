@@ -3,7 +3,6 @@ import logging
 from datetime import datetime, timedelta
 
 import aerovaldb
-import numpy as np
 import xarray as xr
 
 from pyaerocom import (
@@ -36,7 +35,7 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VarNotAvailableError,
 )
-from pyaerocom.stats.mda8.mda8 import min_periods_max
+from pyaerocom.stats.mda8.mda8 import _calc_mda8
 from pyaerocom.units.helpers import get_standard_unit
 
 logger = logging.getLogger(__name__)
@@ -46,13 +45,8 @@ MODELREADERS_USE_MAP_FREQ = ["ReadMscwCtm"]  # , "ReadCAMS2_83"]
 
 def calco3mda8(data: GriddedData) -> list[GriddedData]:
     data2 = data.to_xarray()
-
     o3mda8 = (
-        data2.rolling(time=8, center=False, min_periods=6)
-        .mean("time")
-        .resample(time="24h", origin="start_day", label="left", offset="1h")
-        .reduce(lambda x, axis: np.apply_along_axis(min_periods_max, 0, x, min_periods=18))
-        # .dropna("time") # this is too slow
+        _calc_mda8(data2)
         .rename("conco3mda8")
         .assign_attrs(
             long_name="conco3mda8",
