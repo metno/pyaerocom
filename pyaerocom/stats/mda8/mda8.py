@@ -92,6 +92,10 @@ def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
 
     mda8.attrs["ts_type"] = "daily"
 
+    if "data_source" not in mda8.dims:
+        # skip time-shift and filtering, too expensive
+        return mda8
+
     # Ensure time dimension represents the midpoint of the interval.
     mda8.coords.update({"time": mda8.get_index("time") + pd.tseries.frequencies.to_offset("12h")})
 
