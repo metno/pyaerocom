@@ -1034,8 +1034,9 @@ def _process_map_and_scat(
                         pass
 
                 for i, map_stat in zip(site_indices, map_data):
+                    ms = deepcopy(map_stat)
                     if freq not in map_stat:
-                        map_stat[freq] = {}
+                        ms[freq] = {}
 
                     if use_dummy:
                         stats = stats_dummy
@@ -1087,17 +1088,17 @@ def _process_map_and_scat(
                                     logger.info(msg)
 
                     perstr = f"{per}-{season}"
-                    map_stat[freq][perstr] = stats
+                    ms[freq][perstr] = stats
                     if freq == scatter_freq:
                         # add only sites to scatter data that have data available
                         # in the lowest of the input resolutions (e.g. yearly)
-                        site = map_stat["station_name"]
+                        site = ms["station_name"]
                         if site not in scat_data:
                             scat_data[site] = {}
-                            scat_data[site]["latitude"] = map_stat["latitude"]
-                            scat_data[site]["longitude"] = map_stat["longitude"]
-                            scat_data[site]["altitude"] = map_stat["altitude"]
-                            scat_data[site]["region"] = map_stat["region"]
+                            scat_data[site]["latitude"] = ms["latitude"]
+                            scat_data[site]["longitude"] = ms["longitude"]
+                            scat_data[site]["altitude"] = ms["altitude"]
+                            scat_data[site]["region"] = ms["region"]
                         if use_dummy:
                             obs = mod = jsdate = scat_dummy
                             units = None
@@ -1111,7 +1112,7 @@ def _process_map_and_scat(
                             "units": units,
                         }
 
-                    new_map_data.append(map_stat)
+                    new_map_data.append(ms)
 
     return (new_map_data, scat_data)
 
@@ -1878,6 +1879,64 @@ def _calculate_fairmode(
 
         for reg in results:
             fairmode_statistics.save_fairmode_stats(
+                exp_output,
+                results,
+                obs_name,
+                var_name_web,
+                vert_code,
+                model_name,
+                model_var,
+                per,
+                reg,
+            )
+
+
+def _calculate_radarplot(
+    coldata: ColocatedData,
+    radarplot_statistics,  #: RadarPlotStatistics,
+    exp_output,  #: ExperimentOutput,
+    obs_name: str,
+    var_name_web: str,
+    vert_code: str,
+    model_name: str,
+    model_var: str,
+    regs: dict,
+    regnames: dict,
+    obs_var: str = None,
+    periods: tuple[str, ...] | None = None,
+    seasons: tuple[str, ...] | None = None,
+    use_meteorological_seasons: bool = False,
+    use_country: bool = True,
+):
+    for per in periods:
+        results = {"ALL": {}}
+        for season in seasons:
+            try:
+                subset = _select_period_season_coldata(
+                    coldata, per, season, use_meteorological_seasons
+                )
+                # jsdate = subset.data.jsdate.values.tolist()
+            except (DataCoverageError, TemporalResolutionError) as e:
+                logger.info(f"Failed to access subset coldata: {e}")
+                return results
+
+            for regid in regs:
+                regname = regnames[regid]
+                reg_subset = subset.filter_region(regid, check_country_meta=use_country)
+
+                perstr = f"{per}-{season}"
+                fm_stats = radarplot_statistics.get_radarplot_statistics(reg_subset, obs_var)
+
+                if regname not in results:
+                    results[regname] = {}
+
+                if perstr not in results[regname]:
+                    results[regname][perstr] = {}
+
+                results[regname][perstr] = fm_stats
+
+        for reg in results:
+            radarplot_statistics.save_radarplot_stats(
                 exp_output,
                 results,
                 obs_name,

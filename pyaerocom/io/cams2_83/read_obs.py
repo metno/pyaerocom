@@ -91,9 +91,9 @@ class ReadCAMS2_83(ReadUngriddedBase):
                 f"Unsupported type {type(vars_to_retrieve)}, "
                 "vars_to_retrieve supported types are: str | list[str] | None"
             )
-        assert all(
-            var in self.PROVIDES_VARIABLES for var in vars_to_retrieve
-        ), f"this dataset only has {self.PROVIDES_VARIABLES}"
+        assert all(var in self.PROVIDES_VARIABLES for var in vars_to_retrieve), (
+            f"this dataset only has {self.PROVIDES_VARIABLES}"
+        )
 
         if files is None:
             files = list(obs_paths(date.today() - timedelta(days=1)))
@@ -107,7 +107,7 @@ class ReadCAMS2_83(ReadUngriddedBase):
         # lazy data_iterator returns immediately, unpacked in from_station_data
         data_iterator = self.__reader(vars_to_retrieve, files)
         ungriddeddata = UngriddedDataStructured.from_station_data(
-            data_iterator, add_meta_keys=["station_type"]
+            data_iterator, add_meta_keys=["station_type", "station_area"]
         )
         logger.info(f"Time needed to convert obs to ungridded: {time.time() - start}s")
         return ungriddeddata
