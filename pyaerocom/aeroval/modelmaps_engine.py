@@ -63,7 +63,7 @@ def calco3mda8(data: GriddedData) -> list[GriddedData]:
     griddedo3mda8 = GriddedData(
         cubeo3mda8,
         var_name="conco3mda8",
-        ts_type=data.ts_type,
+        ts_type="daily",
         check_unit=True,
         convert_unit_on_init=True,
     )
