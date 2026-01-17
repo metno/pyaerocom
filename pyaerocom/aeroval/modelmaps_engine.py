@@ -35,7 +35,7 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VarNotAvailableError,
 )
-from pyaerocom.stats.mda8.mda8 import _calc_mda8
+from pyaerocom.stats.mda8.mda8 import calc_mda8
 from pyaerocom.units.helpers import get_standard_unit
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ MODELREADERS_USE_MAP_FREQ = ["ReadMscwCtm"]  # , "ReadCAMS2_83"]
 def calco3mda8(data: GriddedData) -> list[GriddedData]:
     data2 = data.to_xarray()
     o3mda8 = (
-        _calc_mda8(data2)
+        calc_mda8(data2)
         .rename("conco3mda8")
         .assign_attrs(
             long_name="conco3mda8",
