@@ -24,7 +24,7 @@ GLOBAL_CONFIG = dict(
     # maps_res_deg=5,
     only_model_maps=False,
     compute_conco3mda8_contours=False,
-    modelmaps_opts={"extra_map_vars":[]},
+    extra_map_vars=[],
     clear_existing_json=False,
     # if True, the analysis will stop whenever an error occurs (else, errors that
     # occurred will be written into the logfiles)
