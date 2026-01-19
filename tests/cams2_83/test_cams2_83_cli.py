@@ -148,4 +148,4 @@ def test_make_config(
     assert cfg["compute_conco3mda8_contours"]
     assert cfg["use_cams2_83_fairmode"] == use_cams2_83_fairmode_flag
     assert cfg["use_fairmode"] == use_fairmode_flag
-    assert cfg["extra_map_vars"] == ["conco3mda8"]
+    assert cfg["modelmaps_opts"]["extra_map_vars"] == ["conco3mda8"]

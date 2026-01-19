@@ -122,7 +122,7 @@ def make_config(
 
     if conco3mda8_contours and (add_map or only_map):
         cfg.update(compute_conco3mda8_contours=True)
-        cfg["extra_map_vars"]=["conco3mda8"]
+        cfg["modelmaps_opts"]["extra_map_vars"]=["conco3mda8"]
 
     if add_seasons:
         cfg.update(add_seasons=True)
