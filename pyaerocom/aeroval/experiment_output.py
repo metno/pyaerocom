@@ -733,7 +733,7 @@ class ExperimentOutput(ProjectOutput):
                 # to describe an experiment has been written to disc, traditionally in the map directory.
                 # If only_model_maps = True, then we do not do colocation, and so the map dir is empty,
                 # however menu.json is still needed.
-                if not all_combinations:
+                if not all_combinations or uri.meta["obsvar"] == "conco3mda8":
                     break
 
                 try:  # overlay case
@@ -768,14 +768,9 @@ class ExperimentOutput(ProjectOutput):
                         if var in self.cfg.obs_cfg.get_entry(o).obs_vars:
                             vert_code = self.cfg.obs_cfg.get_entry(o).obs_vert_type
                     if not vert_code:
-                        if var == "conco3mda8":  # computation happened in the map engine
-                            vert_code = self.cfg.obs_cfg.get_entry(
-                                self.cfg.obs_cfg.keylist()[0]
-                            ).obs_vert_type
-                        else:
-                            raise ValueError(
-                                "Failed to infer vert_code in an only_model_maps experiment"
-                            )
+                        raise ValueError(
+                            "Failed to infer vert_code in an only_model_maps experiment"
+                        )
                     first_with_mod_name = next(
                         (
                             item
@@ -827,11 +822,16 @@ class ExperimentOutput(ProjectOutput):
                     f"Invalid entry: model {mod_name} ({mod_var}), obs {obs_name} ({obs_var}) ⚠️"
                 )
         if self.cfg.processing_opts.compute_conco3mda8_contours:
-            new.update({"conco3mda": new["conco3"]})
-            new["conco3mda"]["longname"] = (
-                "Daily maximum of the 8 hour rolling mean (see EU Directive 2008/50/EC Annex XI) of O3 mass concentration"
-            )
-            new["conco3mda"]["name"] = "O<sub>3</sub> (MDA8)"
+            try:
+                new.update({"conco3mda": new["conco3"]})
+                new["conco3mda"]["longname"] = (
+                    "Daily maximum of the 8 hour rolling mean (see EU Directive 2008/50/EC Annex XI) of O3 mass concentration"
+                )
+                new["conco3mda"]["name"] = "O<sub>3</sub> (MDA8)"
+            except KeyError:
+                logger.warning(
+                    "Cannot create the entry menu for conco3mda8, entry for conco3 not found"
+                )
         return new
 
     def _sort_menu_entries(self, avail: dict) -> dict:

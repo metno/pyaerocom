@@ -138,6 +138,17 @@ def test_ExperimentOutput_update_menu_EMPTY(dummy_expout: ExperimentOutput):
     assert data == {}
 
 
+def test_ExperimentOutput_update_menu_conco3mda8_fail(patched_config, caplog):
+    cfg = EvalSetup(**patched_config)
+    out = ExperimentOutput(cfg)
+    # with pytest.raises(KeyError) as e:
+    out.update_menu()
+    data = out.avdb.get_menu(out.proj_id, out.exp_id)
+    # assert "conco3" in str(e.value)
+    assert "Cannot create the entry menu for conco3mda8, entry for conco3 not found" in caplog.text
+    assert data == {}
+
+
 def test_ExperimentOutput_update_interface_EMPTY(dummy_expout: ExperimentOutput):
     dummy_expout.update_interface()
 
