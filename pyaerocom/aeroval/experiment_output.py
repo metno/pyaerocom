@@ -567,8 +567,6 @@ class ExperimentOutput(ProjectOutput):
         try:
             # Comes in as a string. split() here breaks up based on space and returns either just the element in a list or the components of the string in a list
             only_use_in = const.VARS[var].only_use_in.split(" ")
-            if var == "conco3mda8" and self.cfg.compute_conco3mda8_contours:
-                only_use_in = only_use_in.append("maps")
             # only return only_use_in if key exists, otherwise do not
             out["only_use_in"] = only_use_in
 
@@ -786,8 +784,10 @@ class ExperimentOutput(ProjectOutput):
                         ),
                         None,
                     )
+
                     if not first_with_mod_name:  # should already be taken care of in new
                         continue
+
                     obs_name = self.cfg.obs_cfg.get_entry(first_with_mod_name[0]).obs_name
                     all_combinations.remove(first_with_mod_name)
                 else:
@@ -806,9 +806,7 @@ class ExperimentOutput(ProjectOutput):
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
                 mcfg = self.cfg.model_cfg.get_entry(mod_name)
                 var = mcfg.get_varname_web(mod_var, obs_var)
-                if var not in new or (
-                    var == "conco3mda8" and self.cfg.compute_conco3mda8_contours
-                ):
+                if var not in new:
                     new[var] = self._init_menu_entry(var)
 
                 if obs_name not in new[var]["obs"]:
@@ -828,6 +826,12 @@ class ExperimentOutput(ProjectOutput):
                 logger.warning(
                     f"Invalid entry: model {mod_name} ({mod_var}), obs {obs_name} ({obs_var}) ⚠️"
                 )
+        if self.cfg.processing_opts.compute_conco3mda8_contours:
+            new.update({"conco3mda": new["conco3"]})
+            new["conco3mda"]["longname"] = (
+                "Daily maximum of the 8 hour rolling mean (see EU Directive 2008/50/EC Annex XI) of O3 mass concentration"
+            )
+            new["conco3mda"]["name"] = "O<sub>3</sub> (MDA8)"
         return new
 
     def _sort_menu_entries(self, avail: dict) -> dict:
