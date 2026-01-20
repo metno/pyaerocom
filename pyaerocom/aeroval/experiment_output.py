@@ -567,8 +567,11 @@ class ExperimentOutput(ProjectOutput):
         try:
             # Comes in as a string. split() here breaks up based on space and returns either just the element in a list or the components of the string in a list
             only_use_in = const.VARS[var].only_use_in.split(" ")
+            if var == "conco3mda8" and self.cfg.compute_conco3mda8_contours:
+                only_use_in = only_use_in.append("maps")
             # only return only_use_in if key exists, otherwise do not
             out["only_use_in"] = only_use_in
+
         except AttributeError:
             pass
         return out
@@ -803,7 +806,9 @@ class ExperimentOutput(ProjectOutput):
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
                 mcfg = self.cfg.model_cfg.get_entry(mod_name)
                 var = mcfg.get_varname_web(mod_var, obs_var)
-                if var not in new:
+                if var not in new or (
+                    var == "conco3mda8" and self.cfg.compute_conco3mda8_contours
+                ):
                     new[var] = self._init_menu_entry(var)
 
                 if obs_name not in new[var]["obs"]:

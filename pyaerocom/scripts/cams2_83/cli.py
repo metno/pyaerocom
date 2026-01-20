@@ -105,11 +105,14 @@ def make_config(
     cfg["obs_cfg"]["EEA"]["read_opts_ungridded"]["files"] = [  # type:ignore[index]
         str(p)
         for p in obs_paths(
-            *obs_dates, root_path=obs_path, analysis=run_type == RunType.AN, useanalysisobsset=useanalysisobsset
+            *obs_dates,
+            root_path=obs_path,
+            analysis=run_type == RunType.AN,
+            useanalysisobsset=useanalysisobsset,
         )
     ]
 
-    if (run_type == RunType.AN or useanalysisobsset):
+    if run_type == RunType.AN or useanalysisobsset:
         cfg.update(forecast_days=1)
 
     cfg.update(exp_id=id, exp_name=name, exp_descr=description)
@@ -122,7 +125,6 @@ def make_config(
 
     if conco3mda8_contours and (add_map or only_map):
         cfg.update(compute_conco3mda8_contours=True)
-        cfg["extra_map_vars"]=["conco3mda8"]
 
     if add_seasons:
         cfg.update(add_seasons=True)
@@ -184,14 +186,20 @@ def main(
         False, "--onlymap", help="set add_model_maps and only_model_maps"
     ),
     add_seasons: bool = typer.Option(False, "--addseasons", help="set add_seasons"),
-    conco3mda8_contours: bool = typer.Option(False, "--conco3mda8contours", help="set compute_conco3mda8_contours"),
+    conco3mda8_contours: bool = typer.Option(
+        False, "--conco3mda8contours", help="set compute_conco3mda8_contours"
+    ),
     fairmode: bool = typer.Option(False, "--fairmode", help="set use_fairmode"),
     medianscores: bool = typer.Option(
         False,
         "--medianscores",
         help="If true just the cams2_83-specific statistics are computed, a.k.a. the median scores plots or 'weird' plots, the cache is not cleared and it's assumed that the colocated data is already in place and the regular statistics have already been run",
     ),
-    useanalysisobsset: bool = typer.Option(False, "--useanalysisobsset", help="Meant to be used in combination with eval_type forecast: the observations set will be the one for the analysis, evaluation will be limited to just 1 forecast day. This is a hack to produce plots needed for the quarterly reports."),
+    useanalysisobsset: bool = typer.Option(
+        False,
+        "--useanalysisobsset",
+        help="Meant to be used in combination with eval_type forecast: the observations set will be the one for the analysis, evaluation will be limited to just 1 forecast day. This is a hack to produce plots needed for the quarterly reports.",
+    ),
     cache: Optional[Path] = typer.Option(
         None,
         help="Optional path to cache. If nothing is given, the default pyaerocom cache is used",
