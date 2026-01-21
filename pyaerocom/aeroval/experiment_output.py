@@ -733,8 +733,10 @@ class ExperimentOutput(ProjectOutput):
                 # to describe an experiment has been written to disc, traditionally in the map directory.
                 # If only_model_maps = True, then we do not do colocation, and so the map dir is empty,
                 # however menu.json is still needed.
-                if not all_combinations or uri.meta["obsvar"] == "conco3mda8":
+                if not all_combinations:
                     break
+                if uri.meta["obsvar"] == "conco3mda8":
+                    continue
 
                 try:  # overlay case
                     src_name = uri.meta["source"]
@@ -821,13 +823,15 @@ class ExperimentOutput(ProjectOutput):
                 logger.warning(
                     f"Invalid entry: model {mod_name} ({mod_var}), obs {obs_name} ({obs_var}) ⚠️"
                 )
+
         if self.cfg.processing_opts.compute_conco3mda8_contours:
             try:
-                new.update({"conco3mda": new["conco3"]})
-                new["conco3mda"]["longname"] = (
+                newconco3 = new["conco3"].copy()
+                new.update({"conco3mda8": newconco3})
+                new["conco3mda8"]["longname"] = (
                     "Daily maximum of the 8 hour rolling mean (see EU Directive 2008/50/EC Annex XI) of O3 mass concentration"
                 )
-                new["conco3mda"]["name"] = "O<sub>3</sub> (MDA8)"
+                new["conco3mda8"]["name"] = "O<sub>3</sub> (MDA8)"
             except KeyError:
                 logger.warning(
                     "Cannot create the entry menu for conco3mda8, entry for conco3 not found"
