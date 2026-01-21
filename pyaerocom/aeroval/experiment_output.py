@@ -1,4 +1,5 @@
 import itertools
+import json
 import logging
 import os
 import pathlib
@@ -832,6 +833,11 @@ class ExperimentOutput(ProjectOutput):
                     "Daily maximum of the 8 hour rolling mean (see EU Directive 2008/50/EC Annex XI) of O3 mass concentration"
                 )
                 new["conco3mda8"]["name"] = "O<sub>3</sub> (MDA8)"
+                # replace conco3 with conco3mda8 in all the nested fields of new["conco3mda8"]
+                conco3mda8_dict_as_text = json.dumps(new["conco3mda8"])
+                new["conco3mda8"] = json.loads(
+                    conco3mda8_dict_as_text.replace("conco3", "conco3mda8")
+                )
             except KeyError:
                 logger.warning(
                     "Cannot create the entry menu for conco3mda8, entry for conco3 not found"
