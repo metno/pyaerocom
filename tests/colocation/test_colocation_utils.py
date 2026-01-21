@@ -4,15 +4,15 @@ import pandas as pd
 import pytest
 from cf_units import Unit
 
-from pyaerocom import GriddedData, const, helpers, GriddedDataContainer
+from pyaerocom import GriddedData, GriddedDataContainer, const, helpers
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.colocation.colocation_utils import (
     _colocate_site_data_helper,
     _colocate_site_data_helper_timecol,
+    _get_stat_data_vec,
     _regrid_gridded,
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
-    _get_stat_data_vec,
 )
 from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.exceptions import UnresolvableTimeDefinitionError
@@ -90,7 +90,7 @@ S4["concpm10"][0:5] = range(5)
             10,
         ),
         (
-            S3,
+            S3,  # model data 13daily up to dec 2010
             S4,
             "concpm10",
             "concpm10",
@@ -98,9 +98,9 @@ S4["concpm10"][0:5] = range(5)
             "mean",
             {"monthly": {"daily": 25}},
             False,
-            24,
+            11,
         ),
-        (S1, S2, "concpm10", "concpm10", "monthly", "mean", 25, {}, 12),
+        (S1, S2, "concpm10", "concpm10", "monthly", "mean", 25, {}, 11),
         (S2, S1, "concpm10", "concpm10", "monthly", "mean", 25, {}, 11),
     ],
 )
