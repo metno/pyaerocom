@@ -1,4 +1,5 @@
 import itertools
+import json
 import logging
 import os
 import pathlib
@@ -569,6 +570,7 @@ class ExperimentOutput(ProjectOutput):
             only_use_in = const.VARS[var].only_use_in.split(" ")
             # only return only_use_in if key exists, otherwise do not
             out["only_use_in"] = only_use_in
+
         except AttributeError:
             pass
         return out
@@ -734,6 +736,8 @@ class ExperimentOutput(ProjectOutput):
                 # however menu.json is still needed.
                 if not all_combinations:
                     break
+                if uri.meta["obsvar"] == "conco3mda8":
+                    continue
 
                 try:  # overlay case
                     src_name = uri.meta["source"]
@@ -778,9 +782,11 @@ class ExperimentOutput(ProjectOutput):
                         ),
                         None,
                     )
+
                     if not first_with_mod_name:  # should already be taken care of in new
                         continue
-                    obs_name = first_with_mod_name[0]
+
+                    obs_name = self.cfg.obs_cfg.get_entry(first_with_mod_name[0]).obs_name
                     all_combinations.remove(first_with_mod_name)
                 else:
                     logger.warning(
@@ -817,6 +823,24 @@ class ExperimentOutput(ProjectOutput):
             else:
                 logger.warning(
                     f"Invalid entry: model {mod_name} ({mod_var}), obs {obs_name} ({obs_var}) ⚠️"
+                )
+
+        if self.cfg.processing_opts.compute_conco3mda8_contours:
+            try:
+                newconco3 = new["conco3"].copy()
+                new.update({"conco3mda8": newconco3})
+                new["conco3mda8"]["longname"] = (
+                    "Daily maximum of the 8 hour rolling mean (see EU Directive 2008/50/EC Annex XI) of O3 mass concentration"
+                )
+                new["conco3mda8"]["name"] = "O<sub>3</sub> (MDA8)"
+                # replace conco3 with conco3mda8 in all the nested fields of new["conco3mda8"]
+                conco3mda8_dict_as_text = json.dumps(new["conco3mda8"])
+                new["conco3mda8"] = json.loads(
+                    conco3mda8_dict_as_text.replace("conco3", "conco3mda8")
+                )
+            except KeyError:
+                logger.warning(
+                    "Cannot create the entry menu for conco3mda8, entry for conco3 not found"
                 )
         return new
 
