@@ -449,7 +449,7 @@ def _colocate_site_data_helper(
         )[var_ref]
 
     # fill up missing time stamps
-    return pd.concat([obs_ts, grid_ts], axis=1, keys=["ref", "data"])
+    return pd.concat([obs_ts, grid_ts], axis=1, keys=["ref", "data"], sort=True)
 
 
 def _colocate_site_data_helper_timecol(
@@ -542,7 +542,13 @@ def _colocate_site_data_helper_timecol(
     # now both StationData objects are in the same resolution, but they still
     # might have gaps in their time axis, thus concatenate them in a DataFrame,
     # which will merge the time index
-    merged = pd.concat([stat_data_ref[var_ref], stat_data[var]], axis=1, keys=["ref", "data"])
+    merged = pd.concat(
+        [stat_data_ref[var_ref], stat_data[var]],
+        axis=1,
+        keys=["ref", "data"],
+        sort=True,
+    )
+
     # Interpolate the model to the times of the observations
     # (for non-standard coltst it could be that 'resample_time'
     # has placed the model and observations at different time stamps)
@@ -555,7 +561,7 @@ def _colocate_site_data_helper_timecol(
     merged.loc[merged.data.isnull()] = np.nan
     # Ensure the whole timespan of the model is kept in "merged"
     stat_data[var].name = "tmp"
-    merged = pd.concat([merged, stat_data[var]], axis=1)
+    merged = pd.concat([merged, stat_data[var]], axis=1, sort=True)
     merged = merged[["ref", "data"]]
 
     grid_ts = merged["data"]
@@ -582,7 +588,8 @@ def _colocate_site_data_helper_timecol(
         min_num_obs=min_num_obs,
     )
     # fill up missing time stamps
-    return pd.concat([obs_ts, grid_ts], axis=1, keys=["ref", "data"])
+
+    return pd.concat([obs_ts, grid_ts], axis=1, keys=["ref", "data"], sort=True)
 
 
 def colocate_gridded_ungridded(
