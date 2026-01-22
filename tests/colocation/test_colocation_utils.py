@@ -34,7 +34,7 @@ S1 = create_fake_station_data(
     10,
     "2010-01-01",
     "2010-12-31",
-    "d",
+    "D",
     {"ts_type": "daily"},
 )
 
@@ -46,7 +46,7 @@ S2 = create_fake_station_data(
     10,
     "2010-01-01",
     "2010-12-31",
-    "d",
+    "D",
     {"ts_type": "daily"},
 )
 
@@ -56,7 +56,7 @@ S3 = create_fake_station_data(
     10,
     "2010-01-01",
     "2010-12-31",
-    "13d",
+    "13D",
     {"ts_type": "13daily"},
 )
 S3["concpm10"][1] = np.nan
@@ -68,7 +68,7 @@ S4 = create_fake_station_data(
     10,
     "2010-01-03",
     "2011-12-31",
-    "d",
+    "D",
     {"ts_type": "daily"},
 )
 
