@@ -90,8 +90,8 @@ S4["concpm10"][0:5] = range(5)
             10,
         ),
         (
-            S3,  # model data 13daily up to dec 2010
-            S4,
+            S3,  # model data 13daily for 2010
+            S4,  # obs data daily from 1st march 2010 to end of 2011
             "concpm10",
             "concpm10",
             "monthly",
