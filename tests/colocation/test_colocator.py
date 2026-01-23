@@ -495,8 +495,8 @@ def test_colocator_with_obs_data_dir_ungridded(setup):
     cd = data["od550aer"]["od550aer"]
     assert isinstance(cd, ColocatedData)
     assert cd.ts_type == "monthly"
-    assert str(cd.start) == "2010-01-15T00:00:00.000000"
-    assert str(cd.stop) == "2010-12-15T00:00:00.000000"
+    assert str(cd.start.astype("datetime64[us]")) == "2010-01-15T00:00:00.000000"
+    assert str(cd.stop.astype("datetime64[us]")) == "2010-12-15T00:00:00.000000"
 
 
 def test_colocator_with_model_data_dir_ungridded(setup):
@@ -511,8 +511,8 @@ def test_colocator_with_model_data_dir_ungridded(setup):
     cd = data["od550aer"]["od550aer"]
     assert isinstance(cd, ColocatedData)
     assert cd.ts_type == "monthly"
-    assert str(cd.start) == "2010-01-15T00:00:00.000000"
-    assert str(cd.stop) == "2010-12-15T00:00:00.000000"
+    assert str(cd.start.astype("datetime64[us]")) == "2010-01-15T00:00:00.000000"
+    assert str(cd.stop.astype("datetime64[us]")) == "2010-12-15T00:00:00.000000"
 
 
 def test_colocator_with_obs_data_dir_gridded(setup):
@@ -552,14 +552,14 @@ def test_colocation_pyaro(pyaro_testconfig, fake_aod_MSCWCtm_data_monthly_2010, 
     cd = data["od550aer"]["od550aer"]
     assert isinstance(cd, ColocatedData)
     assert cd.ts_type == "monthly"
-    assert str(cd.start) == "2010-01-15T00:00:00.000000"
-    assert str(cd.stop) == "2010-12-15T00:00:00.000000"
+    assert str(cd.start.astype("datetime64[us]")) == "2010-01-15T00:00:00.000000"
+    assert str(cd.stop.astype("datetime64[us]")) == "2010-12-15T00:00:00.000000"
 
     assert np.sum(np.isnan(cd.data[0, :].data)) == 0
 
     assert cd.data[0, :].data.shape[0] == 12
-    assert str(cd.start) == "2010-01-15T00:00:00.000000"
-    assert str(cd.stop) == "2010-12-15T00:00:00.000000"
+    assert str(cd.start.astype("datetime64[us]")) == "2010-01-15T00:00:00.000000"
+    assert str(cd.stop.astype("datetime64[us]")) == "2010-12-15T00:00:00.000000"
 
     assert np.sum(np.isnan(cd.data[0, :].data)) == 0
 
