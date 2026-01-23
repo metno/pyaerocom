@@ -527,8 +527,8 @@ def test_colocator_with_obs_data_dir_gridded(setup):
     cd = data["od550aer"]["od550aer"]
     assert isinstance(cd, ColocatedData)
     assert cd.ts_type == "monthly"
-    assert str(cd.start) == "2010-01-15T12:00:00.000000"
-    assert str(cd.stop) == "2010-12-15T12:00:00.000000"
+    assert str(cd.start.astype("datetime64[us]")) == "2010-01-15T12:00:00.000000"
+    assert str(cd.stop.astype("datetime64[us]")) == "2010-12-15T12:00:00.000000"
 
 
 ###################################
