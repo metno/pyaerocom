@@ -35,7 +35,7 @@ def create_fake_MSCWCtm_data(year="2019", numval=1, tst=None):
 
     start = datetime.strptime(f"{year}-01-01", "%Y-%m-%d")
     stop = datetime.strptime(f"{year}-12-31", "%Y-%m-%d")
-    _time_fake = pd.date_range(start, stop, freq=TsType(tst).to_pandas_freq())
+    _time_fake = pd.date_range(start, stop, freq=TsType(tst).to_pandas_freq(), unit="us")
     sh = (len(_time_fake), len(_lats_fake), len(_lons_fake))
     _data_fake = numval * np.ones(sh)
 

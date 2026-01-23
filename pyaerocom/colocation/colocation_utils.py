@@ -304,7 +304,7 @@ def colocate_gridded_gridded(
     if isinstance(data_ref_np, np.ma.core.MaskedArray):
         data_ref_np = data_ref_np.filled(np.nan)
     arr = np.asarray((data_ref_np, data_np))
-    time = data.time_stamps().astype("datetime64[ns]")
+    time = data.time_stamps().astype("datetime64[us]")
     lats = data.latitude_points
     lons = data.longitude_points
 
