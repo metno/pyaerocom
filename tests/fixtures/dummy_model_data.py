@@ -1,6 +1,7 @@
-import pytest
 import iris
 import numpy as np
+import pytest
+
 from pyaerocom import GriddedData
 
 
@@ -48,5 +49,42 @@ def fake_model_data_with_altitude():
     data = GriddedData(dummy)
 
     data.units = "km-1 sr-1"
+
+    return data
+
+
+@pytest.fixture
+def fake_hourly_conco3_model_data():
+    longitude = iris.coords.DimCoord(
+        np.linspace(-15, 25, 20),
+        var_name="lon",
+        standard_name="longitude",
+        units="degrees",
+    )
+    latitude = iris.coords.DimCoord(
+        np.linspace(50, 55, 10),
+        var_name="lat",
+        standard_name="latitude",
+        units="degrees",
+    )
+    time = iris.coords.DimCoord(
+        np.arange(487968, 487968 + 24, 1),
+        var_name="time",
+        standard_name="time",
+        units="hours since epoch",
+    )
+    dummy = iris.cube.Cube(np.ones((time.shape[0], longitude.shape[0], latitude.shape[0])))
+
+    # latitude.guess_bounds()
+    # longitude.guess_bounds()
+
+    dummy.add_dim_coord(time, 0)
+    dummy.add_dim_coord(longitude, 1)
+    dummy.add_dim_coord(latitude, 2)
+
+    dummy.var_name = "conco3"
+    dummy.units = "ug m-3"
+
+    data = GriddedData(dummy, convert_unit_on_init=False, check_unit=False)
 
     return data

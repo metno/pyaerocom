@@ -20,6 +20,7 @@ class ModelMapsSetup(BaseModel):
     boundaries: BoundingBox = BoundingBox(west=-180, east=180, north=90, south=-90)
     right_menu: tuple[str, ...] | None = None
     overlay_save_format: Literal["webp", "png"] = "webp"
+    extra_map_vars: list[str] | None = None
 
     @field_validator("plot_types")
     def validate_plot_types(cls, v):

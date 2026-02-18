@@ -100,7 +100,7 @@ def parse_daterange(
         return dates
     if len(dates) != 2:
         raise ValueError("need 2 datetime objects to define a date_range")
-    return pd.date_range(*dates, freq="d")
+    return pd.date_range(*dates, freq="D")
 
 
 def forecast_day(ds: xr.Dataset, *, day: int) -> xr.Dataset:

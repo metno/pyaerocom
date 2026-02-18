@@ -4,15 +4,15 @@ import pandas as pd
 import pytest
 from cf_units import Unit
 
-from pyaerocom import GriddedData, const, helpers, GriddedDataContainer
+from pyaerocom import GriddedData, GriddedDataContainer, const, helpers
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.colocation.colocation_utils import (
     _colocate_site_data_helper,
     _colocate_site_data_helper_timecol,
+    _get_stat_data_vec,
     _regrid_gridded,
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
-    _get_stat_data_vec,
 )
 from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.exceptions import UnresolvableTimeDefinitionError
@@ -34,7 +34,7 @@ S1 = create_fake_station_data(
     10,
     "2010-01-01",
     "2010-12-31",
-    "d",
+    "D",
     {"ts_type": "daily"},
 )
 
@@ -46,7 +46,7 @@ S2 = create_fake_station_data(
     10,
     "2010-01-01",
     "2010-12-31",
-    "d",
+    "D",
     {"ts_type": "daily"},
 )
 
@@ -56,7 +56,7 @@ S3 = create_fake_station_data(
     10,
     "2010-01-01",
     "2010-12-31",
-    "13d",
+    "13D",
     {"ts_type": "13daily"},
 )
 S3["concpm10"][1] = np.nan
@@ -68,7 +68,7 @@ S4 = create_fake_station_data(
     10,
     "2010-01-03",
     "2011-12-31",
-    "d",
+    "D",
     {"ts_type": "daily"},
 )
 
@@ -90,17 +90,17 @@ S4["concpm10"][0:5] = range(5)
             10,
         ),
         (
-            S3,
-            S4,
+            S3,  # model data 13daily for 2010
+            S4,  # obs data daily from 1st march 2010 to end of 2011
             "concpm10",
             "concpm10",
             "monthly",
             "mean",
             {"monthly": {"daily": 25}},
             False,
-            24,
+            11,
         ),
-        (S1, S2, "concpm10", "concpm10", "monthly", "mean", 25, {}, 12),
+        (S1, S2, "concpm10", "concpm10", "monthly", "mean", 25, {}, 11),
         (S2, S1, "concpm10", "concpm10", "monthly", "mean", 25, {}, 11),
     ],
 )

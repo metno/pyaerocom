@@ -209,10 +209,10 @@ class FairmodeStatistics:
         obsex = obsvals > EXC_THRESHOLDS[var_name]
         modex = modvals > EXC_THRESHOLDS[var_name]
 
-        fa = np.sum(np.logical_and(modex, ~obsex), axis=0, where=mask)
-        ma = np.sum(np.logical_and(~modex, obsex), axis=0, where=mask)
-        gan = np.sum(np.logical_and(~obsex, ~modex), axis=0, where=mask)
-        gap = np.sum(np.logical_and(obsex, modex), axis=0, where=mask)
+        fa = np.sum(np.logical_and(modex, ~obsex), axis=0, where=mask, out=None)
+        ma = np.sum(np.logical_and(~modex, obsex), axis=0, where=mask, out=None)
+        gan = np.sum(np.logical_and(~obsex, ~modex), axis=0, where=mask, out=None)
+        gap = np.sum(np.logical_and(obsex, modex), axis=0, where=mask, out=None)
 
         return fa, ma, gan, gap
 

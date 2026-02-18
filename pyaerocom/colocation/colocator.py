@@ -863,7 +863,8 @@ class Colocator:
         except DataCoverageError:
             vert_which_alt = self._try_get_vert_which_alt(is_model, var_name)
             data.read_data(
-                var_name,
+                readers,
+                var_name=var_name,
                 start=start,
                 stop=stop,
                 ts_type=ts_type_read,
