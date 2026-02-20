@@ -123,7 +123,7 @@ def calc_concno3pm25(concno3f, concno3c, fine_from_coarse_fraction: float = 0.13
     # mult_fun = CUBE_MATHS["multiply"]
     # concno3pm25 = add_cubes(concno3f, mult_fun(concno3c, fine_from_coarse_fraction))
 
-    return concno3f
+    return concno3f.cube
 
 
 def calc_concno3pm10(concno3f, concno3c):
