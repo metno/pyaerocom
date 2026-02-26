@@ -4,8 +4,9 @@ From: python:3.12
 %post
    apt -y update
    apt -y upgrade
-   pip install pyaerocom
-   pip install pyaro-readers
+   pip install --no-cache-dir pyaerocom
+   pip install --no-cache-dir pyaro-readers
+   python -m pip install --no-cache-dir 'git+https://github.com/metno/pyaerocom-parallelization.git'
 
 %environment
    export LC_ALL=C
