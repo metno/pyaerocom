@@ -190,7 +190,7 @@ def drop_standard_name(ds: xr.Dataset) -> xr.Dataset:
         attrs = ds[var_name].attrs
         attrs.pop("standard_name", None)
         ds[var_name] = ds[var_name].assign_attrs(attrs)
-        return ds
+    return ds
 
 
 def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
