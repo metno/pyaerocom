@@ -66,7 +66,7 @@ def test_model_file_contents(model_dataset: xr.Dataset, steps: int):
 times = pd.date_range(start="2025-07-01", freq="1h", periods=12)
 levels = np.arange(0, 1)
 latitudes = np.arange(20.0, -20.5, -0.5)
-longitudes = np.arange(0.0, 20.0, 0.5)
+longitudes = np.arange(0.0, 320.0, 0.5)
 
 
 @pytest.fixture
@@ -118,3 +118,4 @@ def test_from_fix_missing_vars_to_drop_standard_name(dummy_model_data):
     )
     assert len(ds.data_vars) == 11
     assert "standard_name" not in ds["concso4pm25"].attrs
+    assert ds.longitude.max() == 180.0
