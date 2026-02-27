@@ -16,6 +16,7 @@ from pyaerocom.io.cams2_83.reader import (
     fix_missing_vars,
     drop_standard_name,
     fix_names,
+    fix_coord,
 )
 
 TEST_DATE = datetime(2024, 12, 1)
@@ -108,7 +109,12 @@ def dummy_model_data():
     )
 
 
-def test_fix_missing_vars_drop_standard_name(dummy_model_data):
-    ds = dummy_model_data.pipe(fix_missing_vars).pipe(fix_names).pipe(drop_standard_name)
+def test_from_fix_missing_vars_to_drop_standard_name(dummy_model_data):
+    ds = (
+        dummy_model_data.pipe(fix_missing_vars)
+        .pipe(fix_coord)
+        .pipe(fix_names)
+        .pipe(drop_standard_name)
+    )
     assert len(ds.data_vars) == 11
     assert "standard_name" not in ds["concso4pm25"].attrs
