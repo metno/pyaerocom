@@ -5,6 +5,7 @@ import re
 from collections.abc import Iterator
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from copy import deepcopy
 
 import numpy as np
 import pandas as pd
@@ -29,6 +30,11 @@ AEROCOM_NAMES = dict(
     pm10_conc="concpm10",
     pm2p5_conc="concpm25",
     so2_conc="concso2",
+    pm2p5_so4_conc="concpm25so4",
+    pm2p5_no3_conc="concpm25no3",
+    pm2p5_nh4_conc="concpm25nh4",
+    ectot_conc="concectot",
+    pm2p5_total_om_conc="concpm25totalom",
 )
 
 FULL_NAMES = dict(
@@ -38,15 +44,11 @@ FULL_NAMES = dict(
     pm10_conc="PM10 Aerosol",
     pm2p5_conc="PM2.5 Aerosol",
     so2_conc="Sulphur Dioxide",
-)
-
-STANDARD_NAMES = dict(
-    co_conc="mass_concentration_of_carbon_monoxide_in_air",
-    no2_conc="mass_concentration_of_nitrogen_dioxide_in_air",
-    o3_conc="mass_concentration_of_ozone_in_air",
-    pm10_conc="mass_concentration_of_pm10_ambient_aerosol_in_air",
-    pm2p5_conc="mass_concentration_of_pm2p5_ambient_aerosol_in_air",
-    so2_conc="mass_concentration_of_sulfur_dioxide_in_air",
+    pm2p5_so4_conc="PM2.5 Sulphate",
+    pm2p5_no3_conc="PM2.5 Nitrate",
+    pm2p5_nh4_conc="PM2.5 Ammonium",
+    ectot_conc="Total Elementary Carbon",
+    pm2p5_total_om_conc="PM2.5 Aerosol from Total Organic Matter",
 )
 
 
@@ -159,27 +161,36 @@ def fix_names(ds: xr.Dataset) -> xr.Dataset:
 
 def fix_missing_vars(ds: xr.Dataset) -> xr.Dataset:
     """
-    TODO: Check if all variables are there. If not:
+    Check if all variables are there. If not:
     make the rest of the variables, filled with nans.
-    Log an error when this is done
-
-    Might not be possible...
+    Log a warning when this is done
     """
     vars_list = [i for i in ds.data_vars]
     nb_vars = len(vars_list)
-    if nb_vars < 6:
+    if nb_vars < 11:
         logger.warning(f"Found only {vars_list}. Filling the rest with NaNs")
 
-        dummy_var = ds[vars_list[0]]
+        dummy_var = deepcopy(ds[vars_list[0]])
         dummy_var_name = vars_list[0]
         for species in AEROCOM_NAMES:
             if species not in vars_list:
                 ds = ds.assign(**{species: dummy_var * np.nan})
-                attrs = ds[dummy_var_name].attrs
+                attrs = deepcopy(ds[dummy_var_name].attrs)
                 attrs["species"] = FULL_NAMES[species]
-                attrs["standard_name"] = STANDARD_NAMES[species]
                 ds[species] = ds[species].assign_attrs(attrs)
     return ds
+
+
+def drop_standard_name(ds: xr.Dataset) -> xr.Dataset:
+    """
+    Drop standard_name attribute, since some of the variables have it as Not Defined,
+    which is not a valid CF standard_name, and conversion to iris cube will fail in those cases
+    """
+    for var_name in ds.data_vars:
+        attrs = ds[var_name].attrs
+        attrs.pop("standard_name", None)
+        ds[var_name] = ds[var_name].assign_attrs(attrs)
+        return ds
 
 
 def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
@@ -189,7 +200,7 @@ def read_dataset(paths: list[Path], *, day: int) -> xr.Dataset:
         return ds.pipe(forecast_day, day=day).pipe(fix_missing_vars)
 
     ds = xr.open_mfdataset(paths, preprocess=preprocess, parallel=False, chunks={"time": 24})
-    return ds.pipe(fix_coord).pipe(fix_names)
+    return ds.pipe(fix_coord).pipe(fix_names).pipe(drop_standard_name)
 
 
 def check_files(paths: list[Path]) -> list[Path]:
