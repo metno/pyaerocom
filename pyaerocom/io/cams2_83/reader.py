@@ -30,11 +30,11 @@ AEROCOM_NAMES = dict(
     pm10_conc="concpm10",
     pm2p5_conc="concpm25",
     so2_conc="concso2",
-    pm2p5_so4_conc="concpm25so4",
-    pm2p5_no3_conc="concpm25no3",
-    pm2p5_nh4_conc="concpm25nh4",
-    ectot_conc="concectot",
-    pm2p5_total_om_conc="concpm25totalom",
+    pm2p5_so4_conc="concso4pm25",
+    pm2p5_no3_conc="concno3pm25",
+    pm2p5_nh4_conc="concnh4pm25",
+    ectot_conc="concecpm25",
+    pm2p5_total_om_conc="concompm25",
 )
 
 FULL_NAMES = dict(
