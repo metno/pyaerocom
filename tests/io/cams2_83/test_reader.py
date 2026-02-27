@@ -61,6 +61,7 @@ def test_model_file_contents(model_dataset: xr.Dataset, steps: int):
     for var_name in AEROCOM_NAMES.values():
         assert var_name in model_dataset
     assert len(model_dataset.time) == steps
+    assert len(model_dataset.data_vars) == 11
 
 
 times = pd.date_range(start="2025-07-01", freq="1h", periods=12)
