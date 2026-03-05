@@ -162,6 +162,36 @@ def clean_filters(cfg: dict, obs_pattern: str) -> dict:
     return CFG
 
 
+def add_EBAS_with_station_classification(cfg: dict, station_classification: str):
+    """
+    Adds new EBAS networks for only given station_classification (U, R or G). The networks are appended to the
+    list of networks, with new names
+    """
+    if station_classification not in ["U", "R", "G"]:
+        raise ValueError(f"station_classification {station_classification} must be U, R or G")
+
+    CFG = copy.deepcopy(cfg)
+    for network in cfg["obs_cfg"].keys():
+        if network.startswith("EBAS"):
+            new_network = network + f"-{station_classification}"
+            CFG["obs_cfg"][new_network] = copy.deepcopy(cfg["obs_cfg"][network])
+            for v in CFG["obs_cfg"][new_network]["obs_filters"]:
+                print(v)
+                if not isinstance(CFG["obs_cfg"][new_network]["obs_filters"][v], dict):
+                    continue
+                nf = CFG["obs_cfg"][new_network]["obs_filters"][v]["station_id"]
+
+                if f"*{station_classification}" in nf:
+                    raise ValueError(
+                        f"Filter for {new_network} is already ignoring all stations with classification {station_classification}"
+                    )
+                CFG["obs_cfg"][new_network]["obs_filters"][v]["station_id"] += [
+                    f"*{i}" for i in "UGR".replace(station_classification, "")
+                ]
+
+    return CFG
+
+
 def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION_PATH) -> dict:
     """Get a configuration usable for emep reporting
 
