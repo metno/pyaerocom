@@ -509,7 +509,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                 drop_stats,
                 use_meteorological_seasons,
             )
-            breakpoint()
+
             with self.avdb.lock():
                 self.avdb.put_map(
                     map_data,
