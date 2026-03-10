@@ -5,6 +5,8 @@ import sys
 import numpy as np
 import pandas as pd
 import xarray
+from collections.abc import Iterator
+from tqdm import tqdm
 
 from pyaerocom import const
 from pyaerocom.exceptions import (
@@ -20,6 +22,7 @@ from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
+from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -320,7 +323,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 # xarray.DataArray
                 arr = data_in.variables[netcdf_var_name]
                 # the actual data as numpy array (or float if 0-D data, e.g. zdust)
-                val = np.squeeze(np.float64(arr))  # squeeze to 1D array
+                val = np.squeeze(np.float64(arr), axis=0)  # squeeze to 1D array
 
                 # CONVERT UNIT
                 unit = None
@@ -349,14 +352,14 @@ class ReadEarlinet(ReadUngriddedBase):
                 if read_err and var in self.ERR_VARNAMES:
                     err_name = self.ERR_VARNAMES[var]
                     if err_name in data_in.variables:
-                        err = np.squeeze(np.float64(data_in.variables[err_name]))
+                        err = np.squeeze(np.float64(data_in.variables[err_name]), axis=0)
                         if unit_ok:
                             err *= unit_fac
                         err_read = True
 
                 # 1D variable
                 if var == "zdust":
-                    if not val.ndim == 0:
+                    if not val.ndim == 1:
                         raise DataDimensionError(
                             "Fatal: dust layer height data must be single value"
                         )
@@ -375,8 +378,8 @@ class ReadEarlinet(ReadUngriddedBase):
                     data_out[var] = val
 
                 else:
-                    if not val.ndim == 1:
-                        raise DataDimensionError("Extinction data must be one dimensional")
+                    if not val.ndim == 2:
+                        raise DataDimensionError("Extinction data must be two dimensional")
                     elif len(val) == 0:
                         continue  # no data
                     # Remove NaN equivalent values
@@ -432,12 +435,23 @@ class ReadEarlinet(ReadUngriddedBase):
                     # Write everything into profile
                     data_out[var] = profile
 
-                data_out["var_info"][var].update(
-                    unit_ok=unit_ok,
-                    err_read=err_read,
-                    outliers_removed=outliers_removed,
-                    has_altitude=has_altitude,
-                )
+                if has_altitude:
+                    data_out["var_info"][var].update(
+                        unit_ok=unit_ok,
+                        units=unit,
+                        err_read=err_read,
+                        outliers_removed=outliers_removed,
+                        has_altitude=has_altitude,
+                        altitude=alt_vals,
+                    )
+                else:
+                    data_out["var_info"][var].update(
+                        unit_ok=unit_ok,
+                        units=unit,
+                        err_read=err_read,
+                        outliers_removed=outliers_removed,
+                        has_altitude=has_altitude,
+                    )
         return data_out
 
     @override
@@ -450,7 +464,7 @@ class ReadEarlinet(ReadUngriddedBase):
         read_err=None,
         remove_outliers=True,
         pattern=None,
-    ):
+    ) -> UngriddedDataStructured:
         """Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters
@@ -488,9 +502,7 @@ class ReadEarlinet(ReadUngriddedBase):
             read_err = self.READ_ERR
 
         if files is None:
-            if len(self.files) == 0:
-                self.get_file_list(vars_to_retrieve, pattern=pattern)
-            files = self.files
+            files = self.get_file_list(vars_to_retrieve, pattern=pattern)
 
         # turn files into a list because I suspect there may be a bug if you don't do this
         if isinstance(files, str):
@@ -506,6 +518,14 @@ class ReadEarlinet(ReadUngriddedBase):
         ]  # think need to +1 here in order to actually get desired subset
 
         self.read_failed = []
+
+        self.read_failed = []
+
+        data = self._read_files_structured(
+            files, vars_to_retrieve=vars_to_retrieve, remove_outliers=remove_outliers
+        )
+        data.clear_meta_no_data()
+        return data
 
         data_obj = UngriddedData()
         data_obj.is_vertical_profile = True
@@ -723,3 +743,54 @@ class ReadEarlinet(ReadUngriddedBase):
                         matches.append(path)
         self.files = files = list(dict.fromkeys(matches))
         return files
+
+    def _read_files_structured(
+        self, files, vars_to_retrieve=None, remove_outliers=True
+    ) -> UngriddedDataStructured:
+        """Helper that reads list of files into UngriddedDataStructured
+
+        Note
+        ----
+        This method is not supposed to be called directly but is used in
+        :func:`read` and serves the purpose of parallel loading of data
+        """
+        self.files_failed = []
+
+        data_obj = UngriddedDataStructured.from_station_data(
+            self._station_data_iterator(files, vars_to_retrieve, remove_outliers=remove_outliers),
+            ["station_name_orig"],
+        )
+
+        num_failed = len(self.files_failed)
+        if num_failed > 0:
+            logger.warning(f"{num_failed} out of {len(files)} could not be read...")
+
+        return data_obj
+
+    def _station_data_iterator(
+        self, files, vars_to_retrieve, remove_outliers
+    ) -> Iterator[StationData]:
+        """Generator that yields StationData objects for each file in files"""
+        logger.info(f"Reading EARLINET data from {self.data_dir}...")
+        num_files = len(files)
+
+        for i in tqdm(range(num_files), disable=None):
+            _file = files[i]
+            try:
+                station_data = self.read_file(
+                    _file,
+                    vars_to_retrieve=vars_to_retrieve,
+                    remove_outliers=remove_outliers,
+                )
+            except (
+                ValueError,
+                KeyError,
+            ) as e:
+                self.files_failed.append(_file)
+                logger.info(f"Skipping reading of EARLINET file: {_file}. Reason: {repr(e)}")
+                continue
+            except Exception as e:
+                self.files_failed.append(_file)
+                logger.warning(f"Skipping reading of EARLINET file: {_file}. Reason: {repr(e)}")
+                continue
+            yield station_data

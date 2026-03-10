@@ -48,7 +48,7 @@ def test_ReadEarlinet_read_file(num: int, vars_to_retrieve: list[str]):
 
     ec355aer = stat.ec355aer
     assert isinstance(ec355aer, VerticalProfile)
-    assert len(ec355aer.data) == 164
+    assert ec355aer.data.shape == (1, 164)
     assert np.sum(np.isnan(ec355aer.data)) == 0
 
     assert np.nanmean(ec355aer.data) == pytest.approx(0.02495260001522142, rel=TEST_RTOL)
@@ -78,21 +78,10 @@ def test_ReadEarlinet_read_file_error(vars_to_retrieve: str, error: str):
 
 def test_ReadEarlinet_read():
     read = ReadEarlinet()
-    read.files = TEST_FILES
-    data = read.read(vars_to_retrieve="ec355aer")
+    data = read.read(vars_to_retrieve="ec355aer", files=TEST_FILES)
 
     assert len(data.metadata) == 1
-    assert data.shape == (164, 12)
-
-    assert np.nanmin(data._data[:, data._DATAINDEX]) == pytest.approx(
-        -0.002188435098876817, rel=TEST_RTOL
-    )
-    assert np.nanmean(data._data[:, data._DATAINDEX]) == pytest.approx(
-        0.02495260001522142, rel=TEST_RTOL
-    )
-    assert np.nanmax(data._data[:, data._DATAINDEX]) == pytest.approx(
-        0.16084047083963124, rel=TEST_RTOL
-    )
+    assert data.shape == (164,)
 
     merged = data.to_station_data(0)
     # same values as above because only one meta_idx
