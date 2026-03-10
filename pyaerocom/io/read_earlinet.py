@@ -17,7 +17,6 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
