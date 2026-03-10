@@ -323,6 +323,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 # xarray.DataArray
                 arr = data_in.variables[netcdf_var_name]
                 # the actual data as numpy array (or float if 0-D data, e.g. zdust)
+                # NOTE: I am a bit unsure about this part, but it makes it work...
                 val = np.squeeze(np.float64(arr), axis=0)  # squeeze to 1D array
 
                 # CONVERT UNIT
@@ -526,135 +527,6 @@ class ReadEarlinet(ReadUngriddedBase):
         )
         data.clear_meta_no_data()
         return data
-
-        data_obj = UngriddedData()
-        data_obj.is_vertical_profile = True
-        col_idx = data_obj.index
-        meta_key = -1.0
-        idx = 0
-
-        # assign metadata object
-        metadata = data_obj.metadata
-        meta_idx = data_obj.meta_idx
-
-        # last_station_id = ''
-        num_files = len(files)
-
-        disp_each = int(num_files * 0.1)
-        if disp_each < 1:
-            disp_each = 1
-
-        VAR_IDX = -1
-        for i, _file in enumerate(files):
-            if i % disp_each == 0:
-                logger.info(f"Reading file {i + 1} of {num_files} ({type(self).__name__})")
-            try:
-                stat = self.read_file(
-                    _file,
-                    vars_to_retrieve=vars_to_retrieve,
-                    read_err=read_err,
-                    remove_outliers=remove_outliers,
-                )
-                if not any([var in stat.vars_available for var in vars_to_retrieve]):
-                    logger.info(
-                        f"Station {stat.station_name} contains none of the desired variables. Skipping station..."
-                    )
-                    continue
-                # if last_station_id != station_id:
-                meta_key += 1
-                # Fill the metadata dict
-                # the location in the data set is time step dependant!
-                # use the lat location here since we have to choose one location
-                # in the time series plot
-                metadata[meta_key] = {}
-                metadata[meta_key].update(stat.get_meta())
-                for add_meta in self.KEEP_ADD_META:
-                    if add_meta in stat:
-                        metadata[meta_key][add_meta] = stat[add_meta]
-                # metadata[meta_key]['station_id'] = station_id
-
-                metadata[meta_key]["data_revision"] = self.data_revision
-                metadata[meta_key]["variables"] = []
-                metadata[meta_key]["var_info"] = {}
-                # this is a list with indices of this station for each variable
-                # not sure yet, if we really need that or if it speeds up things
-                meta_idx[meta_key] = {}
-                # last_station_id = station_id
-
-                # Is floating point single value
-                time = stat.dtime[0]
-                for var in stat.vars_available:
-                    if var not in data_obj.var_idx:
-                        VAR_IDX += 1
-                        data_obj.var_idx[var] = VAR_IDX
-
-                    var_idx = data_obj.var_idx[var]
-
-                    val = stat[var]
-                    metadata[meta_key]["var_info"][var] = vi = {}
-                    if isinstance(val, VerticalProfile):
-                        altitude = val.altitude
-                        data = val.data
-                        add = len(data)
-                        err = val.data_err
-                        metadata[meta_key]["var_info"]["altitude"] = via = {}
-
-                        vi.update(val.var_info[var])
-                        via.update(val.var_info["altitude"])
-                    else:
-                        add = 1
-                        altitude = np.nan
-                        data = val
-                        if var in stat.data_err:
-                            err = stat.err[var]
-                        else:
-                            err = np.nan
-                    vi.update(stat.var_info[var])
-                    stop = idx + add
-                    # check if size of data object needs to be extended
-                    if stop >= data_obj._ROWNO:
-                        # if totnum < data_obj._CHUNKSIZE, then the latter is used
-                        data_obj.add_chunk(add)
-
-                    # write common meta info for this station
-                    data_obj._data[idx:stop, col_idx["latitude"]] = stat["station_coords"][
-                        "latitude"
-                    ]
-                    data_obj._data[idx:stop, col_idx["longitude"]] = stat["station_coords"][
-                        "longitude"
-                    ]
-                    data_obj._data[idx:stop, col_idx["altitude"]] = stat["station_coords"][
-                        "altitude"
-                    ]
-                    data_obj._data[idx:stop, col_idx["meta"]] = meta_key
-
-                    # write data to data object
-                    data_obj._data[idx:stop, col_idx["time"]] = time
-                    data_obj._data[idx:stop, col_idx["stoptime"]] = stat.stopdtime[0]
-                    data_obj._data[idx:stop, col_idx["data"]] = data
-                    data_obj._data[idx:stop, col_idx["dataaltitude"]] = altitude
-                    data_obj._data[idx:stop, col_idx["varidx"]] = var_idx
-
-                    if read_err:
-                        data_obj._data[idx:stop, col_idx["dataerr"]] = err
-
-                    if var not in meta_idx[meta_key]:
-                        meta_idx[meta_key][var] = []
-                    meta_idx[meta_key][var].extend(list(range(idx, stop)))
-
-                    if var not in metadata[meta_key]["variables"]:
-                        metadata[meta_key]["variables"].append(var)
-
-                    idx += add
-
-            except Exception as e:
-                self.read_failed.append(_file)
-                logger.exception(f"Failed to read file {os.path.basename(_file)} (ERR: {repr(e)})")
-
-        # shorten data_obj._data to the right number of points
-        data_obj._data = data_obj._data[:idx]
-
-        return data_obj
 
     def _get_exclude_filelist(self):  # pragma: no cover
         """Get list of filenames that are supposed to be ignored"""
