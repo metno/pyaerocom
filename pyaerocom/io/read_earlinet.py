@@ -642,7 +642,7 @@ class ReadEarlinet(ReadUngriddedBase):
         self, files, vars_to_retrieve, remove_outliers
     ) -> Iterator[StationData]:
         """Generator that yields StationData objects for each file in files"""
-        logger.info(f"Reading EARLINET data from {self.data_dir}...")
+        logger.info("Reading EARLINET data...")
         num_files = len(files)
 
         for i in tqdm(range(num_files), disable=None):
