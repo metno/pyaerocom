@@ -4,6 +4,7 @@ import logging
 from collections.abc import Iterator
 from datetime import date, datetime
 from pathlib import Path
+from copy import deepcopy
 
 import numpy as np
 import pandas as pd
@@ -256,12 +257,12 @@ def fix_missing_vars(ds: xr.Dataset) -> xr.Dataset:
     if nb_vars < 6:
         logger.warning(f"Found only {vars_list}. Filling the rest with NaNs")
 
-        dummy_var = ds[vars_list[0]]
+        dummy_var = deepcopy(ds[vars_list[0]])
         dummy_var_name = vars_list[0]
         for species in AEROCOM_NAMES:
             if species not in vars_list:
                 ds = ds.assign(**{species: dummy_var * np.nan})
-                attrs = ds[dummy_var_name].attrs
+                attrs = deepcopy(ds[dummy_var_name].attrs)
                 attrs["species"] = FULL_NAMES[species]
                 attrs["standard_name"] = STANDARD_NAMES[species]
                 ds[species] = ds[species].assign_attrs(attrs)
