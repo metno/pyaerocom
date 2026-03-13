@@ -129,6 +129,9 @@ class ReadMscwCtm(GriddedReader):
         "concebcem": ["concecFineEM", "concecCoarseEM"],
         "concCecpm25EM": ["concecFineEM"],
         "concCecpm10EM": ["concecFineEM"],
+        # For dust
+        "concremppmFine": ["concremppmFineNonRes", "concremppmFineRes"],
+        "concremppmCoarse": ["concremppmCoarseNonRes", "concremppmCoarseRes"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -186,6 +189,8 @@ class ReadMscwCtm(GriddedReader):
         "concebcem": add_dataarrays,
         "concCecpm25EM": update_EC_units,
         "concCecpm10EM": update_EC_units,
+        "concremppmFine": add_dataarrays,
+        "concremppmCoarse": add_dataarrays,
     }
 
     #: supported filename template, freq-placeholder is for frequencies

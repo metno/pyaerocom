@@ -137,3 +137,9 @@ concecFineNonResAgeEM = "SURF_ug_EMEC_F_NONRES_AGE"
 concecCoarseResEM = "SURF_ug_EMEC_C_RES"
 concecCoarseNonResEM = "SURF_ug_EMEC_C_NONRES"
 
+# Variables for dust
+ concremppmFineNonRes = "SURF_ug_REMPPM25_NONRES"
+ concremppmFineRes = "SURF_ug_REMPPM25_RES"
+ concremppmCoarseNonRes = "SURF_ug_REMPPM_C_NONRES"
+ concremppmCoarseRes = "SURF_ug_REMPPM_C_RES"
+
