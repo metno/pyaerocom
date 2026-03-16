@@ -20,6 +20,9 @@ class RadarPlotStatistics:
     see https://gmd.copernicus.org/articles/18/4231/2025/
     """
 
+    # TODO: Check if stats are calculated on the aggrigated regional timeseries, or if the timeseries for all stations in the region is sent in
+    # Might have to be done differently for spatial and temporal stats
+    # Might have to check if the aggrigation/mean done for temporal timeseries is done the same as rest of pyaerocom
     def __init__(self):
         pass
 
@@ -125,7 +128,7 @@ class RadarPlotStatistics:
         inc_model = np.mean(moddata_ub, where=mask_ub) - np.mean(moddata_rb, where=mask_rb)
         inc_obs = np.mean(obsdata_ub, where=mask_ub) - np.mean(obsdata_rb, where=mask_rb)
 
-        mpi = abs(inc_model - inc_obs) / (0.5 * (rms_ub + rms_rb))
+        mpi = (inc_model - inc_obs) / (0.5 * (rms_ub + rms_rb))
 
         return mpi
 
