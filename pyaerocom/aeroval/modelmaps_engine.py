@@ -83,7 +83,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
     def run(self, **kwargs):
         model_list, var_list = self._get_run_kwargs(**kwargs)
-
         for model in model_list:
             try:
                 self._run_model(model, var_list)
@@ -96,12 +95,20 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         )  # if needed, reassign "coarsest" to actual coarsest frequency
 
     def _get_vars_to_process(self, model_name, var_list):
-        mvars = self.cfg.model_cfg.get_entry(model_name).get_vars_to_process(
+        obvars, mvars = self.cfg.model_cfg.get_entry(model_name).get_vars_to_process(
             self.cfg.obs_cfg.get_all_vars()
-        )[1]
-        all_vars = sorted(list(set(mvars)))
+        )
+        
         if var_list is not None:
-            all_vars = [var for var in var_list if var in all_vars]
+            # all_vars = [var for var in var_list if var in all_vars]
+            all_vars = [mvars[obvars.index(var)] for var in var_list if var in obvars]
+        
+            # all_vars = sorted(list(set(mvars)))
+            all_vars = sorted(list(set(all_vars)))
+        
+        else:
+            all_vars = sorted(list(set(mvars)))
+
         return all_vars
 
     def _get_obs_vars_to_process(self, obs_name, var_list):
@@ -269,7 +276,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
             # first calculate and save geojson with contour levels
             contourjson = calc_contour_json(data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins)
-
             with self.avdb.lock():
                 for time, contour in contourjson.items():
                     if var == "conco3mda8" and freq == "daily":

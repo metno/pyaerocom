@@ -123,6 +123,7 @@ class CategoryType(str, Enum):
     surface_emission = "Surface emission"
     column_burden = "Column burden"
     solar_irradiance = "Solar irradiance"
+    dry_deposition_velocity = "Dry deposition velocity"
     UNDEFINED = "UNDEFINED"
 
     def __str__(self):
