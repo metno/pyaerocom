@@ -96,6 +96,17 @@ variables:
     - CZ0003*
     - EE0009*
 
+  # soxwdep:
+  #   - ME0008*
+  #   - IS0091*
+  #   - NO0057*
+  # oxnwdep:
+  #   - IS0091*
+  #   - NO0057*
+  nhxwdep:
+    - IS0091*
+    - NO0057*
+
 2022:
   ALL:
     - NO0042R

@@ -32,9 +32,12 @@ from pyaerocom.io.aux_components_fun import (
     calc_concNno3pm25,
     calc_concno3pm10,
     calc_concno3pm25,
+    calc_concno3pm1,
     calc_concNtnh,
     calc_concNtno3,
     calc_sspm25,
+    identity_fun,
+    convert_ugm3_to_ugCm3,
 )
 from pyaerocom.io.aux_read_cubes import (
     add_cubes,
@@ -140,6 +143,7 @@ class ReadGridded(GriddedReader):
         "concsspm25": ("concss25", "concsscoarse"),
         "concno3pm10": ("concno3f", "concno3c"),
         "concno3pm25": ("concno3f", "concno3c"),
+        "concno3pm1": ("concno3f",),
         "concNno3pm10": ("concno3f", "concno3c"),
         "concNno3pm25": ("concno3f", "concno3c"),
         "concNhno3": ("vmrhno3",),
@@ -147,6 +151,13 @@ class ReadGridded(GriddedReader):
         "concNnh3": ("vmrnh3",),
         "concNnh4": ("concnh4",),
         "concNtnh": ("concnh4", "vmrnh3"),
+        # Identities
+        "concso4c": ("concso4",),
+        "concso4t": ("concso4",),
+        "concso4pm10": ("concso4",),
+        "concso4pm25": ("concso4",),
+        "concCecpm10": ("concec",),
+        "concCecpm25": ("concec",),
     }
 
     AUX_ALT_VARS = {
@@ -172,6 +183,7 @@ class ReadGridded(GriddedReader):
         "concsspm25": calc_sspm25,
         "concno3pm10": calc_concno3pm10,
         "concno3pm25": calc_concno3pm25,
+        "concno3pm1": calc_concno3pm1,
         "concNno3pm10": calc_concNno3pm10,
         "concNno3pm25": calc_concNno3pm25,
         "concNhno3": calc_concNhno3_from_vmr,
@@ -179,6 +191,13 @@ class ReadGridded(GriddedReader):
         "concNnh3": calc_concNnh3_from_vmr,
         "concNnh4": calc_concNnh4,
         "concNtnh": calc_concNtnh,
+        # Identities
+        "concso4c": identity_fun,
+        "concso4t": identity_fun,
+        "concso4pm10": identity_fun,
+        "concso4pm25": identity_fun,
+        "concCecpm10": convert_ugm3_to_ugCm3,
+        "concCecpm25": convert_ugm3_to_ugCm3,
         # 'mec550*'      :    divide_cubes,
         # 'tau*'         :    lifetime_from_load_and_dep
     }

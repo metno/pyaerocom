@@ -19,6 +19,17 @@ logger = logging.getLogger(__name__)
 single_component_mass = {"n": 14.0067, "c": 12.011, "s": 32.065}
 
 
+def identity_fun(data):
+    data = _check_input_iscube(data)[0]
+    return data
+
+
+def convert_ugm3_to_ugCm3(data):
+    data = _check_input_iscube(data)[0]
+    data.units = "ug C m-3"
+    return data
+
+
 def vmr_to_conc(data, vmr_unit, var_name, to_unit, component_unit=None):
     """
     Convert volume mixing ratio (vmr) to mass concentration
@@ -120,16 +131,24 @@ def calc_concNnh4(concnh4):
 
 
 def calc_concno3pm25(concno3f, concno3c, fine_from_coarse_fraction: float = 0.134):
-    # mult_fun = CUBE_MATHS["multiply"]
-    # concno3pm25 = add_cubes(concno3f, mult_fun(concno3c, fine_from_coarse_fraction))
+    mult_fun = CUBE_MATHS["multiply"]
+    concno3f, concno3c = _check_input_iscube(concno3f, concno3c)
+    concno3f, concno3c = _check_same_units(concno3f, concno3c)
+    concno3pm25 = add_cubes(concno3f, mult_fun(concno3c, fine_from_coarse_fraction))
 
-    return concno3f
+    return concno3pm25
 
 
 def calc_concno3pm10(concno3f, concno3c):
     concno3pm10 = add_cubes(concno3f, concno3c)
 
     return concno3pm10
+
+
+def calc_concno3pm1(concno3f):
+    concno3pm1 = _check_input_iscube(concno3f)[0]
+
+    return concno3pm1
 
 
 def calc_concNno3pm25(concno3f, concno3c, fine_from_coarse_fraction: float = 0.134):

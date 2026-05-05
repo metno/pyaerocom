@@ -98,14 +98,14 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         obvars, mvars = self.cfg.model_cfg.get_entry(model_name).get_vars_to_process(
             self.cfg.obs_cfg.get_all_vars()
         )
-        
+
         if var_list is not None:
             # all_vars = [var for var in var_list if var in all_vars]
             all_vars = [mvars[obvars.index(var)] for var in var_list if var in obvars]
-        
+
             # all_vars = sorted(list(set(mvars)))
             all_vars = sorted(list(set(all_vars)))
-        
+
         else:
             all_vars = sorted(list(set(mvars)))
 
