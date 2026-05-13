@@ -330,9 +330,9 @@ class ReadEbas(ReadUngriddedBase):
         "proxydryno3radical": ["concprcpoxn", "pr"],
         "proxydryho2no2": ["concprcpoxn", "pr"],
         # Task4063 Emission
-        "proxyemisox": ["concso2"],
-        "proxyeminox": ["concno2"],
-        "proxyeminh3": ["concnh3"],
+        "proxyemisox": ["concprcpoxs", "pr"],
+        "proxyeminox": ["concprcpoxn", "pr"],
+        "proxyeminh3": ["concprcprdn", "pr"],
         "proxyemico": ["concco"],
         "proxyeminmvoc": ["vmro3"],
         "proxyemipm25": ["concpm25"],
@@ -499,24 +499,27 @@ class ReadEbas(ReadUngriddedBase):
         "proxydryno3radical": compute_wetoxn_from_concprcpoxn,
         "proxydryho2no2": compute_wetoxn_from_concprcpoxn,
         # Task4063 Emissions
-        "proxyemisox": partial(
-            make_proxy_emission,
-            var_name="concso2",
-            new_var_name="proxyemisox",
-            units="mg S m-2 d-1",
-        ),
-        "proxyeminox": partial(
-            make_proxy_emission,
-            var_name="concno2",
-            new_var_name="proxyeminox",
-            units="mg N m-2 d-1",
-        ),
-        "proxyeminh3": partial(
-            make_proxy_emission,
-            var_name="concnh3",
-            new_var_name="proxyeminh3",
-            units="mg N m-2 d-1",
-        ),
+        "proxyemisox": compute_wetoxs_from_concprcpoxs,
+        "proxyeminox": compute_wetoxn_from_concprcpoxn,
+        "proxyeminh3": compute_wetrdn_from_concprcprdn,
+        # "proxyemisox": partial(
+        #     make_proxy_emission,
+        #     var_name="concso2",
+        #     new_var_name="proxyemisox",
+        #     units="mg S m-2 d-1",
+        # ),
+        # "proxyeminox": partial(
+        #     make_proxy_emission,
+        #     var_name="concno2",
+        #     new_var_name="proxyeminox",
+        #     units="mg N m-2 d-1",
+        # ),
+        # "proxyeminh3": partial(
+        #     make_proxy_emission,
+        #     var_name="concnh3",
+        #     new_var_name="proxyeminh3",
+        #     units="mg N m-2 d-1",
+        # ),
         "proxyemico": partial(
             make_proxy_emission,
             var_name="concco",
