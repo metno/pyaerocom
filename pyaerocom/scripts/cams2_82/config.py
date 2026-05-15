@@ -61,9 +61,7 @@ GLOBAL_CONFIG = dict(
     regions_how="htap",
     annual_stats_constrained=False,
     weighted_stats=False,
-    
     use_fairmode=False,
-    
     # This is just the order at which the different species will be shown in the web interface
     # Species that are not evaluated can still be in this list. The web interface will not show them if they are not evaluated
     var_order_menu=[
@@ -79,8 +77,8 @@ GLOBAL_CONFIG = dict(
     ],
     min_num_obs=dict(
         # yearly=dict(monthly=9),
-        # monthly=dict(daily=21, weekly=3),
-        daily=dict(hourly=6),
+        monthly=dict(daily=21, weekly=3),
+        daily=dict(hourly=18),
     ),
 )
 
@@ -140,9 +138,7 @@ EEA_SPECIES = [
     "concpm25",
 ]
 
-AERONET_SPECIES = [
-    "od550aer"
-]
+AERONET_SPECIES = ["od550aer"]
 
 OPENAQ_SPECIES = [
     "concpm10",
@@ -184,15 +180,13 @@ CFG = dict(
 )
 
 
-
 def make_model_entry(
     start_date: datetime,
     end_date: datetime,
     model_path: Path,
-
 ) -> dict:
     return dict(
-        model_id = "IFS",
+        model_id="IFS",
         model_data_dir=str(model_path.resolve()),
         gridded_reader_id={"model": "ReadCAMS2_82"},
         model_kwargs=dict(
@@ -206,41 +200,43 @@ def make_openAQ_entry(
     end_date: datetime,
     obs_path: Path,
 ) -> dict:
-    filters={
-                "time_bounds": {
-                "startend_include": [[start_date.strftime("%Y-%m-%d %H:%M:%S"), end_date.strftime("%Y-%m-%d %H:%M:%S")]]
-            },
-
-        }
+    filters = {
+        "time_bounds": {
+            "startend_include": [
+                [
+                    start_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    end_date.strftime("%Y-%m-%d %H:%M:%S"),
+                ]
+            ]
+        },
+    }
     data_id = "csv_timeseries"
 
     new_columns = {
-        'variable': 7,
-        'station': 1,
-        'longitude': 2,
-        'latitude': 3,
-        'value': 4,
+        "variable": 7,
+        "station": 1,
+        "longitude": 2,
+        "latitude": 3,
+        "value": 4,
         "units": "ug m**-3",
-        'end_time': 6,
-        'start_time': 5,
+        "end_time": 6,
+        "start_time": 5,
         "altitude": "0",
         "country": "Norway",
         "station_type": "NaN",
         "standard_deviation": "NaN",
         "flag": "0",
-        }
+    }
     config_eea = PyaroConfig(
         name="openAQ",
         reader_id=data_id,
         filename_or_obj_or_url=str(obs_path),
         filters=filters,
-        name_map={
-            
-        },
+        name_map={},
         columns=new_columns,
     )
 
-    return  dict(
+    return dict(
         obs_id=config_eea.name,
         pyaro_config=config_eea,
         web_interface_name="openAQ",
@@ -248,73 +244,83 @@ def make_openAQ_entry(
         obs_vert_type="Surface",
         ts_type="hourly",
         min_num_obs=dict(),
-        
-        # obs_filters=EEA_FILTER,   
+        # obs_filters=EEA_FILTER,
     )
-    
+
+
 def make_EEA_entry(
     start_date: datetime,
     end_date: datetime,
     obs_path: Path,
 ) -> dict:
-    filters={
-                "time_bounds": {
-                "startend_include": [[start_date.strftime("%Y-%m-%d %H:%M:%S"), end_date.strftime("%Y-%m-%d %H:%M:%S")]]
-            },
-
-        }
+    filters = {
+        "time_bounds": {
+            "startend_include": [
+                [
+                    start_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    end_date.strftime("%Y-%m-%d %H:%M:%S"),
+                ]
+            ]
+        },
+    }
     data_id = "eeareader"
     config_eea = PyaroConfig(
         name="eea",
         reader_id=data_id,
         filename_or_obj_or_url=obs_path,
         filters=filters,
-        dataset= "unverified",
+        dataset="unverified",
         name_map={
             "PM2.5": "concpm25",
             "PM10": "concpm10",
             "NO2": "concno2",
             "O3": "conco3",
-            
         },
     )
 
-    return  dict(
+    return dict(
         obs_id=config_eea.name,
         pyaro_config=config_eea,
         web_interface_name="EEA-rural",
         obs_vars=EEA_SPECIES,
         obs_vert_type="Surface",
         ts_type="hourly",
-        obs_filters=EEA_FILTER,   
+        obs_filters=EEA_FILTER,
     )
+
+
 def make_ICOS_entry(
     start_date: datetime,
     end_date: datetime,
     obs_path: Path,
 ) -> dict:
 
-    return  dict(
+    return dict(
         obs_id="ICOS",
         web_interface_name="ICOS",
         obs_data_dir=str(obs_path),
         obs_vars=ICOS_SPECIES,
         obs_vert_type="Surface",
         ts_type="hourly",
-        obs_filters=BASE_FILTER,   
+        obs_filters=BASE_FILTER,
     )
+
 
 def make_Aeronet_entry(
     start_date: datetime,
     end_date: datetime,
     obs_path: Path,
 ) -> dict:
-    filters={
-                "time_bounds": {
-                "startend_include": [[start_date.strftime("%Y-%m-%d %H:%M:%S"), end_date.strftime("%Y-%m-%d %H:%M:%S")]]
-            },
-
-        }
+    filters = {
+        "time_bounds": {
+            "startend_include": [
+                [
+                    start_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    end_date.strftime("%Y-%m-%d %H:%M:%S"),
+                ]
+            ]
+        },
+    }
     data_id = "csv_timeseries"
     columns = {
         "variable": 13,
@@ -330,27 +336,27 @@ def make_Aeronet_entry(
         "station_type": 10,
         "standard_deviation": "NaN",
         "flag": "0",
-    }   
+    }
     config_eea = PyaroConfig(
         name="aeronet",
         reader_id=data_id,
         filename_or_obj_or_url=str(obs_path),
         filters=filters,
-        name_map={
-            "AOD_550nm": "od550aer"
-            
-        },
+        name_map={"AOD_550nm": "od550aer"},
         columns=columns,
     )
 
-    return  dict(
+    return dict(
         obs_id=config_eea.name,
         pyaro_config=config_eea,
         web_interface_name="AeronetL1.5",
         obs_vars=AERONET_SPECIES,
         obs_vert_type="Surface",
+        min_num_obs={
+            "monthly": {"daily": 3},
+        },
         ts_type="hourly",
-        # obs_filters=EEA_FILTER,   
+        # obs_filters=EEA_FILTER,
     )
 
 
@@ -359,104 +365,50 @@ def make_EPROFILE_entry(
     end_date: datetime,
     obs_path: Path,
 ) -> dict:
-    return dict( 
-      obs_vars=EPROFILE_SPECIES,
-      obs_id="EPROFILE",
-      obs_name="EPROFILE",
-      obs_ts_type_read=None,
-      obs_vert_type="Column",
-      obs_aux_requires={},
-      instr_vert_loc=None,
-      is_superobs=False,
-      only_superobs=False,
-      is_bulk=False,
-      bulk_options={},
-      colocation_layer_limts=None,
-      profile_layer_limits=[
-        {
-          "start": 0,
-          "end": 1000
-        },  
-        {
-          "start": 1000,
-          "end": 2000
-        },
-        {
-          "start": 2000,
-          "end": 3000
-        },
-        {
-          "start": 3000,
-          "end": 4000
-        },
-        {
-          "start": 4000,
-          "end": 5000
-        },
-        {
-          "start": 5000,
-          "end": 6000
-        },
-        {
-          "start": 6000,
-          "end": 7000
-        },
-        {
-          "start": 7000,
-          "end": 8000
-        },
-        {
-          "start": 8000,
-          "end": 9000
-        },
-        {
-          "start": 9000,
-          "end": 10000
-        }
-      ],
-      web_interface_name="EPROFILE",
-      diurnal_only=False,
-      obs_type=None,
-      read_opts_ungridded={},
-      only_json=False,
-      coldata_dir=None,
-      obs_use_climatology=False,
-      colocate_time=False,
-      min_num_obs={
-        "yearly": {
-          "monthly": 1
-        },
-        "monthly": {
-          "daily": 1
-        },
-        "daily": {
-          "hourly": 1
-        }
-      },
-      ts_type="daily",
-      ignore_station_ids=None,
-      colocation_layer_limits=[
-        {
-          "start": 0,
-          "end": 2000
-        },
-        {
-          "start": 2000,
-          "end": 4000
-        },
-        {
-          "start": 4000,
-          "end": 6000
-        }
-      ],
-      obs_filters={
-        "latitude": [
-          -90,
-          90
+    return dict(
+        obs_vars=EPROFILE_SPECIES,
+        obs_id="EPROFILE",
+        obs_name="EPROFILE",
+        obs_ts_type_read=None,
+        obs_vert_type="Column",
+        obs_aux_requires={},
+        instr_vert_loc=None,
+        is_superobs=False,
+        only_superobs=False,
+        is_bulk=False,
+        bulk_options={},
+        colocation_layer_limts=None,
+        profile_layer_limits=[
+            {"start": 0, "end": 1000},
+            {"start": 1000, "end": 2000},
+            {"start": 2000, "end": 3000},
+            {"start": 3000, "end": 4000},
+            {"start": 4000, "end": 5000},
+            {"start": 5000, "end": 6000},
+            {"start": 6000, "end": 7000},
+            {"start": 7000, "end": 8000},
+            {"start": 8000, "end": 9000},
+            {"start": 9000, "end": 10000},
         ],
-        "longitude": [
-          -180,
-          180
-        ]
-      }
+        web_interface_name="EPROFILE",
+        diurnal_only=False,
+        obs_type=None,
+        read_opts_ungridded={},
+        only_json=False,
+        coldata_dir=None,
+        obs_use_climatology=False,
+        colocate_time=False,
+        min_num_obs={
+            "yearly": {"monthly": 1},
+            "monthly": {"daily": 1},
+            "daily": {"hourly": 1},
+        },
+        ts_type="daily",
+        ignore_station_ids=None,
+        colocation_layer_limits=[
+            {"start": 0, "end": 2000},
+            {"start": 2000, "end": 4000},
+            {"start": 4000, "end": 6000},
+        ],
+        obs_filters={"latitude": [-90, 90], "longitude": [-180, 180]},
     )
