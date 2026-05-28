@@ -468,6 +468,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
             "vmro3",
             "vmro3max",
             "vmro3mda8",
+            "vmro3somo30",
             "vmrox",
             "vmrco",
             # PMs
