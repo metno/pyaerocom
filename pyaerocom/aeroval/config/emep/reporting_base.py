@@ -529,7 +529,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
     # Station filters
 
     # This list of stations was generated using the script found here:
-    # https://gist.github.com/thorbjoernl/b7946882f1696722742053406d056e12.
+    # scripts/generate_ebas_height_ignore_list.py.
     # It excludes stations with a relative altitude (Elevation difference to the lowest
     # altitude in a 5km radius based on gtopo30) above 500m as well as stations that do not include
     # an altitude in the ebas file index.
@@ -645,6 +645,31 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
         "US9078R",
         "US9082U",
         "VN0001R",
+        # sites with missing altitudes
+        "DK0042R",
+        "ES0024U",
+        "GB0017R",
+        "IE0010U",
+        "IT0011R",
+        "IT0012R",
+        "LT0016R",
+        "NO0798R",
+        "NO1006R",
+        "NO1011R",
+        "RU0021R",
+        "SE0081R",
+        "SE0082R",
+        "SE0083R",
+        "SE0084R",
+        "SE0085R",
+        "SE0086R",
+        "SE0087R",
+        "SE0089R",
+        "SE0090R",
+        "SE0091R",
+        "SE0092R",
+        "UA0008R",
+        "US9028R",
     ]
 
     EBAS_FILTER = {
