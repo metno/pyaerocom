@@ -533,7 +533,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
     # It excludes stations with a relative altitude (Elevation difference to the lowest
     # altitude in a 5km radius based on gtopo30) above 500m as well as stations that do not include
     # an altitude in the ebas file index.
-    # Last updated: ~2025-01-03
+    # Last updated: ~2026-06-02
     height_ignore_ebas = [
         "AM0001R",
         "AR0001R",
@@ -560,12 +560,14 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
         "DE0057G",
         "DE0060G",
         "DE0075R",
+        "DK0009R",
         "DZ0001G",
         "ES0005R",
         "ES0018G",
         "ES0022R",
         "ES0025U",
         "FI0009R",
+        "FI0090R",
         "FR0012R",
         "FR0019R",
         "FR0026R",
@@ -584,6 +586,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
         "IT0009R",
         "IT0019R",
         "IT0031U",
+        "JP0002G",
         "JP1021R",
         "KE0001G",
         "MK0007R",
