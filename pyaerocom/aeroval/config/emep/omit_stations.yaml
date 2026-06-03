@@ -59,11 +59,20 @@ variables:
   ALL:
     - ALL
 
+
+2024:
+  ALL:
+    - NO0043R
+    - DK0010G
+    - IT0019*
+    - "*U"
+
 2023:
   ALL:
     - NO0042R
     - DK0010G
     - IT0019*
+    - "*U"
   NO:
     - BE0007*
     - DK0008*
@@ -101,6 +110,7 @@ variables:
     - NO0042R
     - DK0010G
     - AM0001*
+    - "*U"
   NO2:
     - ES0017*
     - IT0019*
@@ -130,6 +140,7 @@ variables:
     - NO0042R
     - DK0010G
     - NO0057*
+    - "*U"
   SO2:
     - ES0013*
     - ES0016*
@@ -162,6 +173,7 @@ variables:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
   SO2:
     - ES0012*
     - ES0016*
@@ -206,6 +218,7 @@ variables:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
   SO2:
     - GR0001*
   O3max:
@@ -223,6 +236,7 @@ variables:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
   NO2:
     - GR0001*
     - RS0005*
@@ -245,6 +259,7 @@ variables:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
   NO2:
     - MD0013*
     - ME0008*
@@ -274,6 +289,7 @@ variables:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
   SO2:
     - GB1055*
     - RS0005*
@@ -288,6 +304,7 @@ variables:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
   SO2:
     - EE0011*
     - ES0010*
@@ -319,6 +336,7 @@ variables:
     - NO0042R
     - DK0010G
     - ME0008*
+    - "*U"
   tNO3:
     - ES0012*
     - LV0010*
@@ -359,6 +377,7 @@ variables:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
   SO2:
     - RS0005*
     - RO0008*
@@ -413,6 +432,7 @@ variables:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
   SO2:
     - ME0008*
     - RS0005*
@@ -449,6 +469,7 @@ variables:
     - NO0042R
     - DK0010G
     - MD0013*
+    - "*U"
   SO2:
     - AM0001*
     - RS0005*
@@ -474,6 +495,7 @@ variables:
     - NO0042R
     - DK0010G
     - NO0001*
+    - "*U"
   NO3:
     - MD0013*
   SO2:
@@ -497,6 +519,7 @@ variables:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
   NO3:
     - MD0013*
     - LV*
@@ -520,6 +543,7 @@ variables:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
   NO3:
     - LV0016*
   SO2:
@@ -538,88 +562,106 @@ variables:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 2006:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 2005:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 2004:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 2003:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 2002:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 2001:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 2000:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 1999:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 1998:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 1997:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 1996:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 1995:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 1994:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 1993:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 1992:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 1991:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
 
 1990:
   ALL:
     - NO0042R
     - DK0010G
+    - "*U"
