@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Iterator
+from copy import deepcopy
 from datetime import date, datetime
 from pathlib import Path
-from copy import deepcopy
 
 import numpy as np
 import pandas as pd
@@ -270,6 +270,7 @@ def fix_missing_vars(ds: xr.Dataset) -> xr.Dataset:
 
 
 def only_first_day(ds: xr.Dataset) -> xr.Dataset:
+    ds = ds.sortby("time")
     first_day = ds.time[0].dt.day
     return ds.sel(time=ds.time.dt.day == first_day)
 
@@ -412,7 +413,7 @@ class ReadCAMS2_82(GriddedReader):
         """
         Path to data file
         """
-        if self.data_dir is None and self._filepaths is None:  # type:ignore[unreachable]
+        if self.data_dir is None and self._filepaths is None:  # type: ignore[unreachable]
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
         if self._filepaths is None:
             paths = []

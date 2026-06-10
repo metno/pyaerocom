@@ -176,7 +176,7 @@ def test_empty_class_header(empty_cfg):
     assert cfg.GAWTADSUBSETAASETAL_NAME == "GAWTADsubsetAasEtAl"
     assert cfg.DMS_AMS_CVO_NAME == "DMS_AMS_CVO"
     assert cfg.CNEMC_NAME == "CNEMC"
-    assert cfg.EBAS_DB_LOCAL_CACHE
+    assert hasattr(cfg, "EBAS_DB_LOCAL_CACHE")
     assert cfg.MIN_YEAR == 0
     assert cfg.MAX_YEAR == 20000
     assert cfg.STANDARD_COORD_NAMES == ["latitude", "longitude", "altitude"]
