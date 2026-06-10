@@ -927,7 +927,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         for meta_idx, meta in obj.metadata.items():
             if not np.any(distinct_metas == meta_idx):
                 # sanity check
-                if bool(meta["var_info"]):
+                if "var_info" in meta and bool(meta["var_info"]):
                     raise AttributeError(
                         "meta_idx {} suggests empty data block "
                         "but metadata[{}] contains variable "
