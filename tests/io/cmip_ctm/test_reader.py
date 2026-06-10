@@ -13,10 +13,12 @@ from pyaerocom.io.cmip_ctm.reader import ReadCmipCtm
 
 TEST_MODEL_NAME = "MPI-ESM-1-2-HAM"
 PYAEROCOM_UNIT_TEST_DATA_DIR = (
-    "/lustre/storeB/project/aerocom/aerocom-users-database/HYway/NorESM2-LM-C/transient2010s/"
+    # "/lustre/storeB/project/aerocom/aerocom-users-database/HYway/NorESM2-LM-C/transient2010s/"
+    "/lustre/storeB/project/aerocom/aerocom-users-database/CMIP6/NorESM2-LM/historical"
 )
 PYAEROCOM_UNIT_TEST_DATA_MODEL = "NorESM2-LM-C"
-VARS_TO_TEST = ["concso4", "vmro3"]
+# VARS_TO_TEST = ["concso4", "vmro3"]
+VARS_TO_TEST = ["od550aer"]
 
 
 @pytest.fixture()

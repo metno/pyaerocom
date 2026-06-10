@@ -12,9 +12,11 @@ import xarray as xr
 from cf_units import Unit
 from iris.util import equalise_attributes
 
-from pyaerocom import const, GriddedData
+from pyaerocom import GriddedData, const
 from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.units.helpers import get_standard_unit
+from calendar import isleap
+
 
 # from .additional_variables import (
 #     add_dataarrays,
@@ -41,7 +43,7 @@ from pyaerocom.units.helpers import get_standard_unit
 #     calc_ratpm10pm25,
 #     calc_ratpm25pm10,
 # )
-from .model_variables import cmip_variables, cmip_aux_info, cmip_aliases
+from .model_variables import cmip_aliases, cmip_aux_info, cmip_variables
 
 # from pyaerocom.units.units import Unit
 from .var_calculations_iris import calc_concso4, calc_vmro3
@@ -82,7 +84,7 @@ class ReadCmipCtm(GriddedReader):
         data_id: str | None = None,
         data_dir: str | None = None,
         *,
-        file_pattern: str | None = FILEMASK,
+        file_pattern: str = FILEMASK,
         **kwargs,
     ):
         self.var_map = cmip_variables()
@@ -394,9 +396,16 @@ class ReadCmipCtm(GriddedReader):
                     logger.info(
                         "Info: forcing leap year calendar to non leap year model data. Necessary date corrections are still missing at this point."
                     )
-                    tcoord = cubelist[0].coord("time")
+                    # change the calendar for every member of the cube list
+                    # OBS! non campatible for daily data if leap years are involved
+                    # This also doesn't change the calendar values!
+                    # so e.g. for NorESM-historical with a calendar start at the year 0001 this leads to several
+                    # months of time deviation once we get in the year 2000s
+                    for i_idx, cube in enumerate(cubelist):
+                        tcoord = cubelist[i_idx].coord("time")
+                        tcoord.units = Unit(tcoord.units.origin, calendar="gregorian")
+                    # cubelist[0].coord("time") = tcoord
 
-                    tcoord.units = Unit(tcoord.units.origin, calendar="gregorian")
                     cubelist = cubelist.extract(self.date_range)
 
             if len(cubelist) > 1:
@@ -502,3 +511,17 @@ class ReadCmipCtm(GriddedReader):
         else:
             logger.info(f"no alias for var {var_name} defined.")
             return False
+
+    def get_leap_year_diff(self, startyear: int = 1, endyear: int = 1970):
+        """
+        small helper routine to get the number of days to be added to a time axis
+        based on the startyear and endyear
+        :param startyear:
+        :param endyear:
+        :return:
+        """
+        days_to_add = 0
+        for _year in range(startyear, endyear):
+            if isleap(_year):
+                days_to_add += 1
+        return days_to_add
