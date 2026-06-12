@@ -437,8 +437,10 @@ class Colocator:
                         mda8 = mda8_colocated_data(
                             coldata, obs_var=f"{obs_var}mda8", mod_var=f"{mod_var}mda8"
                         )
-                    except ValueError as e:
-                        logger.debug(e)
+                    except Exception as e:
+                        logger.error(
+                            f"Exception during colocation of mda8: {e} {traceback.format_exc()} ❌"
+                        )
                     else:
                         self._save_coldata(mda8)
                         logger.info(
@@ -453,8 +455,10 @@ class Colocator:
                         somo30 = somo30_colocated_data(
                             coldata, obs_var=f"{obs_var}somo30", mod_var=f"{mod_var}somo30"
                         )
-                    except ValueError as e:
-                        logger.debug(e)
+                    except Exception as e:
+                        logger.error(
+                            f"Exception during colocation of somo30: {e} {traceback.format_exc()} ❌"
+                        )
                     else:
                         self._save_coldata(somo30)
                         logger.info(

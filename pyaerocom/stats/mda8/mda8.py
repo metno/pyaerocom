@@ -143,7 +143,7 @@ def min_periods_sum_over_threshold(x: np.ndarray, /, threshold: float, min_perio
         return np.nan
 
     x -= threshold
-    x.where(x <= 0, 0, inplace=True)
+    x = np.clip(x, a_min=0, a_max=None)
     return np.nansum(x)
 
 
@@ -154,7 +154,7 @@ def _yearly_sum_over_threshold(arr: xr.DataArray, threshold: float) -> xr.DataAr
     else:
         # usual data has time-axis at axis 0
         t_axis = 0
-    return arr.resample(time="365D", origin="start_year", label="left").reduce(
+    return arr.resample(time="YS", label="left").reduce(
         lambda x, axis: np.apply_along_axis(
             min_periods_sum_over_threshold, t_axis, x, threshold=threshold, min_periods=273
         )
