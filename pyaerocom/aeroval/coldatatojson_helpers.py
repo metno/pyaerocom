@@ -1034,9 +1034,9 @@ def _process_map_and_scat(
                         pass
 
                 for i, map_stat in zip(site_indices, map_data):
-                    ms = deepcopy(map_stat)
+                    # ms = deepcopy(map_stat)
                     if freq not in map_stat:
-                        ms[freq] = {}
+                        map_stat[freq] = {}
 
                     if use_dummy:
                         stats = stats_dummy
@@ -1047,10 +1047,10 @@ def _process_map_and_scat(
                             obs_vals, mod_vals, min_num=min_num, drop_stats=drop_stats
                         )
 
-                        if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
-                            stats["mb"] = np.nanmean(mod_vals - obs_vals)
+                        # if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
+                        #     stats["mb"] = np.nanmean(mod_vals - obs_vals)
 
-                            stats["fairmode"] = fairmode_stats(obs_var, stats, freq)
+                        #     stats["fairmode"] = fairmode_stats(obs_var, stats, freq)
 
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":
@@ -1088,17 +1088,17 @@ def _process_map_and_scat(
                                     logger.info(msg)
 
                     perstr = f"{per}-{season}"
-                    ms[freq][perstr] = stats
+                    map_stat[freq][perstr] = stats
                     if freq == scatter_freq:
                         # add only sites to scatter data that have data available
                         # in the lowest of the input resolutions (e.g. yearly)
-                        site = ms["station_name"]
+                        site = map_stat["station_name"]
                         if site not in scat_data:
                             scat_data[site] = {}
-                            scat_data[site]["latitude"] = ms["latitude"]
-                            scat_data[site]["longitude"] = ms["longitude"]
-                            scat_data[site]["altitude"] = ms["altitude"]
-                            scat_data[site]["region"] = ms["region"]
+                            scat_data[site]["latitude"] = map_stat["latitude"]
+                            scat_data[site]["longitude"] = map_stat["longitude"]
+                            scat_data[site]["altitude"] = map_stat["altitude"]
+                            scat_data[site]["region"] = map_stat["region"]
                         if use_dummy:
                             obs = mod = jsdate = scat_dummy
                             units = None
@@ -1112,7 +1112,7 @@ def _process_map_and_scat(
                             "units": units,
                         }
 
-                    new_map_data.append(ms)
+                    new_map_data.append(map_stat)
 
     return (new_map_data, scat_data)
 
@@ -1925,6 +1925,7 @@ def _calculate_radarplot(
                 reg_subset = subset.filter_region(regid, check_country_meta=use_country)
 
                 perstr = f"{per}-{season}"
+                logger.info(f"Calculating radarplot statistics for {regname} in period {perstr}")
                 fm_stats = radarplot_statistics.get_radarplot_statistics(reg_subset, obs_var)
 
                 if regname not in results:
