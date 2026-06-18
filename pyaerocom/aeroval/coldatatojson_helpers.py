@@ -18,7 +18,7 @@ from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
 
 # from pyaerocom.aeroval.experiment_output import ExperimentOutput
-from pyaerocom.aeroval.fairmode_stats import fairmode_stats
+# from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import (
     _get_min_max_year_periods,
     _period_str_to_timeslice,

@@ -3,12 +3,12 @@ import logging
 # from pathlib import Path
 import numpy as np
 import xarray as xr
-from typing import Callable
+
 
 from pyaerocom import ColocatedData
 from pyaerocom.aeroval.fairmode_statistics import FairmodeStatistics, SPECIES
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
-from pyaerocom.units.datetime import TsType
+
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +112,6 @@ class RadarPlotStatistics:
         var_name: str,
         use_weights: bool,
     ) -> dict[str, dict[str, float]]:
-
         def critY(obs: np.ndarray, mask, axis=None) -> np.ndarray:
             return SPECIES[var_name]["UrRV"] * np.sqrt(
                 (1 - SPECIES[var_name]["alpha"] ** 2)
