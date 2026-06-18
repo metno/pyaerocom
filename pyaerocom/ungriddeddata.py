@@ -791,6 +791,9 @@ class UngriddedData(UngriddedDataMetadata):
 
             data = pd.Series(vals, dtime)
             if not data.index.is_monotonic_increasing:
+                logger.warning(
+                    f"Non monotonically increasing time index for station {meta['station_name']}. Possible duplicates."
+                )
                 idx = data.index.argsort()
                 data = data.iloc[idx]
                 vals_err = vals_err[idx]

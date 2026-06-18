@@ -464,12 +464,16 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         threshold = SPECIES[var_name]["RV"]
         false_alarms = np.sum(
-            np.logical_and(modvals > threshold, obsvals <= threshold, where=mask),
+            np.logical_and(
+                modvals > threshold, obsvals <= threshold, where=mask, out=None
+            ),
             axis=1,
             where=mask,
         )
         missed_alarms = np.sum(
-            np.logical_and(modvals <= threshold, obsvals > threshold, where=mask),
+            np.logical_and(
+                modvals <= threshold, obsvals > threshold, where=mask, out=None
+            ),
             axis=1,
             where=mask,
         )

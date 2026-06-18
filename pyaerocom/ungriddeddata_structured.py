@@ -392,9 +392,12 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
             series = pd.Series(vals, dtime)
             if not series.index.is_monotonic_increasing:
-                idx = data.index.argsort()
-                data = data.iloc[idx]
-                vals_err = vals_err.iloc[idx]
+                logger.warning(
+                    f"Non monotonically increasing time index for station {meta['station_name']}. Possible duplicates."
+                )
+                idx = series.index.argsort()
+                series = series.iloc[idx]
+                vals_err = vals_err[idx]
             if any(~np.isnan(vals_err)):
                 sd.data_err[var] = vals_err
             if any(~np.isnan(flagged)):
@@ -924,7 +927,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         for meta_idx, meta in obj.metadata.items():
             if not np.any(distinct_metas == meta_idx):
                 # sanity check
-                if bool(meta["var_info"]):
+                if "var_info" in meta and bool(meta["var_info"]):
                     raise AttributeError(
                         "meta_idx {} suggests empty data block "
                         "but metadata[{}] contains variable "

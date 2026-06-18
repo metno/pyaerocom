@@ -234,9 +234,14 @@ class ReadMscwCtm(GriddedReader):
 
         self.var_map = emep_variables()
         if "emep_vars" in kwargs:
+            # Allows replacing the var map instead of updating the default map.
+            replace_map = kwargs.get("replace_map", False)
             new_map = kwargs["emep_vars"]
             if isinstance(new_map, dict):
-                self.var_map.update(new_map)
+                if replace_map:
+                    self.var_map = new_map
+                else:
+                    self.var_map.update(new_map)
             else:
                 logger.warning(f"New map {new_map} is not a dict. Skipping")
 

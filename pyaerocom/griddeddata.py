@@ -531,7 +531,7 @@ class GriddedData:
             raise AttributeError("Data does not contain longitude information")
         vals = np.diff(self.longitude.points)
         val = vals.mean()
-        if vals.std() / val > 0.0001:
+        if vals.std() / val > 0.0001:  # NOTE: Increased from 0.0001
             raise ValueError("Check longitudes")
         return val
 
@@ -541,7 +541,7 @@ class GriddedData:
             raise AttributeError("Data does not contain longitude information")
         vals = np.diff(self.latitude.points)
         val = vals.mean()
-        if vals.std() / val > 0.0001:
+        if vals.std() / val > 0.0001:  # NOTE: Increased from 0.0001
             raise ValueError("Check latitudes")
         return val
 
@@ -992,6 +992,77 @@ class GriddedData:
             new index order
         """
         self.grid.transpose(new_order)
+
+    def get_xyranges(self) -> tuple[list[tuple[float, float]]]:
+        """
+        Finds the max/min ranges for x and y. Done by taking first and last point in each dimension.
+        This might be the middle point of the bounding cells
+
+
+        Returns
+        -------
+        tuple[list[tuple[float, float]]]
+            Two list, one for xs and one for ys
+
+        Raises
+        --------
+        ValueError
+            If self  has no proj_info
+        VariableDefinitionError
+            If there is a child where x or y is not found
+
+        """
+        if self.proj_info is None:
+            raise ValueError("X and Y cannot be found, since proj_info is None")
+
+        xranges = []
+        yranges = []
+
+        xrange = None
+        yrange = None
+        for coord in self.cube.dim_coords:
+            if coord.var_name == self.proj_info.x_axis:
+                vals = coord.points
+                xrange = (vals[0], vals[-1])
+
+            if coord.var_name == self.proj_info.y_axis:
+                vals = coord.points
+                yrange = (vals[0], vals[-1])
+
+        if xrange[0] > xrange[1] or yrange[0] > yrange[1]:
+            raise ValueError(f"X or Y range had start bigger than end: {xrange=}, {yrange=}")
+        if xrange is None or yrange is None:
+            raise VariableDefinitionError(
+                f"x/y axis not found in cube: {self.proj_info.x_axis}, {self.proj_info.y_axis}"
+            )
+        xranges.append(xrange)
+        yranges.append(yrange)
+        return xranges, yranges
+
+    def get_latlon_ranges(self) -> tuple[tuple[float, float]]:
+        """
+        Finds the max/min ranges for lat and lon
+
+
+        Returns
+        -------
+        tuple[list[tuple[float, float]]]
+            Two list, one for lats and one for lons
+
+        """
+
+        latitude = self.latitude.points
+        longitude = self.longitude.points
+        lat_range = (latitude[0], latitude[-1])
+        lon_range = (longitude[0], longitude[-1])
+
+        if lat_range[0] > lat_range[1] or lon_range[0] > lon_range[1]:
+            raise ValueError(f"X or Y range had start bigger than end: {lat_range=}, {lon_range=}")
+
+        if len(lon_range) == 0 or len(lat_range) == 0:
+            raise ValueError("Failed to find lat or lon ranges")
+
+        return lat_range, lon_range
 
     def mean_at_coords(self, latitude=None, longitude=None, time_resample_kwargs=None, **kwargs):
         """Compute mean value at all input locations
@@ -1901,24 +1972,11 @@ class GriddedData:
                     time_range[0] <= self.time_stamps(), self.time_stamps() < time_range[1]
                 )
                 dates = self.time_stamps()[mask]
+                old_cube = data
                 data = data.extract(time_constraint)
                 if len(dates) == 1:
-                    # Working around iris 'squeezing' the cube when extract is length 1 along the date
-                    # dimension by readding the dimension with the appropriate value.
-                    time_coord = data.coord("time")
-                    data.remove_coord("time")
-                    new_shape = (1,) + data.shape
-                    nd_data = np.reshape(data.data, new_shape)
-                    data = iris.cube.Cube(
-                        nd_data,
-                        dim_coords_and_dims=[(time_coord, 0)]
-                        + [(coord, i + 1) for i, coord in enumerate(data.dim_coords)],
-                        aux_coords_and_dims=[
-                            (coord, i) for i, coord in enumerate(data.aux_coords)
-                        ],
-                        var_name=data.var_name,
-                        long_name=data.long_name,
-                        units=data.units,
+                    data = iris.common.resolve.Resolve(old_cube, data).cube(
+                        np.reshape(data.core_data(), (1,) + data.shape)
                     )
 
             elif all(isinstance(x, int) for x in time_range):
@@ -2689,9 +2747,13 @@ class GriddedData:
                 return self.__dict__[indices_or_attr]
             try:
                 which = self._check_coordinate_access(indices_or_attr)
-                return self.grid.coord(**which)
-            except Exception:
-                raise AttributeError(f"GriddedData object has no attribute {indices_or_attr}")
+                # dim_coords=None is to look at both aux_coords and dim_coords — time won't be an aux_coord if the number of values is 1,
+                # therefore we allow for both.
+                return self.grid.coord(**which, dim_coords=None)
+            except Exception as e:
+                raise AttributeError(
+                    f"GriddedData object has no attribute {indices_or_attr}"
+                ) from e
 
         sub = self.grid.__getitem__(indices_or_attr)
         return GriddedData(sub, **self.metadata)

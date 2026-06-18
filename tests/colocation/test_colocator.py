@@ -5,7 +5,13 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from pyaerocom import ColocatedData, GriddedData, UngriddedData, const
+from pyaerocom import (
+    ColocatedData,
+    GriddedData,
+    GriddedDataContainer,
+    UngriddedData,
+    const,
+)
 from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.colocation.colocator import Colocator
@@ -274,7 +280,10 @@ def test_Colocator_prepare_colocation_args(monkeypatch):
         fake_data = list(string.ascii_lowercase)
         for i, n in enumerate(fake_data):
             d.metadata[i] = dict(
-                data_id="testcase", station_name=n, station_type=n, var_info={"units": "1"}
+                data_id="testcase",
+                station_name=n,
+                station_type=n,
+                var_info={"units": "1"},
             )
         assert d.station_name == fake_data
         assert {"station_type" in dict for dict in d.metadata.values()} == {True}
@@ -308,7 +317,10 @@ def test_Colocator_prepare_colocation_args_malformed_metadata(monkeypatch):
         for i, n in enumerate(fake_data):
             if i > len(fake_data) / 2:
                 d.metadata[i] = dict(
-                    data_id="testcase", station_name=n, station_type=n, var_info={"units": "1"}
+                    data_id="testcase",
+                    station_name=n,
+                    station_type=n,
+                    var_info={"units": "1"},
                 )
             else:
                 d.metadata[i] = dict(data_id="testcase", station_name=n, var_info={"units": "1"})
@@ -387,7 +399,7 @@ def test_colocator_get_model_data(setup):
 
     col = Colocator(col_stp)
     data = col.get_model_data("od550aer")
-    assert isinstance(data, GriddedData)
+    assert isinstance(data, GriddedDataContainer)
 
 
 def test_colocator__find_var_matches(setup):
@@ -483,8 +495,8 @@ def test_colocator_with_obs_data_dir_ungridded(setup):
     cd = data["od550aer"]["od550aer"]
     assert isinstance(cd, ColocatedData)
     assert cd.ts_type == "monthly"
-    assert str(cd.start) == "2010-01-15T00:00:00.000000000"
-    assert str(cd.stop) == "2010-12-15T00:00:00.000000000"
+    assert str(cd.start.astype("datetime64[us]")) == "2010-01-15T00:00:00.000000"
+    assert str(cd.stop.astype("datetime64[us]")) == "2010-12-15T00:00:00.000000"
 
 
 def test_colocator_with_model_data_dir_ungridded(setup):
@@ -499,8 +511,8 @@ def test_colocator_with_model_data_dir_ungridded(setup):
     cd = data["od550aer"]["od550aer"]
     assert isinstance(cd, ColocatedData)
     assert cd.ts_type == "monthly"
-    assert str(cd.start) == "2010-01-15T00:00:00.000000000"
-    assert str(cd.stop) == "2010-12-15T00:00:00.000000000"
+    assert str(cd.start.astype("datetime64[us]")) == "2010-01-15T00:00:00.000000"
+    assert str(cd.stop.astype("datetime64[us]")) == "2010-12-15T00:00:00.000000"
 
 
 def test_colocator_with_obs_data_dir_gridded(setup):
@@ -515,8 +527,8 @@ def test_colocator_with_obs_data_dir_gridded(setup):
     cd = data["od550aer"]["od550aer"]
     assert isinstance(cd, ColocatedData)
     assert cd.ts_type == "monthly"
-    assert str(cd.start) == "2010-01-15T12:00:00.000000000"
-    assert str(cd.stop) == "2010-12-15T12:00:00.000000000"
+    assert str(cd.start.astype("datetime64[us]")) == "2010-01-15T12:00:00.000000"
+    assert str(cd.stop.astype("datetime64[us]")) == "2010-12-15T12:00:00.000000"
 
 
 ###################################
@@ -540,8 +552,14 @@ def test_colocation_pyaro(pyaro_testconfig, fake_aod_MSCWCtm_data_monthly_2010, 
     cd = data["od550aer"]["od550aer"]
     assert isinstance(cd, ColocatedData)
     assert cd.ts_type == "monthly"
-    assert str(cd.start) == "2010-01-15T00:00:00.000000000"
-    assert str(cd.stop) == "2010-12-15T00:00:00.000000000"
+    assert str(cd.start.astype("datetime64[us]")) == "2010-01-15T00:00:00.000000"
+    assert str(cd.stop.astype("datetime64[us]")) == "2010-12-15T00:00:00.000000"
+
+    assert np.sum(np.isnan(cd.data[0, :].data)) == 0
+
+    assert cd.data[0, :].data.shape[0] == 12
+    assert str(cd.start.astype("datetime64[us]")) == "2010-01-15T00:00:00.000000"
+    assert str(cd.stop.astype("datetime64[us]")) == "2010-12-15T00:00:00.000000"
 
     assert np.sum(np.isnan(cd.data[0, :].data)) == 0
 

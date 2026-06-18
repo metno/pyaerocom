@@ -6,12 +6,57 @@ import copy
 import functools
 import logging
 import os
+import fnmatch
 
 import yaml
+
+import configparser
 
 from pyaerocom.data import resources
 
 logger = logging.getLogger(__name__)
+
+
+DEFAULT_OMIT_STATION_PATH = "./omit_stations.yaml"
+
+EXTRA_EBAS_SPECIES = [
+    "concNhno3",
+    "concNtno3",
+    "concNtnh",
+    "concNnh3",
+    "concnh4",
+    "prmm",
+    "concpm10",
+    "concpm25",
+    "concSso2",
+    "concNno2",
+    "vmrco",
+    "vmro3max",
+    "vmro3",
+    "concNno",
+    "concCecpm25",
+    "concCocpm25",
+    "concom1",
+    "concCecpm10",
+    "concCocpm10",
+    #        "concnh4pm10", # no output in the model
+    "concnh4pm25",
+    "concnh4pm1",
+    #        "concso4pm10", # no output in the model
+    "concso4pm25",
+    "concso4pm1",
+    "concno3pm10",
+    "concno3pm25",
+    "concno3pm1",
+    "concsspm10",
+    "concsspm25",
+    "concso4t",
+    "concso4c",
+    "wetoxs",
+    "wetoxn",
+    "wetrdn",
+    "vmrox",
+]
 
 
 # Constraints
@@ -44,9 +89,9 @@ OC_EC_RESAMPLE_CONSTRAINTS_DAILY = dict(
 
 
 @functools.cache
-def _get_ignore_stations_from_file():
-    if os.path.exists("./omit_stations.yaml"):
-        filename = os.path.abspath("./omit_stations.yaml")
+def _get_ignore_stations_from_file(omit_stations_path):
+    if os.path.exists(omit_stations_path):
+        filename = os.path.abspath(omit_stations_path)
         logger.info(f"reading omit_stations.yaml from {filename}")
         with open(filename) as fh:
             stations = yaml.safe_load(fh)
@@ -68,7 +113,7 @@ def _get_ignore_stations_from_file():
     return rows
 
 
-def _get_ignore_stations(specy, year):
+def _get_ignore_stations(specy, year, omit_stations_path):
     """
     Read the ignore stations from either omit_stations.tsv in the local eller in the lib-folder
 
@@ -79,7 +124,7 @@ def _get_ignore_stations(specy, year):
     """
     retvals = []
     year = int(year)
-    stations = _get_ignore_stations_from_file()
+    stations = _get_ignore_stations_from_file(omit_stations_path)
     for yearstart, yearend, comp, station in stations:
         if comp == "ALL" or comp == specy:
             if yearstart <= year <= yearend:
@@ -87,7 +132,37 @@ def _get_ignore_stations(specy, year):
     return retvals
 
 
-def get_CFG(reportyear, year, model_dir) -> dict:
+def _get_ebas_species():
+    with resources.path(__package__, "../../../data/ebas_config.ini") as filename:
+        config = configparser.ConfigParser()
+        config.read(filename.resolve())
+        ebas_species = config.sections()
+    complete_list = ebas_species + EXTRA_EBAS_SPECIES
+    return list(set(complete_list))
+
+
+def clean_filters(cfg: dict, obs_pattern: str) -> dict:
+    CFG = copy.deepcopy(cfg)
+
+    for network in CFG["obs_cfg"]:
+        if fnmatch.fnmatchcase(network, obs_pattern):
+            vs = CFG["obs_cfg"][network]["obs_vars"]
+            new_filters = {}
+            for v in vs:
+                if v not in CFG["obs_cfg"][network]["obs_filters"]:
+                    raise KeyError(f"Could not find filter for {v}")
+                new_filters[v] = CFG["obs_cfg"][network]["obs_filters"][v]
+
+            CFG["obs_cfg"][network]["obs_filters"] = copy.deepcopy(new_filters)
+            assert (
+                list(CFG["obs_cfg"][network]["obs_filters"].keys())
+                == CFG["obs_cfg"][network]["obs_vars"]
+            )
+
+    return CFG
+
+
+def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION_PATH) -> dict:
     """Get a configuration usable for emep reporting
 
     :param reportyear: year of reporting
@@ -453,51 +528,12 @@ def get_CFG(reportyear, year, model_dir) -> dict:
 
     # Station filters
 
-    ebas_species = [
-        "concNhno3",
-        "concNtno3",
-        "concNtnh",
-        "concNnh3",
-        "concnh4",
-        "prmm",
-        "concpm10",
-        "concpm25",
-        "concSso2",
-        "concNno2",
-        "vmrco",
-        "vmro3max",
-        "vmro3",
-        "concNno",
-        "concCecpm25",
-        "concCocpm25",
-        "concom1",
-        "concCecpm10",
-        "concCocpm10",
-        #        "concnh4pm10", # no output in the model
-        "concnh4pm25",
-        "concnh4pm1",
-        #        "concso4pm10", # no output in the model
-        "concso4pm25",
-        "concso4pm1",
-        "concno3pm10",
-        "concno3pm25",
-        "concno3pm1",
-        "concsspm10",
-        "concsspm25",
-        "concso4t",
-        "concso4c",
-        "wetoxs",
-        "wetoxn",
-        "wetrdn",
-        "vmrox",
-    ]
-
     # This list of stations was generated using the script found here:
-    # https://gist.github.com/thorbjoernl/b7946882f1696722742053406d056e12.
+    # scripts/generate_ebas_height_ignore_list.py.
     # It excludes stations with a relative altitude (Elevation difference to the lowest
     # altitude in a 5km radius based on gtopo30) above 500m as well as stations that do not include
     # an altitude in the ebas file index.
-    # Last updated: ~2025-01-03
+    # Last updated: ~2026-06-02
     height_ignore_ebas = [
         "AM0001R",
         "AR0001R",
@@ -524,12 +560,14 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         "DE0057G",
         "DE0060G",
         "DE0075R",
+        "DK0009R",
         "DZ0001G",
         "ES0005R",
         "ES0018G",
         "ES0022R",
         "ES0025U",
         "FI0009R",
+        "FI0090R",
         "FR0012R",
         "FR0019R",
         "FR0026R",
@@ -548,6 +586,7 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         "IT0009R",
         "IT0019R",
         "IT0031U",
+        "JP0002G",
         "JP1021R",
         "KE0001G",
         "MK0007R",
@@ -606,15 +645,40 @@ def get_CFG(reportyear, year, model_dir) -> dict:
         "US9078R",
         "US9082U",
         "VN0001R",
+        # sites with missing altitudes
+        "DK0042R",
+        "ES0024U",
+        "GB0017R",
+        "IE0010U",
+        "IT0011R",
+        "IT0012R",
+        "LT0016R",
+        "NO0798R",
+        "NO1006R",
+        "NO1011R",
+        "RU0021R",
+        "SE0081R",
+        "SE0082R",
+        "SE0083R",
+        "SE0084R",
+        "SE0085R",
+        "SE0086R",
+        "SE0087R",
+        "SE0089R",
+        "SE0090R",
+        "SE0091R",
+        "SE0092R",
+        "UA0008R",
+        "US9028R",
     ]
 
     EBAS_FILTER = {
         key: dict(
             **EBAS_FILTER,
-            station_id=_get_ignore_stations(key, year) + height_ignore_ebas,
+            station_id=_get_ignore_stations(key, year, omit_stations_path) + height_ignore_ebas,
             negate="station_id",
         )
-        for key in ebas_species
+        for key in _get_ebas_species()
     }
 
     EEA_FILTER = {
