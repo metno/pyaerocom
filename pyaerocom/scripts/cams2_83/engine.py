@@ -221,7 +221,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                         )
 
 
-                        results_radar[f"{regname}"][f"{perstr}"] = radar_statistics.radar_plot_statistics(radar_subset, var_name)
+                        results_radar[f"{regname}"][f"{perstr}"] = radar_statistics.get_radarplot_statistics(radar_subset, var_name)
 
                         if calc_forecast_target:
 
