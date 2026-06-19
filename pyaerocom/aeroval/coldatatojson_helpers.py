@@ -18,7 +18,7 @@ from pyaerocom._warnings import ignore_warnings
 from pyaerocom.aeroval.exceptions import ConfigError, TrendsError
 
 # from pyaerocom.aeroval.experiment_output import ExperimentOutput
-# from pyaerocom.aeroval.fairmode_stats import fairmode_stats
+from pyaerocom.aeroval.fairmode_stats import fairmode_stats
 from pyaerocom.aeroval.helpers import (
     _get_min_max_year_periods,
     _period_str_to_timeslice,
@@ -1058,10 +1058,10 @@ def _process_map_and_scat(
                             obs_vals, mod_vals, min_num=min_num, drop_stats=drop_stats
                         )
 
-                        # if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
-                        #     stats["mb"] = np.nanmean(mod_vals - obs_vals)
+                        if use_fairmode and freq != "yearly" and not np.isnan(obs_vals).all():
+                            stats["mb"] = np.nanmean(mod_vals - obs_vals)
 
-                        #     stats["fairmode"] = fairmode_stats(obs_var, stats, freq)
+                            stats["fairmode"] = fairmode_stats(obs_var, stats, freq)
 
                         #  Code for the calculation of trends
                         if add_trends and freq != "daily":

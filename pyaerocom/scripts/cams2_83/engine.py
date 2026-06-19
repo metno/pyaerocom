@@ -291,7 +291,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                     )
                     radar_statistics.save_radarplot_stats(
                         self.exp_output,
-                        results_fairmode,
+                        results_radar,
                         obs_name,
                         var_name_web,
                         vert_code,
