@@ -9,6 +9,7 @@ from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
     _apply_annual_constraint,
     _calculate_fairmode,
+    _calculate_radarplot,
     _init_data_default_frequencies,
     _init_meta_glob,
     _process_heatmap_data,
@@ -24,6 +25,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
 )
 from pyaerocom.aeroval.exceptions import ConfigError
 from pyaerocom.aeroval.fairmode_statistics import SPECIES, FairmodeStatistics
+from pyaerocom.aeroval.radarplot_statistics import RadarPlotStatistics
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.region import RegionName
 from pyaerocom.units import Unit
@@ -218,6 +220,21 @@ class ColdataToJsonEngine(ProcessingEngine):
                         regions_how=regions_how,
                         regs=regs,
                     )
+
+                    self._process_radarplot(
+                        data=data,
+                        obs_name=obs_name,
+                        obs_var=obs_var,
+                        var_name_web=var_name_web,
+                        vert_code=vert_code,
+                        model_name=model_name,
+                        model_var=model_var,
+                        periods=periods,
+                        seasons=seasons,
+                        regs=regs,
+                        regnames=regnames,
+                    )
+
                 logger.info("Processing statistics timeseries for all regions...")
 
                 self._process_stats_timeseries_for_all_regions(
@@ -578,6 +595,44 @@ class ColdataToJsonEngine(ProcessingEngine):
             model_name,
             model_var,
             map_meta,
+            obs_var,
+            periods,
+            seasons,
+            use_meteorological_seasons,
+        )
+
+    def _process_radarplot(
+        self,
+        data: dict[str, ColocatedData] | None = None,
+        obs_name: str | None = None,
+        obs_var: str = None,
+        var_name_web: str | None = None,
+        vert_code: str | None = None,
+        model_name: str | None = None,
+        model_var: str | None = None,
+        periods: tuple[str, ...] | None = None,
+        seasons: tuple[str, ...] | None = None,
+        regs: dict | None = None,
+        regnames: dict | None = None,
+        use_meteorological_seasons: bool = False,
+    ):
+        radarplot_statistics = RadarPlotStatistics()
+
+        if "hourly" not in data:
+            raise ValueError("Could not find any hourly data to make radar plot")
+
+        logger.info("Processing radar plot data for all regions...")
+        _calculate_radarplot(
+            data["hourly"],
+            radarplot_statistics,
+            self.exp_output,
+            obs_name,
+            var_name_web,
+            vert_code,
+            model_name,
+            model_var,
+            regs,
+            regnames,
             obs_var,
             periods,
             seasons,
