@@ -7,7 +7,7 @@ from enum import Enum
 from pathlib import Path
 from pprint import pformat
 
-from pyaerocom import const
+from pyaerocom import ConfigReader
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.io import ReadUngridded
 from pyaerocom.io.cachehandler_ungridded import list_cache_files
@@ -16,6 +16,7 @@ from pyaerocom.scripts.cams2_83.processer import CAMS2_83_Processer
 
 logger = logging.getLogger(__name__)
 
+const = ConfigReader.get_instance()
 
 class EvalType(str, Enum):
     LONG = "long"

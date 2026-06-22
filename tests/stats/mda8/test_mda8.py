@@ -4,9 +4,9 @@ import xarray as xr
 
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.stats.mda8.mda8 import (
-    _calc_mda8,
     _daily_max,
     _rolling_average_8hr,
+    calc_mda8,
     mda8_colocated_data,
 )
 
@@ -59,7 +59,7 @@ def test_data(time, values) -> xr.DataArray:
     ),
 )
 def test_calc_mda8(test_data, exp_mda8):
-    mda8 = _calc_mda8(test_data)
+    mda8 = calc_mda8(test_data)
 
     assert mda8.shape[1] == len(exp_mda8)
 
@@ -81,7 +81,7 @@ def test_calc_mda8_with_gap():
 
     arr = xr.concat((arr1, arr2), dim="time")
 
-    mda8 = _calc_mda8(arr)
+    mda8 = calc_mda8(arr)
 
     assert mda8.shape == (1, 6, 1)
     pytest.approx(mda8[0, :, 0], [20.5, 44.5, np.nan, 41.25, 44.5, np.nan], abs=10 * 10**-5)
@@ -97,7 +97,16 @@ def test_coldata_to_mda8(coldata):
     assert mda8.shape == (2, 8, 1)
 
     assert mda8.data.values[0, :, 0] == pytest.approx(
-        [np.nan, np.nan, 1.18741556, 1.18777241, 1.18869106, 1.18879322, 1.18807846, 1.18700801],
+        [
+            np.nan,
+            np.nan,
+            1.18741556,
+            1.18777241,
+            1.18869106,
+            1.18879322,
+            1.18807846,
+            1.18700801,
+        ],
         abs=10**-5,
         nan_ok=True,
     )

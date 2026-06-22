@@ -8,7 +8,7 @@ import numpy as np
 from geonum.atmosphere import T0_STD, p0
 from tqdm import tqdm
 
-from pyaerocom import const
+from pyaerocom import ConfigReader
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.aux_var_helpers import (
     calc_vmro3max,
@@ -52,6 +52,7 @@ from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
+const = ConfigReader.get_instance()
 
 
 class ReadEbasOptions(BrowseDict):
@@ -1018,6 +1019,9 @@ class ReadEbas(ReadUngriddedBase):
         else:
             data_out["station_name"] = name
 
+        if const.EBAS_USE_STATION_CODE_AS_DISPLAY_NAME:
+            data_out["display_name"] = meta["station_code"]
+
         # write meta information
         tres_code = meta["resolution_code"]
         try:
@@ -1861,7 +1865,8 @@ class ReadEbas(ReadUngriddedBase):
         self.files_failed = []
 
         data_obj = UngriddedDataStructured.from_station_data(
-            self._station_data_iterator(files, files_contain), ["station_name_orig"]
+            self._station_data_iterator(files, files_contain),
+            add_meta_keys=["station_name_orig", "display_name"],
         )
 
         # Add reading options to filter "history of UngriddedDataObject"

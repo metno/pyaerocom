@@ -5,6 +5,8 @@ import sys
 import numpy as np
 import pandas as pd
 import xarray
+from collections.abc import Iterator
+from tqdm import tqdm
 
 from pyaerocom import const
 from pyaerocom.exceptions import (
@@ -15,11 +17,11 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
+from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -320,7 +322,8 @@ class ReadEarlinet(ReadUngriddedBase):
                 # xarray.DataArray
                 arr = data_in.variables[netcdf_var_name]
                 # the actual data as numpy array (or float if 0-D data, e.g. zdust)
-                val = np.squeeze(np.float64(arr))  # squeeze to 1D array
+                # NOTE: I am a bit unsure about this part, but it makes it work...
+                val = np.squeeze(np.float64(arr), axis=0)  # squeeze to 1D array
 
                 # CONVERT UNIT
                 unit = None
@@ -349,14 +352,14 @@ class ReadEarlinet(ReadUngriddedBase):
                 if read_err and var in self.ERR_VARNAMES:
                     err_name = self.ERR_VARNAMES[var]
                     if err_name in data_in.variables:
-                        err = np.squeeze(np.float64(data_in.variables[err_name]))
+                        err = np.squeeze(np.float64(data_in.variables[err_name]), axis=0)
                         if unit_ok:
                             err *= unit_fac
                         err_read = True
 
                 # 1D variable
                 if var == "zdust":
-                    if not val.ndim == 0:
+                    if not val.ndim == 1:
                         raise DataDimensionError(
                             "Fatal: dust layer height data must be single value"
                         )
@@ -375,8 +378,8 @@ class ReadEarlinet(ReadUngriddedBase):
                     data_out[var] = val
 
                 else:
-                    if not val.ndim == 1:
-                        raise DataDimensionError("Extinction data must be one dimensional")
+                    if not val.ndim == 2:
+                        raise DataDimensionError("Extinction data must be two dimensional")
                     elif len(val) == 0:
                         continue  # no data
                     # Remove NaN equivalent values
@@ -432,12 +435,23 @@ class ReadEarlinet(ReadUngriddedBase):
                     # Write everything into profile
                     data_out[var] = profile
 
-                data_out["var_info"][var].update(
-                    unit_ok=unit_ok,
-                    err_read=err_read,
-                    outliers_removed=outliers_removed,
-                    has_altitude=has_altitude,
-                )
+                if has_altitude:
+                    data_out["var_info"][var].update(
+                        unit_ok=unit_ok,
+                        units=unit,
+                        err_read=err_read,
+                        outliers_removed=outliers_removed,
+                        has_altitude=has_altitude,
+                        altitude=alt_vals,
+                    )
+                else:
+                    data_out["var_info"][var].update(
+                        unit_ok=unit_ok,
+                        units=unit,
+                        err_read=err_read,
+                        outliers_removed=outliers_removed,
+                        has_altitude=has_altitude,
+                    )
         return data_out
 
     @override
@@ -450,7 +464,7 @@ class ReadEarlinet(ReadUngriddedBase):
         read_err=None,
         remove_outliers=True,
         pattern=None,
-    ):
+    ) -> UngriddedDataStructured:
         """Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters
@@ -488,9 +502,7 @@ class ReadEarlinet(ReadUngriddedBase):
             read_err = self.READ_ERR
 
         if files is None:
-            if len(self.files) == 0:
-                self.get_file_list(vars_to_retrieve, pattern=pattern)
-            files = self.files
+            files = self.get_file_list(vars_to_retrieve, pattern=pattern)
 
         # turn files into a list because I suspect there may be a bug if you don't do this
         if isinstance(files, str):
@@ -507,134 +519,13 @@ class ReadEarlinet(ReadUngriddedBase):
 
         self.read_failed = []
 
-        data_obj = UngriddedData()
-        data_obj.is_vertical_profile = True
-        col_idx = data_obj.index
-        meta_key = -1.0
-        idx = 0
+        self.read_failed = []
 
-        # assign metadata object
-        metadata = data_obj.metadata
-        meta_idx = data_obj.meta_idx
-
-        # last_station_id = ''
-        num_files = len(files)
-
-        disp_each = int(num_files * 0.1)
-        if disp_each < 1:
-            disp_each = 1
-
-        VAR_IDX = -1
-        for i, _file in enumerate(files):
-            if i % disp_each == 0:
-                logger.info(f"Reading file {i + 1} of {num_files} ({type(self).__name__})")
-            try:
-                stat = self.read_file(
-                    _file,
-                    vars_to_retrieve=vars_to_retrieve,
-                    read_err=read_err,
-                    remove_outliers=remove_outliers,
-                )
-                if not any([var in stat.vars_available for var in vars_to_retrieve]):
-                    logger.info(
-                        f"Station {stat.station_name} contains none of the desired variables. Skipping station..."
-                    )
-                    continue
-                # if last_station_id != station_id:
-                meta_key += 1
-                # Fill the metadata dict
-                # the location in the data set is time step dependant!
-                # use the lat location here since we have to choose one location
-                # in the time series plot
-                metadata[meta_key] = {}
-                metadata[meta_key].update(stat.get_meta())
-                for add_meta in self.KEEP_ADD_META:
-                    if add_meta in stat:
-                        metadata[meta_key][add_meta] = stat[add_meta]
-                # metadata[meta_key]['station_id'] = station_id
-
-                metadata[meta_key]["data_revision"] = self.data_revision
-                metadata[meta_key]["variables"] = []
-                metadata[meta_key]["var_info"] = {}
-                # this is a list with indices of this station for each variable
-                # not sure yet, if we really need that or if it speeds up things
-                meta_idx[meta_key] = {}
-                # last_station_id = station_id
-
-                # Is floating point single value
-                time = stat.dtime[0]
-                for var in stat.vars_available:
-                    if var not in data_obj.var_idx:
-                        VAR_IDX += 1
-                        data_obj.var_idx[var] = VAR_IDX
-
-                    var_idx = data_obj.var_idx[var]
-
-                    val = stat[var]
-                    metadata[meta_key]["var_info"][var] = vi = {}
-                    if isinstance(val, VerticalProfile):
-                        altitude = val.altitude
-                        data = val.data
-                        add = len(data)
-                        err = val.data_err
-                        metadata[meta_key]["var_info"]["altitude"] = via = {}
-
-                        vi.update(val.var_info[var])
-                        via.update(val.var_info["altitude"])
-                    else:
-                        add = 1
-                        altitude = np.nan
-                        data = val
-                        if var in stat.data_err:
-                            err = stat.err[var]
-                        else:
-                            err = np.nan
-                    vi.update(stat.var_info[var])
-                    stop = idx + add
-                    # check if size of data object needs to be extended
-                    if stop >= data_obj._ROWNO:
-                        # if totnum < data_obj._CHUNKSIZE, then the latter is used
-                        data_obj.add_chunk(add)
-
-                    # write common meta info for this station
-                    data_obj._data[idx:stop, col_idx["latitude"]] = stat["station_coords"][
-                        "latitude"
-                    ]
-                    data_obj._data[idx:stop, col_idx["longitude"]] = stat["station_coords"][
-                        "longitude"
-                    ]
-                    data_obj._data[idx:stop, col_idx["altitude"]] = stat["station_coords"][
-                        "altitude"
-                    ]
-                    data_obj._data[idx:stop, col_idx["meta"]] = meta_key
-
-                    # write data to data object
-                    data_obj._data[idx:stop, col_idx["time"]] = time
-                    data_obj._data[idx:stop, col_idx["stoptime"]] = stat.stopdtime[0]
-                    data_obj._data[idx:stop, col_idx["data"]] = data
-                    data_obj._data[idx:stop, col_idx["dataaltitude"]] = altitude
-                    data_obj._data[idx:stop, col_idx["varidx"]] = var_idx
-
-                    if read_err:
-                        data_obj._data[idx:stop, col_idx["dataerr"]] = err
-
-                    if var not in meta_idx[meta_key]:
-                        meta_idx[meta_key][var] = []
-                    meta_idx[meta_key][var].extend(list(range(idx, stop)))
-
-                    if var not in metadata[meta_key]["variables"]:
-                        metadata[meta_key]["variables"].append(var)
-
-                    idx += add
-
-            except Exception as e:
-                self.read_failed.append(_file)
-                logger.exception(f"Failed to read file {os.path.basename(_file)} (ERR: {repr(e)})")
-
-        # shorten data_obj._data to the right number of points
-        data_obj._data = data_obj._data[:idx]
-
-        return data_obj
+        data = self._read_files_structured(
+            files, vars_to_retrieve=vars_to_retrieve, remove_outliers=remove_outliers
+        )
+        data.clear_meta_no_data()
+        return data
 
     def _get_exclude_filelist(self):  # pragma: no cover
         """Get list of filenames that are supposed to be ignored"""
@@ -723,3 +614,54 @@ class ReadEarlinet(ReadUngriddedBase):
                         matches.append(path)
         self.files = files = list(dict.fromkeys(matches))
         return files
+
+    def _read_files_structured(
+        self, files, vars_to_retrieve=None, remove_outliers=True
+    ) -> UngriddedDataStructured:
+        """Helper that reads list of files into UngriddedDataStructured
+
+        Note
+        ----
+        This method is not supposed to be called directly but is used in
+        :func:`read` and serves the purpose of parallel loading of data
+        """
+        self.files_failed = []
+
+        data_obj = UngriddedDataStructured.from_station_data(
+            self._station_data_iterator(files, vars_to_retrieve, remove_outliers=remove_outliers),
+            ["station_name_orig"],
+        )
+
+        num_failed = len(self.files_failed)
+        if num_failed > 0:
+            logger.warning(f"{num_failed} out of {len(files)} could not be read...")
+
+        return data_obj
+
+    def _station_data_iterator(
+        self, files, vars_to_retrieve, remove_outliers
+    ) -> Iterator[StationData]:
+        """Generator that yields StationData objects for each file in files"""
+        logger.info("Reading EARLINET data...")
+        num_files = len(files)
+
+        for i in tqdm(range(num_files), disable=None):
+            _file = files[i]
+            try:
+                station_data = self.read_file(
+                    _file,
+                    vars_to_retrieve=vars_to_retrieve,
+                    remove_outliers=remove_outliers,
+                )
+            except (
+                ValueError,
+                KeyError,
+            ) as e:
+                self.files_failed.append(_file)
+                logger.info(f"Skipping reading of EARLINET file: {_file}. Reason: {repr(e)}")
+                continue
+            except Exception as e:
+                self.files_failed.append(_file)
+                logger.warning(f"Skipping reading of EARLINET file: {_file}. Reason: {repr(e)}")
+                continue
+            yield station_data

@@ -18,3 +18,6 @@ M_NH4 = MolecularMass("NH4")
 HA_TO_SQM = 10_000  # m^2 ha^1
 
 SECONDS_IN_DAY = 24 * 60 * 60
+
+# specific gas constant for dry air
+RSPECIFIC = 287.058  # J kg-1 K-1

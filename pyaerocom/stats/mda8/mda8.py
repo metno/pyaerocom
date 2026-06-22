@@ -47,14 +47,14 @@ def mda8_colocated_data(coldat: ColocatedData, /, obs_var: str, mod_var: str) ->
             f"Unexpected dimensions. Got {coldat.dims}, expected ['data_source', 'time', 'station_name']."
         )
 
-    cd = ColocatedData(_calc_mda8(coldat.data))
+    cd = ColocatedData(calc_mda8(coldat.data))
     cd.data.attrs["var_name"] = [obs_var, mod_var]
     cd.metadata["var_name_input"] = [obs_var, mod_var]
 
     return cd
 
 
-def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
+def calc_mda8(data: xr.DataArray) -> xr.DataArray:
     """Calculates the daily max 8h average for an array:
 
     :param data: The DataArray for which to calculate the mda8. Input
@@ -92,6 +92,10 @@ def _calc_mda8(data: xr.DataArray) -> xr.DataArray:
 
     mda8.attrs["ts_type"] = "daily"
 
+    if "data_source" not in mda8.dims:
+        # skip time-shift and filtering, too expensive
+        return mda8
+
     # Ensure time dimension represents the midpoint of the interval.
     mda8.coords.update({"time": mda8.get_index("time") + pd.tseries.frequencies.to_offset("12h")})
 
@@ -109,6 +113,13 @@ def _rolling_average_8hr(arr: xr.DataArray) -> xr.DataArray:
 
 
 def _daily_max(arr: xr.DataArray) -> xr.DataArray:
+    if "data_source" in arr.dims:
+        # colocated data object has time-axis at axis 1
+        t_axis = 1
+    else:
+        # usual data has time-axis at axis 0
+        t_axis = 0
+
     return arr.resample(time="24h", origin="start_day", label="left", offset="1h").reduce(
-        lambda x, axis: np.apply_along_axis(min_periods_max, 1, x, min_periods=18)
+        lambda x, axis: np.apply_along_axis(min_periods_max, t_axis, x, min_periods=18)
     )

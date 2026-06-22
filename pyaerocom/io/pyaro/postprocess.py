@@ -2,14 +2,13 @@ import dataclasses
 
 import numpy as np
 import numpy.typing as npt
-
 from pyaro.timeseries import (
-    Reader,
     Data,
+    Reader,
 )
 
+from pyaerocom.units.constants import M_N, M_O, M_S
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
-from pyaerocom.units.constants import M_N, M_S, M_O
 
 
 @dataclasses.dataclass
@@ -44,6 +43,27 @@ class VariableCombiner:
 
 
 TRANSFORMATIONS = {
+    "proxyconcpm10dust_from_concpm10": VariableScaling(
+        REQ_VAR="concpm10",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ug m-3",
+        SCALING_FACTOR=1,
+        OUT_VARNAME="proxyconcpm10dust",
+    ),
+    "proxyconcpm10wf_from_concpm10": VariableScaling(
+        REQ_VAR="concpm10",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ug m-3",
+        SCALING_FACTOR=1,
+        OUT_VARNAME="proxyconcpm10wf",
+    ),
+    "proxyconcpm10ss_from_concpm10": VariableScaling(
+        REQ_VAR="concpm10",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ug m-3",
+        SCALING_FACTOR=1,
+        OUT_VARNAME="proxyconcpm10ss",
+    ),
     "concNno_from_concno": VariableScaling(
         REQ_VAR="concno",
         IN_UNIT="ug m-3",
@@ -64,6 +84,49 @@ TRANSFORMATIONS = {
         OUT_UNIT="ug S m-3",
         SCALING_FACTOR=M_S / (M_S + 2 * M_O),
         OUT_VARNAME="concSso2",
+    ),
+    # I think they should be scaled with just 1, since M_C/M_C = 1(?). This is how it is done for EMEP reader
+    "concCecpm10_from_concecpm10": VariableScaling(
+        REQ_VAR="concecpm10",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ug C m-3",
+        SCALING_FACTOR=1,
+        OUT_VARNAME="concCecpm10",
+    ),
+    "concCocpm10_from_concocpm10": VariableScaling(
+        REQ_VAR="concocpm10",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ug C m-3",
+        SCALING_FACTOR=1,
+        OUT_VARNAME="concCocpm10",
+    ),
+    "concCecpm25_from_concecpm25": VariableScaling(
+        REQ_VAR="concecpm25",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ug C m-3",
+        SCALING_FACTOR=1,
+        OUT_VARNAME="concCecpm25",
+    ),
+    "concCocpm25_from_concocpm25": VariableScaling(
+        REQ_VAR="concocpm25",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ug C m-3",
+        SCALING_FACTOR=1,
+        OUT_VARNAME="concCocpm25",
+    ),
+    "concCec_from_concec": VariableScaling(
+        REQ_VAR="concec",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ug C m-3",
+        SCALING_FACTOR=1,
+        OUT_VARNAME="concCec",
+    ),
+    "concCoc_from_concoc": VariableScaling(
+        REQ_VAR="concoc",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ug C m-3",
+        SCALING_FACTOR=1,
+        OUT_VARNAME="concCoc",
     ),
     "vmro3_from_conco3": VariableScaling(
         REQ_VAR="conco3",
@@ -87,7 +150,15 @@ TRANSFORMATIONS = {
         OUT_UNIT="ppb",
         SCALING_FACTOR=0.5229,  # 20C and 1013 hPa
         OUT_VARNAME="vmrno2",
-        NOTE="The vmrno2_from_conco3 transform is only valid at T=20C, p=1013hPa",
+        NOTE="The vmrno2_from_concno2 transform is only valid at T=20C, p=1013hPa",
+    ),
+    "vmrso2_from_concso2": VariableScaling(
+        REQ_VAR="concso2",
+        IN_UNIT="ug m-3",
+        OUT_UNIT="ppb",
+        SCALING_FACTOR=0.3758,  # 20C and 1013 hPa
+        OUT_VARNAME="vmrso2",
+        NOTE="The vmrso2_from_concso2 transform is only valid at T=20C, p=1013hPa",
     ),
     "vmrox_from_vmrno2_vmro3": VariableCombiner(
         REQ_VARS=("vmrno2", "vmro3"),

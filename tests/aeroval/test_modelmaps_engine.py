@@ -25,7 +25,7 @@ def test__process_map_var(cfg: dict):
     stp = EvalSetup(**cfg)
     engine = ModelMapsEngine(stp)
     with pytest.raises(ModelVarNotAvailable) as excinfo:
-        engine._process_contour_map_var("LOTOS", "concco", False)
+        engine._process_contour_map_var("LOTOS", "concco", False, False)
 
     assert "Cannot read data for model LOTOS" in str(excinfo.value)
 
@@ -134,3 +134,35 @@ def test__read_model_data(cfg: dict):
     data = engine._read_model_data(model_name, var_name)
 
     assert isinstance(data, GriddedData)
+
+
+@pytest.fixture
+def fake_modelmapengine_readmodeldata(monkeypatch, fake_hourly_conco3_model_data):
+    def read_dummy(
+        self,
+        model_name="EMEP",
+        var="conco3",
+    ):
+        return fake_hourly_conco3_model_data
+
+    monkeypatch.setattr(
+        "pyaerocom.aeroval.modelmaps_engine.ModelMapsEngine._read_model_data",
+        read_dummy,
+    )
+
+
+@pytest.mark.usefixtures("fake_modelmapengine_readmodeldata")
+def test__process_contour_map_var_conco3mda8calc(patched_config, tmp_path):
+    model_name = "EMEP"
+    var = "conco3"
+    stp = EvalSetup(**patched_config)
+    engine = ModelMapsEngine(stp)
+    reanalyse_existing = True
+    compute_conco3mda8_contours = True
+    engine._process_contour_map_var(
+        model_name, var, reanalyse_existing, compute_conco3mda8_contours
+    )
+    contour_dir_conco3mda8 = tmp_path / "cams2-83/test/contour/conco3mda8_EMEP/"
+    assert contour_dir_conco3mda8.is_dir()
+    contour_dir_conco3 = tmp_path / "cams2-83/test/contour/conco3_EMEP/"
+    assert contour_dir_conco3.is_dir()
