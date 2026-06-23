@@ -29,6 +29,18 @@ def calc_concso4(
     return res_cube
 
 
+def calc_concso2(
+    so2_surf: iris.cube.Cube, ps: iris.cube.Cube, tas: iris.cube.Cube
+) -> iris.cube.Cube:
+    # calculate concso4 from mmrso4
+    # x.ps/287.0/x.tas)*x.mmrso4_surf*1e9
+    res_cube = ps / 287.0 / tas * so2_surf * 1.0e9
+    res_cube.standard_name = "mass_concentration_of_sulfur_dioxide_in_air"
+    res_cube.var_name = "concso2"
+    res_cube.units = "ug m-3"
+    return res_cube
+
+
 def calc_vmro3(o3_surf: iris.cube.Cube) -> iris.cube.Cube:
     # the climate models store vmro3 in the unit mol mol-1
     # only the factor of 1.E9 is missing

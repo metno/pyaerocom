@@ -41,6 +41,10 @@ how = "surface layer"
 aux_vars = ["mmrso4_surf", "ps", "tas"]
 units = "ug m-3"
 
+[aux_info.concso2]
+aux_vars = ["so2_surf", "ps", "tas"]
+units = "ug m-3"
+
 [aux_info.concno2]
 aux_vars = ["no2_surf", "ps", "tas"]
 units = "ug m-3"
@@ -53,6 +57,11 @@ how = "surface layer"
 [aux_info.mmrso4_surf]
 aux_vars = ["mmrso4"]
 units = "kg kg-1"
+how = "surface layer"
+
+[aux_info.so2_surf]
+aux_vars = ["so2"]
+units = "mol mol-1"
 how = "surface layer"
 
 # aliases for CMIP variables

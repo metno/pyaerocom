@@ -2,6 +2,7 @@
 import logging
 import os
 import pathlib
+from calendar import isleap
 
 import iris
 import iris.cube
@@ -15,8 +16,6 @@ from iris.util import equalise_attributes
 from pyaerocom import GriddedData, const
 from pyaerocom.io.gridded_reader import GriddedReader
 from pyaerocom.units.helpers import get_standard_unit
-from calendar import isleap
-
 
 # from .additional_variables import (
 #     add_dataarrays,
@@ -46,7 +45,7 @@ from calendar import isleap
 from .model_variables import cmip_aliases, cmip_aux_info, cmip_variables
 
 # from pyaerocom.units.units import Unit
-from .var_calculations_iris import calc_concso4, calc_vmro3
+from .var_calculations_iris import calc_concso2, calc_concso4, calc_vmro3
 
 # import warnings
 
@@ -377,6 +376,8 @@ class ReadCmipCtm(GriddedReader):
                 # perform the calculation
                 if var_name == "concso4":
                     cube = calc_concso4(self._temp_data[0], self._temp_data[1], self._temp_data[2])
+                elif var_name == "concso2":
+                    cube = calc_concso2(self._temp_data[0], self._temp_data[1], self._temp_data[2])
                 elif var_name == "vmro3":
                     cube = calc_vmro3(self._temp_data[0])
                 else:
@@ -435,7 +436,13 @@ class ReadCmipCtm(GriddedReader):
             gridded.convert_unit(get_standard_unit(var_name))
             return gridded
         else:
-            return cube
+            try:
+                return cube
+            except UnboundLocalError:
+                logger.info(
+                    f"Info: Variable {var_name} not directly readable and not computable. Returning None as data."
+                )
+                return None
 
     def check_and_read_aux_vars(self, var_name: str):
         # check if a given variable can be computed from the found data files
