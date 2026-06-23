@@ -26,6 +26,7 @@ def calc_concso4(
     res_cube.standard_name = "mass_concentration_of_sulfate_ambient_aerosol_particles_in_air"
     res_cube.var_name = "concso4"
     res_cube.units = "ug m-3"
+    logger.info(f"var_name {res_cube.var_name} successfully computed.")
     return res_cube
 
 
@@ -38,6 +39,7 @@ def calc_concso2(
     res_cube.standard_name = "mass_concentration_of_sulfur_dioxide_in_air"
     res_cube.var_name = "concso2"
     res_cube.units = "ug m-3"
+    logger.info(f"var_name {res_cube.var_name} successfully computed.")
     return res_cube
 
 
@@ -47,4 +49,5 @@ def calc_vmro3(o3_surf: iris.cube.Cube) -> iris.cube.Cube:
     res_cube = o3_surf * 1.0e9
     res_cube.var_name = "vmro3"
     res_cube.units = "nmol mol-1"
+    logger.info(f"var_name {res_cube.var_name} successfully computed.")
     return res_cube
