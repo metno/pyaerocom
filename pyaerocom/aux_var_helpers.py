@@ -942,3 +942,77 @@ def make_proxy_wetdep_from_O3(data):
 
     data.data_flagged[new_var_name] = flags
     return new_var_data
+
+
+def make_proxy_drydep_velocities(data, var_name, new_var_name):
+    # sort of prototype to add a compted variable
+    # one has to extend the data structures of the station data object
+    # 'right', but has to return just the data array
+    # That concept is a bit confusing (why not do everything in data here?)
+
+    flags = data.data_flagged[var_name]
+    new_var_data = data[var_name]
+
+    if new_var_name not in data.var_info:
+        data.var_info[new_var_name] = {}
+    data.var_info[new_var_name] = data.var_info[var_name]
+    data.var_info[new_var_name]["units"] = "cms-1"
+
+    data.data_flagged[new_var_name] = flags
+    return new_var_data
+
+
+def make_proxy_gases(data, var_name, new_var_name):
+
+    flags = data.data_flagged[var_name]
+    new_var_data = data[var_name]
+
+    if new_var_name not in data.var_info:
+        data.var_info[new_var_name] = {}
+    data.var_info[new_var_name] = data.var_info[var_name]
+    data.var_info[new_var_name]["units"] = "ppb"
+
+    data.data_flagged[new_var_name] = flags
+    return new_var_data
+
+
+def make_proxy_PM(data, var_name, new_var_name):
+
+    flags = data.data_flagged[var_name]
+    new_var_data = data[var_name]
+
+    if new_var_name not in data.var_info:
+        data.var_info[new_var_name] = {}
+    data.var_info[new_var_name] = data.var_info[var_name]
+    data.var_info[new_var_name]["units"] = "ug m-3"
+
+    data.data_flagged[new_var_name] = flags
+    return new_var_data
+
+
+def make_proxy_wetdep(data, var_name, new_var_name):
+
+    flags = data.data_flagged[var_name]
+    new_var_data = data[var_name]
+
+    if new_var_name not in data.var_info:
+        data.var_info[new_var_name] = {}
+    data.var_info[new_var_name] = data.var_info[var_name]
+    data.var_info[new_var_name]["units"] = "mg m-2 d-1"
+
+    data.data_flagged[new_var_name] = flags
+    return new_var_data
+
+
+def make_proxy_emission(data, var_name, new_var_name, units="mg m-2 s-1"):
+
+    flags = data.data_flagged[var_name]
+    new_var_data = data[var_name]
+
+    if new_var_name not in data.var_info:
+        data.var_info[new_var_name] = {}
+    data.var_info[new_var_name] = data.var_info[var_name]
+    data.var_info[new_var_name]["units"] = units
+
+    data.data_flagged[new_var_name] = flags
+    return new_var_data

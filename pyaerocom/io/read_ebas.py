@@ -3,6 +3,7 @@ import logging
 import os
 import re
 from collections.abc import Iterator
+from functools import partial
 
 import numpy as np
 from geonum.atmosphere import T0_STD, p0
@@ -31,6 +32,11 @@ from pyaerocom.aux_var_helpers import (
     make_proxy_drydep_from_O3,
     make_proxy_wetdep_from_O3,
     vmrx_to_concx,
+    make_proxy_drydep_velocities,
+    make_proxy_gases,
+    make_proxy_PM,
+    make_proxy_wetdep,
+    make_proxy_emission,
 )
 from pyaerocom.units import UnitConversionError
 from pyaerocom.exceptions import (
@@ -291,6 +297,57 @@ class ReadEbas(ReadUngriddedBase):
         "proxywetrdn": ["concprcprdn", "pr"],
         "proxywetnh3": ["concprcprdn", "pr"],
         "proxywetnh4": ["concprcprdn", "pr"],
+        # Dry dep velocities
+        "proxyvgn2o5": ["conco3"],
+        "proxyvgho2no2": ["conco3"],
+        "proxyvgo3": ["conco3"],
+        "proxyvgso2": ["concso2"],
+        "proxyvgso4": ["concso4"],
+        "proxyvgnh3": ["concnh3"],
+        "proxyvgnh4": ["concnh4"],
+        "proxyvgno2": ["concno2"],
+        "proxyvgno2no2": ["conco3"],
+        "proxyvghono": ["conco3"],
+        "proxyvghonopm25": ["concpm25"],
+        "proxyvghno3": ["concNhno3"],
+        "proxyvgno3f": ["concno3pm25"],
+        "proxyvgno3c": ["concno3pm10"],
+        "proxyvgno3": ["concno3"],
+        "proxyvgec": ["concCec"],
+        # Task 4063 Gases and PMs
+        "proxyvmrpan": ["vmro3"],
+        "proxyvmroh": ["concpm25"],
+        "proxyvmrho2no2": ["vmro3"],
+        "proxyvmrhono": ["vmro3"],
+        "proxyvmrn2o5": ["concpm25"],
+        "proxyconcpm25w": ["concpm25"],
+        "concec": ["concCec"],
+        # Task4063 Wet dep
+        "proxywetec": ["concCec"],
+        "proxywetno3radical": ["concprcpoxn", "pr"],
+        "proxywetho2no2": ["concprcpoxn", "pr"],
+        # Task4063 Dry dep
+        "proxydryec": ["concCec"],
+        "proxydryno3radical": ["concprcpoxn", "pr"],
+        "proxydryho2no2": ["concprcpoxn", "pr"],
+        # Task4063 Emission
+        "proxyemisox": ["concprcpoxs", "pr"],
+        "proxyeminox": ["concprcpoxn", "pr"],
+        "proxyeminh3": ["concprcprdn", "pr"],
+        "proxyemico": ["concco"],
+        "proxyeminmvoc": ["vmro3"],
+        "proxyemipm25": ["concpm25"],
+        "proxyemipm10": ["concpm10"],
+        "proxyemiec": ["concCec"],
+        "proxyemiisop": ["vmro3"],
+        "proxyemitp": ["concpm25"],
+        "proxyemisqt": ["vmro3"],
+        "proxyemisbvocall": ["vmro3"],
+        # Task4063 Other
+        "proxylai": ["vmro3"],
+        "proxygstmax": ["vmro3"],
+        "proxygaerodyn": ["vmro3"],
+        "proxydiffo3": ["vmro3"],
         # Other
         "proxyweto3": ["vmro3"],
         "proxywetpm10": ["concprcpoxs", "pr"],
@@ -369,6 +426,180 @@ class ReadEbas(ReadUngriddedBase):
         "proxyweto3": make_proxy_wetdep_from_O3,
         "proxywetpm10": compute_wetoxs_from_concprcpoxs,
         "proxywetpm25": compute_wetoxs_from_concprcpoxs,
+        # Dry dep velocities
+        "proxyvgn2o5": partial(
+            make_proxy_drydep_velocities, var_name="conco3", new_var_name="proxyvgn2o5"
+        ),
+        "proxyvgho2no2": partial(
+            make_proxy_drydep_velocities, var_name="conco3", new_var_name="proxyvgho2no2"
+        ),
+        "proxyvgo3": partial(
+            make_proxy_drydep_velocities, var_name="conco3", new_var_name="proxyvgo3"
+        ),
+        "proxyvgso2": partial(
+            make_proxy_drydep_velocities, var_name="concso2", new_var_name="proxyvgso2"
+        ),
+        "proxyvgso4": partial(
+            make_proxy_drydep_velocities, var_name="concso4", new_var_name="proxyvgso4"
+        ),
+        "proxyvgnh3": partial(
+            make_proxy_drydep_velocities, var_name="concnh3", new_var_name="proxyvgnh3"
+        ),
+        "proxyvgnh4": partial(
+            make_proxy_drydep_velocities, var_name="concnh4", new_var_name="proxyvgnh4"
+        ),
+        "proxyvgno2": partial(
+            make_proxy_drydep_velocities, var_name="concno2", new_var_name="proxyvgno2"
+        ),
+        "proxyvgno2no2": partial(
+            make_proxy_drydep_velocities, var_name="conco3", new_var_name="proxyvgno2no2"
+        ),
+        "proxyvghono": partial(
+            make_proxy_drydep_velocities, var_name="conco3", new_var_name="proxyvghono"
+        ),
+        "proxyvghonopm25": partial(
+            make_proxy_drydep_velocities, var_name="concpm25", new_var_name="proxyvghonopm25"
+        ),
+        "proxyvghno3": partial(
+            make_proxy_drydep_velocities, var_name="concNhno3", new_var_name="proxyvghno3"
+        ),
+        "proxyvgno3f": partial(
+            make_proxy_drydep_velocities, var_name="concno3pm25", new_var_name="proxyvgno3f"
+        ),
+        "proxyvgno3c": partial(
+            make_proxy_drydep_velocities, var_name="concno3pm10", new_var_name="proxyvgno3c"
+        ),
+        "proxyvgno3": partial(
+            make_proxy_drydep_velocities, var_name="concno3", new_var_name="proxyvgno3"
+        ),
+        "proxyvgec": partial(
+            make_proxy_drydep_velocities, var_name="concCec", new_var_name="proxyvgec"
+        ),
+        # Task4063 Gases and PMs
+        "proxyvmrpan": partial(make_proxy_gases, var_name="vmro3", new_var_name="proxyvmrpan"),
+        "proxyvmroh": partial(make_proxy_gases, var_name="concpm25", new_var_name="proxyvmroh"),
+        "proxyvmrho2no2": partial(
+            make_proxy_gases, var_name="vmro3", new_var_name="proxyvmrho2no2"
+        ),
+        "proxyvmrhono": partial(make_proxy_gases, var_name="vmro3", new_var_name="proxyvmrhono"),
+        "proxyvmrn2o5": partial(
+            make_proxy_gases, var_name="concpm25", new_var_name="proxyvmrn2o5"
+        ),
+        "proxyconcpm25w": partial(
+            make_proxy_PM, var_name="concpm25", new_var_name="proxyconcpm25w"
+        ),
+        "concec": partial(
+            make_proxy_emission, var_name="concCec", new_var_name="concec", units="ug m-3"
+        ),
+        # Task4063 Wet dep
+        "proxywetec": partial(make_proxy_wetdep, var_name="concCec", new_var_name="proxywetec"),
+        "proxywetno3radical": compute_wetoxn_from_concprcpoxn,
+        "proxywetho2no2": compute_wetoxn_from_concprcpoxn,
+        # Task4063 Dry dep
+        "proxydryec": partial(make_proxy_wetdep, var_name="concCec", new_var_name="proxydryec"),
+        "proxydryno3radical": compute_wetoxn_from_concprcpoxn,
+        "proxydryho2no2": compute_wetoxn_from_concprcpoxn,
+        # Task4063 Emissions
+        "proxyemisox": compute_wetoxs_from_concprcpoxs,
+        "proxyeminox": compute_wetoxn_from_concprcpoxn,
+        "proxyeminh3": compute_wetrdn_from_concprcprdn,
+        # "proxyemisox": partial(
+        #     make_proxy_emission,
+        #     var_name="concso2",
+        #     new_var_name="proxyemisox",
+        #     units="mg S m-2 d-1",
+        # ),
+        # "proxyeminox": partial(
+        #     make_proxy_emission,
+        #     var_name="concno2",
+        #     new_var_name="proxyeminox",
+        #     units="mg N m-2 d-1",
+        # ),
+        # "proxyeminh3": partial(
+        #     make_proxy_emission,
+        #     var_name="concnh3",
+        #     new_var_name="proxyeminh3",
+        #     units="mg N m-2 d-1",
+        # ),
+        "proxyemico": partial(
+            make_proxy_emission,
+            var_name="concco",
+            new_var_name="proxyemico",
+            units="mg C m-2 d-1",
+        ),
+        "proxyeminmvoc": partial(
+            make_proxy_emission,
+            var_name="vmro3",
+            new_var_name="proxyeminmvoc",
+            units="mg C m-2 d-1",
+        ),
+        "proxyemipm25": partial(
+            make_proxy_emission,
+            var_name="concpm25",
+            new_var_name="proxyemipm25",
+            units="mg m-2 d-1",
+        ),
+        "proxyemipm10": partial(
+            make_proxy_emission,
+            var_name="concpm10",
+            new_var_name="proxyemipm10",
+            units="mg m-2 d-1",
+        ),
+        "proxyemiec": partial(
+            make_proxy_emission,
+            var_name="concCec",
+            new_var_name="proxyemiec",
+            units="mg m-2 d-1",
+        ),
+        "proxyemiisop": partial(
+            make_proxy_emission,
+            var_name="vmro3",
+            new_var_name="proxyemiisop",
+            units="mg C m-2 d-1",
+        ),
+        "proxyemitp": partial(
+            make_proxy_emission,
+            var_name="concpm25",
+            new_var_name="proxyemitp",
+            units="mg C m-2 d-1",
+        ),
+        "proxyemisqt": partial(
+            make_proxy_emission,
+            var_name="vmro3",
+            new_var_name="proxyemisqt",
+            units="mg C m-2 d-1",
+        ),
+        "proxyemisbvocall": partial(
+            make_proxy_emission,
+            var_name="vmro3",
+            new_var_name="proxyemisbvocall",
+            units="mg C m-2 d-1",
+        ),
+        # Task4063 Other
+        "proxylai": partial(
+            make_proxy_emission,
+            var_name="vmro3",
+            new_var_name="proxylai",
+            units="m2 m-2",
+        ),
+        "proxygstmax": partial(
+            make_proxy_emission,
+            var_name="vmro3",
+            new_var_name="proxygstmax",
+            units="cms-1",
+        ),
+        "proxygaerodyn": partial(
+            make_proxy_emission,
+            var_name="vmro3",
+            new_var_name="proxygaerodyn",
+            units="cms-1",
+        ),
+        "proxydiffo3": partial(
+            make_proxy_emission,
+            var_name="vmro3",
+            new_var_name="proxydiffo3",
+            units="cm2 s-1",
+        ),
         # Testing
         "wetrdnpr": compute_wetrdnpr_from_concprcprdn,
     }
