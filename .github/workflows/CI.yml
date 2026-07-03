@@ -11,7 +11,7 @@ jobs:
     env:
       PYTHON: "3.10"
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set up Python ${{ env.PYTHON }}
       uses: actions/setup-python@v5
       with:
@@ -48,7 +48,7 @@ jobs:
         #    experimental: true
         #    os: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
@@ -82,7 +82,7 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set up Python ${{ env.PYTHON }}
       uses: conda-incubator/setup-miniconda@v3
       with:
