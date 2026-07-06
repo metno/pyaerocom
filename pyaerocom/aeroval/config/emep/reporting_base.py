@@ -197,7 +197,9 @@ def get_CFG(
         # Setup for models used in analysis
         CFG = get_CFG(reportyear=2024,
                     year=2021,
-                    model_dir="/lustre/storeB/project/fou/kl/emep/ModelRuns/2024_REPORTING/EMEP01_rv5.3_metyear2021_emis2022")
+                    model_dir="/lustre/storeB/project/fou/kl/emep/ModelRuns/2024_REPORTING/EMEP01_rv5.3_metyear2021_emis2022",
+                    # remove_urban_stations=False, # keep or remove urban stations, default True=keep
+                    )
 
         CFG.update(dict(
             # proj_id="status-2024",
