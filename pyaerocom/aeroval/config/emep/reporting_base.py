@@ -167,7 +167,7 @@ def get_CFG(
     year,
     model_dir,
     omit_stations_path=DEFAULT_OMIT_STATION_PATH,
-    remove_urban_stations=True,
+    remove_urban_ebas_stations=True,
 ) -> dict:
     """Get a configuration usable for emep reporting
 
@@ -198,7 +198,7 @@ def get_CFG(
         CFG = get_CFG(reportyear=2024,
                     year=2021,
                     model_dir="/lustre/storeB/project/fou/kl/emep/ModelRuns/2024_REPORTING/EMEP01_rv5.3_metyear2021_emis2022",
-                    # remove_urban_stations=False, # keep or remove urban stations, default True=keep
+                    # remove_urban_ebas_stations=False, # keep or remove urban stations, default True=keep
                     )
 
         CFG.update(dict(
@@ -681,7 +681,7 @@ def get_CFG(
         "US9028R",
     ]
 
-    urban_ignore_ebas = ["*U"] if remove_urban_stations else []
+    urban_ignore_ebas = ["*U"] if remove_urban_ebas_stations else []
 
     EBAS_FILTER = {
         key: dict(
