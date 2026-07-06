@@ -7,4 +7,5 @@ class EvalRunOptions(BaseModel):
     only_colocation: bool = False
     #: If True, process only maps (skip obs evaluation)
     only_model_maps: bool = False
+    compute_conco3mda8_contours: bool = False
     obs_only: bool = False

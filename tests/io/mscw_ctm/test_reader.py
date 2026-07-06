@@ -79,7 +79,7 @@ def test__ReadMscwCtm__check_files_in_data_dir(data_dir: str):
 def test__ReadMscwCtm__check_files_in_data_dir_error():
     reader = ReadMscwCtm()
     with pytest.raises(FileNotFoundError):
-        reader._check_files_in_data_dir("/tmp")
+        reader._check_files_in_data_dir("/tmpxyz1234")
 
 
 def test_ReadMscwCtm_ts_type():

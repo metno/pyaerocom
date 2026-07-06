@@ -474,6 +474,7 @@ def get_CFG(
             "vmro3",
             "vmro3max",
             "vmro3mda8",
+            "vmro3somo30",
             "vmrox",
             "vmrco",
             # PMs
@@ -535,11 +536,11 @@ def get_CFG(
     # Station filters
 
     # This list of stations was generated using the script found here:
-    # https://gist.github.com/thorbjoernl/b7946882f1696722742053406d056e12.
+    # scripts/generate_ebas_height_ignore_list.py.
     # It excludes stations with a relative altitude (Elevation difference to the lowest
     # altitude in a 5km radius based on gtopo30) above 500m as well as stations that do not include
     # an altitude in the ebas file index.
-    # Last updated: ~2025-01-03
+    # Last updated: ~2026-06-02
     height_ignore_ebas = [
         "AM0001R",
         "AR0001R",
@@ -566,12 +567,14 @@ def get_CFG(
         "DE0057G",
         "DE0060G",
         "DE0075R",
+        "DK0009R",
         "DZ0001G",
         "ES0005R",
         "ES0018G",
         "ES0022R",
         "ES0025U",
         "FI0009R",
+        "FI0090R",
         "FR0012R",
         "FR0019R",
         "FR0026R",
@@ -590,6 +593,7 @@ def get_CFG(
         "IT0009R",
         "IT0019R",
         "IT0031U",
+        "JP0002G",
         "JP1021R",
         "KE0001G",
         "MK0007R",
@@ -648,6 +652,31 @@ def get_CFG(
         "US9078R",
         "US9082U",
         "VN0001R",
+        # sites with missing altitudes
+        "DK0042R",
+        "ES0024U",
+        "GB0017R",
+        "IE0010U",
+        "IT0011R",
+        "IT0012R",
+        "LT0016R",
+        "NO0798R",
+        "NO1006R",
+        "NO1011R",
+        "RU0021R",
+        "SE0081R",
+        "SE0082R",
+        "SE0083R",
+        "SE0084R",
+        "SE0085R",
+        "SE0086R",
+        "SE0087R",
+        "SE0089R",
+        "SE0090R",
+        "SE0091R",
+        "SE0092R",
+        "UA0008R",
+        "US9028R",
     ]
 
     urban_ignore_ebas = ["*U"] if remove_urban_stations else []
