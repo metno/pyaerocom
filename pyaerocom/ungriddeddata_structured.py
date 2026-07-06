@@ -57,8 +57,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     _nan_types = {
         "meta_id": np.iinfo("i4").min,
         "var_id": np.iinfo("i2").min,
-        "start_time": np.datetime64("NaT"),
-        "end_time": np.datetime64("NaT"),
+        "start_time": np.datetime64("NaT", "D"),
+        "end_time": np.datetime64("NaT", "D"),
         "data": np.nan,
         "stdev": np.nan,
         "dataaltitude": np.iinfo("i2").min,
