@@ -162,13 +162,20 @@ def clean_filters(cfg: dict, obs_pattern: str) -> dict:
     return CFG
 
 
-def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION_PATH) -> dict:
+def get_CFG(
+    reportyear,
+    year,
+    model_dir,
+    omit_stations_path=DEFAULT_OMIT_STATION_PATH,
+    remove_urban_ebas_stations=True,
+) -> dict:
     """Get a configuration usable for emep reporting
 
     :param reportyear: year of reporting
     :param year: year of data
     :param model_dir: directory containing Base_hour.nc,Base_day.nc,Base_month.nc and Base_fullrun.nc
         or for trends directory containing years like 2005,2010,2015 again containing above files
+    :param remove_urban_ebas_stations: if True, remove all stations with *U in the station name from EBAS
 
     The current working directory of the experiment should have the following files/directories by default:
         - `data` output directory
@@ -191,7 +198,9 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
         # Setup for models used in analysis
         CFG = get_CFG(reportyear=2024,
                     year=2021,
-                    model_dir="/lustre/storeB/project/fou/kl/emep/ModelRuns/2024_REPORTING/EMEP01_rv5.3_metyear2021_emis2022")
+                    model_dir="/lustre/storeB/project/fou/kl/emep/ModelRuns/2024_REPORTING/EMEP01_rv5.3_metyear2021_emis2022",
+                    # remove_urban_ebas_stations=False, # keep or remove urban stations, default True=keep
+                    )
 
         CFG.update(dict(
             # proj_id="status-2024",
@@ -673,10 +682,14 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
         "US9028R",
     ]
 
+    urban_ignore_ebas = ["*U"] if remove_urban_ebas_stations else []
+
     EBAS_FILTER = {
         key: dict(
             **EBAS_FILTER,
-            station_id=_get_ignore_stations(key, year, omit_stations_path) + height_ignore_ebas,
+            station_id=_get_ignore_stations(key, year, omit_stations_path)
+            + height_ignore_ebas
+            + urban_ignore_ebas,
             negate="station_id",
         )
         for key in _get_ebas_species()
