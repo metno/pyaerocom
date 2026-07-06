@@ -175,6 +175,7 @@ def get_CFG(
     :param year: year of data
     :param model_dir: directory containing Base_hour.nc,Base_day.nc,Base_month.nc and Base_fullrun.nc
         or for trends directory containing years like 2005,2010,2015 again containing above files
+    :param remove_urban_ebas_stations: if True, remove all stations with *U in the station name from EBAS
 
     The current working directory of the experiment should have the following files/directories by default:
         - `data` output directory
