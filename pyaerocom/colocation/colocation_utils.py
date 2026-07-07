@@ -536,7 +536,7 @@ def _colocate_site_data_helper_timecol(
     )
 
     # zero the obs if there is a matching model timestamp where data in NaN
-    nanmodtimes = stat_data[var_ref].index[np.where(stat_data[var_ref].isna())]
+    nanmodtimes = stat_data[var].index[np.where(stat_data[var].isna())]
     if set(nanmodtimes).issubset(stat_data_ref[var_ref].index):
         stat_data_ref[var_ref].loc[nanmodtimes] = np.nan
 
