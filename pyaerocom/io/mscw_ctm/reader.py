@@ -611,7 +611,9 @@ class ReadMscwCtm(GriddedReader):
                 )
 
         logger.info(f"Opening {fps}")
-        ds = xr.open_mfdataset(fps, chunks={"time": 24}, decode_timedelta=True)
+        # join="exact" became new default in xarray 2025.08.0 with `use_new_combine_kwarg_defaults`
+        # use join="outer" since trend-runs might not be 100% homogeneous
+        ds = xr.open_mfdataset(fps, chunks={"time": 24}, decode_timedelta=True, join="outer")
 
         self._private.filedata = ds
 
