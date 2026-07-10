@@ -59,6 +59,13 @@ variables:
   ALL:
     - ALL
 
+
+2024:
+  ALL:
+    - NO0043R
+    - DK0010G
+    - IT0019*
+
 2023:
   ALL:
     - NO0042R

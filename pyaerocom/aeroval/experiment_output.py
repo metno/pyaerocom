@@ -27,7 +27,7 @@ from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
-from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS
+from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS, SOMO30_OUTPUT_VARS
 from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.utils import recursive_defaultdict
@@ -670,9 +670,11 @@ class ExperimentOutput(ProjectOutput):
 
         """
 
-        # MDA8 is computed on-the-fly ONLY if a MDA8_INPUT_VAR at hourly freq is detected.
+        # MDA8/SOMO30 is computed on-the-fly ONLY if a MDA8/SOMO30_INPUT_VAR at hourly freq is detected.
         # Consequently, it is not specified in a config but should be included as part of the experiment.
         if obs_var in MDA8_OUTPUT_VARS and mod_var in MDA8_OUTPUT_VARS:
+            return True
+        if obs_var in SOMO30_OUTPUT_VARS and mod_var in SOMO30_OUTPUT_VARS:
             return True
 
         # get model entry for model name
@@ -1049,6 +1051,55 @@ class ExperimentOutput(ProjectOutput):
             glob_stats = recursive_defaultdict(glob_stats)
             glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
             self.avdb.put_fairmode(
+                glob_stats,
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+                modelname,
+                period.replace("/", ""),  # Remove slashes in CAMS2_83 period,
+            )
+
+    def add_radarplot_entry(
+        self,
+        entry: dict,
+        region: str,
+        network: str,
+        obsvar: str,
+        layer: str,
+        modelname: str,
+        modvar: str,
+        period: str,
+    ):
+        """Adds a radarplot entry to radarplot
+
+        :param entry: The entry to be added.
+        :param network: Observation network
+        :param obsvar: Observation variable
+        :param layer: Vertical layer
+        :param modelname: Model name
+        :param modvar: Model variable
+        """
+        project = self.proj_id
+        experiment = self.exp_id
+
+        with self.avdb.lock():
+            glob_stats = self.avdb.get_radarplot(
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+                modelname,
+                period.replace("/", ""),  # Remove slashes in CAMS2_83 period,
+                default={},
+            )
+            glob_stats = recursive_defaultdict(glob_stats)
+            glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
+            self.avdb.put_radarplot(
                 glob_stats,
                 project,
                 experiment,

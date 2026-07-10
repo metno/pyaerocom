@@ -33,7 +33,7 @@ from .additional_variables import (
     calc_conNtno3_emep,
     calc_vmrno2,
     calc_vmro3,
-    calc_vmrox_from_conc,
+    calc_vmrox,
     identity,
     subtract_dataarrays,
     update_EC_units,
@@ -95,8 +95,8 @@ class ReadMscwCtm(GriddedReader):
         "concno3pm25": ["concno3f", "concno3c"],
         "concsspm25": ["concssf", "concssc"],
         "concsspm10": ["concssf", "concssc"],
-        # "vmrox": ["concno2", "vmro3"],
-        "vmrox": ["concno2", "conco3"],
+        "vmrox": ["concno2", "vmro3"],
+        # "vmrox": ["concno2", "conco3"],
         "vmrno2": ["concno2"],
         "concNtno3": ["concoxn"],
         "concNtnh": ["concrdn"],
@@ -108,6 +108,7 @@ class ReadMscwCtm(GriddedReader):
         "concCecpm25": ["concecpm25"],
         "concCocpm25": ["concCocFine"],
         "concCocpm10": ["concCocFine", "concCocCoarse"],
+        "concom10": ["concoaf", "concoac"],
         "concso4t": ["concso4", "concss"],
         "concNno": ["concno"],
         "concNno2": ["concno2"],
@@ -163,8 +164,8 @@ class ReadMscwCtm(GriddedReader):
         "concno3pm25": calc_concno3pm25,
         "concsspm25": calc_concsspm25,
         "concsspm10": add_dataarrays,
-        # "vmrox": calc_vmrox,
-        "vmrox": calc_vmrox_from_conc,
+        "vmrox": calc_vmrox,
+        # "vmrox": calc_vmrox_from_conc,
         "vmrno2": calc_vmrno2,
         "concNtno3": calc_conNtno3_emep,
         "concNtnh": calc_conNtnh_emep,
@@ -177,6 +178,7 @@ class ReadMscwCtm(GriddedReader):
         "concCecpm10": update_EC_units,
         "concCocpm25": identity,
         "concCocpm10": add_dataarrays,
+        "concom10": add_dataarrays,
         "concso4t": calc_concso4t,
         "concNno": calc_concNno,
         "concNno2": calc_concNno2,
@@ -629,7 +631,9 @@ class ReadMscwCtm(GriddedReader):
                 )
 
         logger.info(f"Opening {fps}")
-        ds = xr.open_mfdataset(fps, chunks={"time": 24}, decode_timedelta=True)
+        # join="exact" became new default in xarray 2025.08.0 with `use_new_combine_kwarg_defaults`
+        # use join="outer" since trend-runs might not be 100% homogeneous
+        ds = xr.open_mfdataset(fps, chunks={"time": 24}, decode_timedelta=True, join="outer")
 
         self._private.filedata = ds
 
