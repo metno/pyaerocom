@@ -123,12 +123,22 @@ class ReadMscwCtm(GriddedReader):
         "concecTotalRes": ["concecFineRes", "concecCoarseRes"],
         "concecTotalNonRes": ["concecFineNonRes", "concecCoarseNonRes"],
         "concebc": ["concecFine", "concecCoarse"],
+        "concocpm25": ["concCocFine"],
         # For EC from emission
         "concecTotalResEM": ["concecFineResNewEM", "concecFineResAgeEM"],
         "concecTotalNonResEM": ["concecFineNonResNewEM", "concecFineNonResAgeEM"],
         "concebcem": ["concecFineEM", "concecCoarseEM"],
         "concCecpm25EM": ["concecFineEM"],
         "concCecpm10EM": ["concecFineEM"],
+        # WP 8 variables
+        "concdust10": ["concdustf", "concdustc"],
+        "concdust25": ["concdustf"],
+        "concss25": ["concssf", "concssc"],
+        "concss10": ["concssf", "concssc"],
+        # WP 8 PMF derived variables
+        "conchoa": ["concpoart", "concpoaoth"],
+        "concbboa": ["concpoacbb", "concpoawf"],
+        "concooa": ["concsoart", "concsoacbb", "concsoawf", "concsoaoth", "concbsoa"],
     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -162,6 +172,7 @@ class ReadMscwCtm(GriddedReader):
         # "concNtnh": calc_concNtnh,
         "concecpm25": identity,
         "concecpm10": add_dataarrays,
+        "concocpm25": update_EC_units,
         "concCecpm25": update_EC_units,
         "concCecpm10": update_EC_units,
         "concCocpm25": identity,
@@ -186,6 +197,15 @@ class ReadMscwCtm(GriddedReader):
         "concebcem": add_dataarrays,
         "concCecpm25EM": update_EC_units,
         "concCecpm10EM": update_EC_units,
+        # WP 8 variables
+        "concdust10": add_dataarrays,
+        "concdust25": identity,
+        "concss25": calc_concsspm25,
+        "concss10": add_dataarrays,
+        # WP 8 PMF derived variables
+        "conchoa": add_dataarrays,
+        "concbboa": add_dataarrays,
+        "concooa": add_dataarrays,
     }
 
     #: supported filename template, freq-placeholder is for frequencies

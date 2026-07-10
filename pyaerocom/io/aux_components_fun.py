@@ -200,3 +200,35 @@ def calc_concNtnh(concnh4, vmrnh3):
     concNnh3, concNnh4 = _check_same_units(concNnh3, concNnh4)
 
     return add_cubes(concNnh3, concNnh4)
+
+
+def calc_conchoa(concpoart, concpoaoth):
+    concpoart, concpoaoth = _check_input_iscube(concpoart, concpoaoth)
+    concpoart, concpoaoth = _check_same_units(concpoart, concpoaoth)
+
+    return add_cubes(concpoart, concpoaoth)
+
+
+def calc_concbboa(concpoacbb, concpoawf):
+    concpoacbb, concpoawf = _check_input_iscube(concpoacbb, concpoawf)
+    concpoacbb, concpoawf = _check_same_units(concpoacbb, concpoawf)
+
+    return add_cubes(concpoacbb, concpoawf)
+
+
+def calc_concooa(concsoart, concsoacbb, concsoawf, concsoaoth, concbsoa):
+    concsoart, concsoacbb, concsoawf, concsoaoth, concbsoa = _check_input_iscube(
+        concsoart, concsoacbb, concsoawf, concsoaoth, concbsoa
+    )
+    # concsoart, concsoacbb, concsoawf, concsoaoth, concbsoa = _check_same_units(
+    #     concsoart, concsoacbb, concsoawf, concsoaoth, concbsoa
+    # )
+    concsoart, concsoacbb = _check_same_units(concsoart, concsoacbb)
+    concsoart, concsoawf = _check_same_units(concsoart, concsoawf)
+    concsoart, concsoaoth = _check_same_units(concsoart, concsoaoth)
+    concsoart, concbsoa = _check_same_units(concsoart, concbsoa)
+
+    return add_cubes(
+        add_cubes(concsoart, add_cubes(concsoacbb, add_cubes(concsoawf, concsoaoth))),
+        concbsoa,
+    )

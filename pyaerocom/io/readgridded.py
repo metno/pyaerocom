@@ -38,6 +38,9 @@ from pyaerocom.io.aux_components_fun import (
     calc_sspm25,
     identity_fun,
     convert_ugm3_to_ugCm3,
+    calc_conchoa,
+    calc_concbboa,
+    calc_concooa,
 )
 from pyaerocom.io.aux_read_cubes import (
     add_cubes,
@@ -158,6 +161,11 @@ class ReadGridded(GriddedReader):
         "concso4pm25": ("concso4",),
         "concCecpm10": ("concec",),
         "concCecpm25": ("concec",),
+        "concCocpm25": ("concoc25",),
+        # WP8 PMF derived variables
+        "conchoa": ("concpoart", "concpoaoth"),
+        "concbboa": ("concpoacbb", "concpoawf"),
+        "concooa": ("concsoart", "concsoacbb", "concsoawf", "concsoaoth", "concbsoa"),
     }
 
     AUX_ALT_VARS = {
@@ -198,6 +206,11 @@ class ReadGridded(GriddedReader):
         "concso4pm25": identity_fun,
         "concCecpm10": convert_ugm3_to_ugCm3,
         "concCecpm25": convert_ugm3_to_ugCm3,
+        "concCocpm25": convert_ugm3_to_ugCm3,
+        # WP8 PMF derived variables
+        "conchoa": calc_conchoa,
+        "concbboa": calc_concbboa,
+        "concooa": calc_concooa,
         # 'mec550*'      :    divide_cubes,
         # 'tau*'         :    lifetime_from_load_and_dep
     }

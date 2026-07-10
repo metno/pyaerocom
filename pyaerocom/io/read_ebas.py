@@ -37,6 +37,7 @@ from pyaerocom.aux_var_helpers import (
     make_proxy_PM,
     make_proxy_wetdep,
     make_proxy_emission,
+    change_name,
 )
 from pyaerocom.units import UnitConversionError
 from pyaerocom.exceptions import (
@@ -351,6 +352,26 @@ class ReadEbas(ReadUngriddedBase):
         "proxyweto3": ["vmro3"],
         "proxywetpm10": ["concprcpoxs", "pr"],
         "proxywetpm25": ["concprcpoxs", "pr"],
+        # WP8
+        "concocpm25": ["concCocpm25"],
+        # WP8 EC PMF
+        "proxyconcpoart": ["concCocpm25"],
+        "proxyconcpoacbb": ["concCocpm25"],
+        "proxyconcpoawf": ["concCocpm25"],
+        "proxyconcpoaoth": ["concCocpm25"],
+        "proxyconcsoart": ["concCocpm25"],
+        "proxyconcsoacbb": ["concCocpm25"],
+        "proxyconcsoawf": ["concCocpm25"],
+        "proxyconcsoaoth": ["concCocpm25"],
+        "proxyconcbsoa": ["concCocpm25"],
+        # WP8 Proxies
+        "proxyvmrglyoxal": ["vmro3"],
+        "proxyvmrmgly": ["vmro3"],  # ["vmrglyoxal"],
+        "proxyvmrhcho": ["vmro3"],
+        "proxyconecbb": ["concec"],
+        "proxyconecoth": ["concec"],
+        "proxyconcdust10": ["concpm10"],
+        "proxyconcdust25": ["concpm25"],
         # Testing
         "wetrdnpr": ["pr"],
     }
@@ -595,6 +616,80 @@ class ReadEbas(ReadUngriddedBase):
             var_name="vmro3",
             new_var_name="proxydiffo3",
             units="cm2 s-1",
+        ),
+        # WP8
+        "concocpm25": partial(
+            make_proxy_emission,
+            var_name="concCocpm25",
+            new_var_name="concocpm25",
+            units="ug m-3",
+        ),
+        # WP8 EC PMF
+        "proxyconcpoart": partial(
+            make_proxy_emission,
+            var_name="concCocpm25",
+            new_var_name="proxyconcpoart",
+            units="ug m-3",
+        ),
+        "proxyconcpoacbb": partial(
+            make_proxy_emission,
+            var_name="concCocpm25",
+            new_var_name="proxyconcpoacbb",
+            units="ug m-3",
+        ),
+        "proxyconcpoawf": partial(
+            make_proxy_emission,
+            var_name="concCocpm25",
+            new_var_name="proxyconcpoawf",
+            units="ug m-3",
+        ),
+        "proxyconcpoaoth": partial(
+            make_proxy_emission,
+            var_name="concCocpm25",
+            new_var_name="proxyconcpoaoth",
+            units="ug m-3",
+        ),
+        "proxyconcsoart": partial(
+            make_proxy_emission,
+            var_name="concCocpm25",
+            new_var_name="proxyconcsoart",
+            units="ug m-3",
+        ),
+        "proxyconcsoacbb": partial(
+            make_proxy_emission,
+            var_name="concCocpm25",
+            new_var_name="proxyconcsoacbb",
+            units="ug m-3",
+        ),
+        "proxyconcsoawf": partial(
+            make_proxy_emission,
+            var_name="concCocpm25",
+            new_var_name="proxyconcsoawf",
+            units="ug m-3",
+        ),
+        "proxyconcsoaoth": partial(
+            make_proxy_emission,
+            var_name="concCocpm25",
+            new_var_name="proxyconcsoaoth",
+            units="ug m-3",
+        ),
+        "proxyconcbsoa": partial(
+            make_proxy_emission,
+            var_name="concCocpm25",
+            new_var_name="proxyconcbsoa",
+            units="ug m-3",
+        ),
+        # WP8 Proxies
+        "proxyvmrglyoxal": partial(change_name, var_name="vmro3", new_var_name="proxyvmrglyoxal"),
+        "proxyvmrmgly": partial(change_name, var_name="vmro3", new_var_name="proxyvmrmgly"),
+        "proxyvmrhcho": partial(change_name, var_name="vmro3", new_var_name="proxyvmrhcho"),
+        "proxyconecbb": partial(change_name, var_name="concec", new_var_name="proxyconecbb"),
+        "proxyconecoth": partial(change_name, var_name="concec", new_var_name="proxyconecoth"),
+        "proxyconcdust10": partial(
+            change_name, var_name="concpm10", new_var_name="proxyconcdust10"
+        ),
+        "proxyconcdust25": partial(
+            change_name, var_name="concpm25", new_var_name="proxyconcdust25"
         ),
         # Testing
         "wetrdnpr": compute_wetrdnpr_from_concprcprdn,

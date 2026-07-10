@@ -1016,3 +1016,16 @@ def make_proxy_emission(data, var_name, new_var_name, units="mg m-2 s-1"):
 
     data.data_flagged[new_var_name] = flags
     return new_var_data
+
+
+def change_name(data, var_name, new_var_name):
+
+    flags = data.data_flagged[var_name]
+    new_var_data = data[var_name]
+
+    if new_var_name not in data.var_info:
+        data.var_info[new_var_name] = {}
+    data.var_info[new_var_name] = data.var_info[var_name]
+
+    data.data_flagged[new_var_name] = flags
+    return new_var_data

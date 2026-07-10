@@ -91,6 +91,7 @@ vmrc2h6 = "SURF_ppb_C2H6"
 vmrc2h4 = "SURF_ppb_C2H4"
 vmrhcho = "SURF_ppb_HCHO"
 vmrglyoxal = "SURF_ppb_GLYOX"
+vmrgly = "SURF_ppb_GLYOX"
 vmrisop = "SURF_ppb_C5H8"
 wetbc = "WDEP_EC"
 wetdust = "WDEP_DUST"
@@ -137,3 +138,37 @@ concecFineNonResAgeEM = "SURF_ug_EMEC_F_NONRES_AGE"
 concecCoarseResEM = "SURF_ug_EMEC_C_RES"
 concecCoarseNonResEM = "SURF_ug_EMEC_C_NONRES"
 
+
+# WP8 variables
+vmrso2 = "SURF_ppb_SO2"
+vmrno3 = "SURF_ppb_NO3"
+vmrhno3 = "SURF_ppb_HNO3"
+vmrnh3 = "SURF_ppb_NH3"
+vmrn2o5 = "SURF_ppb_N2O5"
+
+vmrtp = "SURF_ppb_APINENE"
+vmrpan = "SURF_ppb_PAN"
+vmroh = "SURF_ppb_OH"
+vmrmgly = "SURF_ppb_MGLYOX"
+
+concpm25w = "SURF_PM25water"
+concec = "SURF_ug_ECFINE"
+concecbb = "SURF_ug_ECbb"
+concecoth = "SURF_ug_ECoth"
+
+concdustf = "SURF_ug_DUST_NAT_F"
+concdustc = "SURF_ug_DUST_NAT_C"
+
+concom25 = "SURF_ug_PM_OM25"
+
+
+# WP8 PMF variables
+concpoart = "SURF_ug_PM_POA_RT"
+concpoacbb = "SURF_ug_PM_POA_Cbb"
+concpoawf = "SURF_ug_PM_POA_WF"
+concpoaoth = "SURF_ug_PM_POA_OTH"
+concsoart = "SURF_ug_PM_SOA_F"
+concsoacbb = "SURF_ug_PM_SOA_Cbb"
+concsoawf = "SURF_ug_PM_SOA_WF"
+concsoaoth = "SURF_ug_PM_SOA_OTH"
+concbsoa = "SURF_ug_PM_BSOA"
