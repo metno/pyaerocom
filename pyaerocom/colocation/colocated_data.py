@@ -1227,6 +1227,17 @@ class ColocatedData(BaseModel):
                 meta_out[key] = val
         return meta_out
 
+    @staticmethod
+    def _build_netcdf_encoding(ds: xr.Dataset) -> dict:
+        encoding = {}
+        for name, da in ds.data_vars.items():
+            var_encoding = {
+                "zlib": True,
+                "complevel": 1,
+            }
+            encoding[name] = var_encoding
+        return encoding
+
     def to_netcdf(self, out_dir, savename=None, **kwargs):
         """Save data object as NetCDF file
 
@@ -1256,8 +1267,11 @@ class ColocatedData(BaseModel):
             savename = f"{savename}.nc"
         arr = self.data.copy()
         arr.attrs = self._prepare_meta_to_netcdf()
+        ds = arr.to_dataset()
+        if "encoding" not in kwargs:
+            kwargs["encoding"] = self._build_netcdf_encoding(ds)
         fp = os.path.join(out_dir, savename)
-        arr.to_netcdf(path=fp, **kwargs)
+        ds.to_netcdf(path=fp, **kwargs)
         return fp
 
     def _meta_from_netcdf(self, imported_meta):

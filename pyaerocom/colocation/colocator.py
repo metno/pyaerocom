@@ -469,9 +469,12 @@ class Colocator:
                             )
                             data_out[f"{mod_var}somo30"][f"{obs_var}somo30"] = somo30
                 else:
-                    logger.info(
-                        f"Skipping mda8 and somo30 calculation for [{obs_var}, {mod_var}] because ts_type is {coldata.ts_type}, hourly needed 🟡"
-                    )
+                    if (calc_mda8 and (obs_var in MDA8_INPUT_VARS)) or (
+                        calc_somo30 and (obs_var in SOMO30_INPUT_VARS)
+                    ):
+                        logger.info(
+                            f"Skipping somo30/mda8 calculation for [{obs_var}, {mod_var}] because ts_type is {coldata.ts_type}, hourly needed ⚠️"
+                        )
 
                 self._processing_status.append((mod_var, obs_var, 1))
             except Exception:
@@ -979,9 +982,8 @@ class Colocator:
 
         else:
             savename = self._coldata_savename(obs_var, mvar, coldata.ts_type)
-        fp = coldata.to_netcdf(
-            self.output_dir, savename=savename, compress=True, compression_level=1
-        )
+
+        fp = coldata.to_netcdf(self.output_dir, savename=savename)
         self.files_written.append(fp)
         msg = f"WRITE: {fp}\n"
         logger.info(msg)
