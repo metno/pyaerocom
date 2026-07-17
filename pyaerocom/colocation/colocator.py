@@ -979,7 +979,9 @@ class Colocator:
 
         else:
             savename = self._coldata_savename(obs_var, mvar, coldata.ts_type)
-        fp = coldata.to_netcdf(self.output_dir, savename=savename)
+        fp = coldata.to_netcdf(
+            self.output_dir, savename=savename, compress=True, compression_level=1
+        )
         self.files_written.append(fp)
         msg = f"WRITE: {fp}\n"
         logger.info(msg)
