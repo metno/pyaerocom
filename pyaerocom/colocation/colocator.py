@@ -468,6 +468,10 @@ class Colocator:
                                 mod_var,
                             )
                             data_out[f"{mod_var}somo30"][f"{obs_var}somo30"] = somo30
+                else:
+                    logger.info(
+                        f"Skipping mda8 and somo30 calculation for [{obs_var}, {mod_var}] because ts_type is {coldata.ts_type}, hourly needed 🟡"
+                    )
 
                 self._processing_status.append((mod_var, obs_var, 1))
             except Exception:
