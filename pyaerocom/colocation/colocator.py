@@ -432,41 +432,42 @@ class Colocator:
                 )  # note this can be ColocatedData or ColocatedDataLists
                 data_out[mod_var][obs_var] = coldata
 
-                if calc_mda8 and (obs_var in MDA8_INPUT_VARS):
-                    try:
-                        mda8 = mda8_colocated_data(
-                            coldata, obs_var=f"{obs_var}mda8", mod_var=f"{mod_var}mda8"
-                        )
-                    except Exception as e:
-                        logger.error(
-                            f"Exception during colocation of mda8: {e} {traceback.format_exc()} ❌"
-                        )
-                    else:
-                        self._save_coldata(mda8)
-                        logger.info(
-                            "Successfully calculated mda8 for [%s, %s]. 🟢",
-                            obs_var,
-                            mod_var,
-                        )
-                        data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8
+                if coldata.ts_type == "hourly":
+                    if calc_mda8 and (obs_var in MDA8_INPUT_VARS):
+                        try:
+                            mda8 = mda8_colocated_data(
+                                coldata, obs_var=f"{obs_var}mda8", mod_var=f"{mod_var}mda8"
+                            )
+                        except Exception as e:
+                            logger.error(
+                                f"Exception during colocation of mda8: {e} {traceback.format_exc()} ❌"
+                            )
+                        else:
+                            self._save_coldata(mda8)
+                            logger.info(
+                                "Successfully calculated mda8 for [%s, %s]. 🟢",
+                                obs_var,
+                                mod_var,
+                            )
+                            data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8
 
-                if calc_somo30 and (obs_var in SOMO30_INPUT_VARS):
-                    try:
-                        somo30 = somo30_colocated_data(
-                            coldata, obs_var=f"{obs_var}somo30", mod_var=f"{mod_var}somo30"
-                        )
-                    except Exception as e:
-                        logger.error(
-                            f"Exception during colocation of somo30: {e} {traceback.format_exc()} ❌"
-                        )
-                    else:
-                        self._save_coldata(somo30)
-                        logger.info(
-                            "Successfully calculated somo30 for [%s, %s]. 🟢",
-                            obs_var,
-                            mod_var,
-                        )
-                        data_out[f"{mod_var}somo30"][f"{obs_var}somo30"] = somo30
+                    if calc_somo30 and (obs_var in SOMO30_INPUT_VARS):
+                        try:
+                            somo30 = somo30_colocated_data(
+                                coldata, obs_var=f"{obs_var}somo30", mod_var=f"{mod_var}somo30"
+                            )
+                        except Exception as e:
+                            logger.error(
+                                f"Exception during colocation of somo30: {e} {traceback.format_exc()} ❌"
+                            )
+                        else:
+                            self._save_coldata(somo30)
+                            logger.info(
+                                "Successfully calculated somo30 for [%s, %s]. 🟢",
+                                obs_var,
+                                mod_var,
+                            )
+                            data_out[f"{mod_var}somo30"][f"{obs_var}somo30"] = somo30
 
                 self._processing_status.append((mod_var, obs_var, 1))
             except Exception:
