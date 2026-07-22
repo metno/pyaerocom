@@ -1230,12 +1230,13 @@ class ColocatedData(BaseModel):
     @staticmethod
     def _build_netcdf_encoding(ds: xr.Dataset) -> dict:
         encoding = {}
-        for name, da in ds.data_vars.items():
+        nc_vars = list(ds.data_vars.keys()) + list(ds.coords.keys())
+        for nc_var in nc_vars:
             var_encoding = {
                 "zlib": True,
                 "complevel": 1,
             }
-            encoding[name] = var_encoding
+            encoding[nc_var] = var_encoding
         return encoding
 
     def to_netcdf(self, out_dir, savename=None, **kwargs):
