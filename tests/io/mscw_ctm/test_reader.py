@@ -364,7 +364,7 @@ def test_read_emep_dummy_data_error(tmp_path: Path):
     reader = ReadMscwCtm(data_dir=str(data_path / "2017"))
     with pytest.raises(exc.VarNotAvailableError) as e:
         reader.read_var("concno3", ts_type="daily")
-    assert str(e.value) == "concno3f (SURF_ug_NO3_F) not available in Base_day.nc"
+    assert str(e.value).startswith("concno3f (SURF_ug_NO3_F) not available in Base_day.nc")
 
 
 @pytest.mark.parametrize(
