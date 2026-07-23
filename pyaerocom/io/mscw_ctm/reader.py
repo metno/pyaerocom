@@ -852,9 +852,9 @@ class ReadMscwCtm(GriddedReader):
             filedata = self._filedata
             data = filedata[emep_var]
             proj_info = ProjectionInformation.from_xarray(filedata, emep_var)
-        except KeyError:
+        except KeyError as ke:
             raise VarNotAvailableError(
-                f"{var_name_aerocom} ({emep_var}) not available in {self._filename}"
+                f"{var_name_aerocom} ({emep_var}) not available in {self._filename}: {ke}"
             )
         data.attrs["long_name"] = var_name_aerocom
         data.time.attrs["long_name"] = "time"
