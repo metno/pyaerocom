@@ -657,7 +657,7 @@ class ReadMscwCtm(GriddedReader):
             chunks={"time": 24},
             decode_timedelta=True,
             combine="by_coords",
-            join="exact",
+            join="outer",
         )
 
         self._private.filedata = ds
