@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from copy import deepcopy
 import functools
 import logging
 import os
@@ -221,6 +222,43 @@ class ReadMscwCtm(GriddedReader):
         data_dir: str | None = None
         file_pattern: re.Pattern
         ts_type: str | None = None
+
+    class _FixMissingVars:
+        """
+        class to add or remove variables from a multi-file dataset to make
+        sure all datasets have the same variables
+
+        The class is callable to be used by xarray.open_mfdataset as the preprocess argument.
+        """
+
+        def __init__(self):
+            self.expected_vars = None
+
+        def __call__(self, ds: xr.Dataset) -> xr.Dataset:
+            """
+            Check if all variables are there. If not:
+            make the rest of the variables, filled with nans.
+            Log a warning when this is done
+            """
+            if self.expected_vars is None:
+                self.expected_vars = list(ds.data_vars)
+            missing = [v for v in self.expected_vars if v not in ds.data_vars]
+            for var in missing:
+                filename = ds.encoding.get("source", "unknown_filename")
+                logger.warning(f"Variable {var} is missing in {filename}. Filling with NaNs")
+                dummy_var = deepcopy(ds[self.expected_vars[0]])
+                ds = ds.assign(**{var: dummy_var * np.nan})
+                attrs = deepcopy(dummy_var.attrs)
+                ds[var] = ds[var].assign_attrs(attrs)
+
+            # drop additional variables that are not in expected_vars
+            additional = [v for v in ds.data_vars if v not in self.expected_vars]
+            for var in additional:
+                filename = ds.encoding.get("source", "unknown_filename")
+                logger.warning(f"Variable {var} is additional in {filename}. Dropping it")
+                ds = ds.drop_vars(var)
+
+            return ds
 
     def __init__(
         self,
@@ -613,7 +651,14 @@ class ReadMscwCtm(GriddedReader):
         logger.info(f"Opening {fps}")
         # join="exact" became new default in xarray 2025.08.0 with `use_new_combine_kwarg_defaults`
         # use join="outer" since trend-runs might not be 100% homogeneous
-        ds = xr.open_mfdataset(fps, chunks={"time": 24}, decode_timedelta=True, join="outer")
+        ds = xr.open_mfdataset(
+            fps,
+            preprocess=self._FixMissingVars(),
+            chunks={"time": 24},
+            decode_timedelta=True,
+            combine="by_coords",
+            join="outer",
+        )
 
         self._private.filedata = ds
 
