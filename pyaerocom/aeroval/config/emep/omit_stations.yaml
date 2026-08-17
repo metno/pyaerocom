@@ -65,6 +65,45 @@ variables:
     - NO0043R
     - DK0010G
     - IT0019*
+  NO:
+    - BE0007*
+    - DK0008*
+    - DK0031*
+  NO2:
+    - ES0009*
+    - SI0008*
+  NH4:
+    - EE0009*
+  SO2:
+    - BE0007*
+    - DE0001*
+    - ES0012*
+    - ES0013*
+    - ES0014*
+    - GR0001*
+  SO4:
+    - EE0009*
+  NO3:
+    - EE0009*
+    - RS0006R
+  so4wdep:
+    - BY0004R
+    - SI0008R
+  soxwdep:
+    - BY0004R
+    - SI0008R
+  oxnwdep:
+    - BY0004R
+    - SI0008R
+  no3wdep:
+    - BY0004R
+    - SI0008R
+  nhxwdep:
+    - BY0004R
+    - SI0008R
+  precip:
+    - BY0004R
+    - SI0008R
 
 2023:
   ALL:
