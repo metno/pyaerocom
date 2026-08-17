@@ -26,6 +26,8 @@ dependencies = [
     # and minimum versions in the tox config at the bottom of this file!
     "aerovaldb>=0.5.2, < 0.6.0",
     "scitools-iris>=3.11.0",
+    # xxhash and iris incompatibility issue: https://github.com/SciTools/iris/issues/7251
+    "xxhash<=4.0.0",
     "xarray>=2022.12.0",
     "cartopy>=0.21.1",
     "matplotlib>=3.7.1",
@@ -235,6 +237,8 @@ deps =
     # Should be incremented when changing dependencies above.
     aerovaldb ==0.5.2; python_version < "3.11"
     scitools-iris ==3.11.0; python_version < "3.11"
+    # xxhash and iris incompatibility issue: https://github.com/SciTools/iris/issues/7251
+    xxhash <= 4.0.0
     cartopy ==0.21.1; python_version < "3.11"
     matplotlib ==3.7.1; python_version < "3.11"
     scipy ==1.10.1; python_version < "3.11"
