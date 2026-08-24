@@ -162,7 +162,9 @@ def clean_filters(cfg: dict, obs_pattern: str) -> dict:
     return CFG
 
 
-def add_EBAS_with_station_classification(cfg: dict, station_classification: str):
+def add_EBAS_with_station_classification(
+    cfg: dict, station_classification: str
+):  # pragma: no cover
     """
     Adds new EBAS networks for only given station_classification (U, R or G). The networks are appended to the
     list of networks, with new names
