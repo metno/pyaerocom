@@ -337,6 +337,8 @@ class ColocationSetup(BaseModel):
             return v
         if isinstance(v, str):
             return pd.Timestamp(v)
+        if isinstance(v, pd.Timestamp):
+            return v
 
     pyaro_config: PyaroConfig | None = None
 

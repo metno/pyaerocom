@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+import pandas as pd
+
 from pyaerocom import const
 from pyaerocom.colocation.colocation_setup import ColocationSetup
 from pyaerocom.config_reader import ALL_REGION_NAME
@@ -74,3 +76,26 @@ def test_ColocationSetup_model_kwargs_validationerror() -> None:
 
     with pytest.raises(ValidationError, match="Key ts_type not allowed in model_kwargs "):
         ColocationSetup(**default_setup, model_kwargs={"emep_vars": {}, "ts_type": "daily"})
+
+
+def test_ColocationSetup_model_kwargs_start_stop_validationerror():
+    stp_none = ColocationSetup(**default_setup)
+
+    default_setup["start"] = 2000
+    default_setup["stop"] = 2010
+    stp_int = ColocationSetup(**default_setup)
+    assert stp_int.start == 2000
+    assert stp_int.stop == 2010
+
+    default_setup["start"] = pd.Timestamp("2000-01-01")
+    default_setup["stop"] = pd.Timestamp("2010-12-31")
+    stp_pd = ColocationSetup(**default_setup)
+
+    assert stp_pd.start == pd.Timestamp("2000-01-01")
+    assert stp_pd.stop == pd.Timestamp("2010-12-31")
+
+    with pytest.raises(ValidationError, match="6 validation errors for ColocationSetup"):
+        default_setup["start"] = ["2000-01-01"]
+        default_setup["stop"] = ["2010-12-31"]
+        breakpoint()
+        ColocationSetup(**default_setup)
