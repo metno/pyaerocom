@@ -100,5 +100,4 @@ def test_ColocationSetup_model_kwargs_start_stop_validationerror():
     with pytest.raises(ValidationError, match="6 validation errors for ColocationSetup"):
         default_setup["start"] = ["2000-01-01"]
         default_setup["stop"] = ["2010-12-31"]
-        breakpoint()
         ColocationSetup(**default_setup)
