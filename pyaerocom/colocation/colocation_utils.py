@@ -12,7 +12,6 @@ from geonum.atmosphere import pressure
 
 from pyaerocom import __version__ as pya_ver
 from pyaerocom import const
-from pyaerocom.stationdata import StationData
 from pyaerocom._lowlevel_helpers import RegridResDeg
 from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.exceptions import (
@@ -26,15 +25,11 @@ from pyaerocom.exceptions import (
 from pyaerocom.filter import Filter
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.griddeddata_container import GriddedDataContainer
-
-from pyaerocom.ungridded_data_container import UngriddedDataContainer
-from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
-from pyaerocom.helpers import (
-    isnumeric,
-    make_datetime_index,
-)
+from pyaerocom.helpers import isnumeric, make_datetime_index
+from pyaerocom.stationdata import StationData
 from pyaerocom.time_resampler import TimeResampler
-from pyaerocom.units.datetime import TsType
+from pyaerocom.ungridded_data_container import UngriddedDataContainer
+from pyaerocom.units.datetime import TsType, get_lowest_resolution, to_pandas_timestamp
 
 from .colocated_data import ColocatedData
 
@@ -309,7 +304,7 @@ def colocate_gridded_gridded(
     if isinstance(data_ref_np, np.ma.core.MaskedArray):
         data_ref_np = data_ref_np.filled(np.nan)
     arr = np.asarray((data_ref_np, data_np))
-    time = data.time_stamps().astype("datetime64[ns]")
+    time = data.time_stamps().astype("datetime64[us]")
     lats = data.latitude_points
     lons = data.longitude_points
 
@@ -454,7 +449,7 @@ def _colocate_site_data_helper(
         )[var_ref]
 
     # fill up missing time stamps
-    return pd.concat([obs_ts, grid_ts], axis=1, keys=["ref", "data"])
+    return pd.concat([obs_ts, grid_ts], axis=1, keys=["ref", "data"], sort=True)
 
 
 def _colocate_site_data_helper_timecol(
@@ -547,11 +542,18 @@ def _colocate_site_data_helper_timecol(
     # now both StationData objects are in the same resolution, but they still
     # might have gaps in their time axis, thus concatenate them in a DataFrame,
     # which will merge the time index
-    merged = pd.concat([stat_data_ref[var_ref], stat_data[var]], axis=1, keys=["ref", "data"])
+    merged = pd.concat(
+        [stat_data_ref[var_ref], stat_data[var]],
+        axis=1,
+        keys=["ref", "data"],
+        sort=True,
+    )
+
     # Interpolate the model to the times of the observations
     # (for non-standard coltst it could be that 'resample_time'
     # has placed the model and observations at different time stamps)
-    merged = merged.interpolate("index").reindex(obs_idx).loc[obs_idx]
+    # ensure model data is not over-interpolated when nan
+    merged = merged.interpolate("index", limit=1).reindex(obs_idx).loc[obs_idx]
     # Set to NaN at times when observations were NaN originally
     # (because the interpolation will interpolate the 'ref' column as well)
     merged.loc[obs_isnan] = np.nan
@@ -559,7 +561,7 @@ def _colocate_site_data_helper_timecol(
     merged.loc[merged.data.isnull()] = np.nan
     # Ensure the whole timespan of the model is kept in "merged"
     stat_data[var].name = "tmp"
-    merged = pd.concat([merged, stat_data[var]], axis=1)
+    merged = pd.concat([merged, stat_data[var]], axis=1, sort=True)
     merged = merged[["ref", "data"]]
 
     grid_ts = merged["data"]
@@ -586,7 +588,8 @@ def _colocate_site_data_helper_timecol(
         min_num_obs=min_num_obs,
     )
     # fill up missing time stamps
-    return pd.concat([obs_ts, grid_ts], axis=1, keys=["ref", "data"])
+
+    return pd.concat([obs_ts, grid_ts], axis=1, keys=["ref", "data"], sort=True)
 
 
 def colocate_gridded_ungridded(
@@ -984,7 +987,11 @@ def _get_stat_data_vec(
 ) -> tuple[list[StationData], list[StationData]]:
     obs_stat_pos = np.array(
         [
-            (*proj(station.latitude, station.longitude), station.latitude, station.longitude)
+            (
+                *proj(station.latitude, station.longitude),
+                station.latitude,
+                station.longitude,
+            )
             for station in unsorted_obs_stat_data
         ],
         np.dtype([("x", "f8"), ("y", "f8"), ("lat", "f8"), ("lon", "f8")]),

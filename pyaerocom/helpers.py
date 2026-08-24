@@ -5,6 +5,7 @@ General helper methods for the pyaerocom library.
 from __future__ import annotations
 
 import logging
+import math
 import math as ma
 from datetime import datetime
 
@@ -26,18 +27,16 @@ from pyaerocom.exceptions import (
     ResamplingError,
     VariableDefinitionError,
 )
+from pyaerocom.units import Unit
+from pyaerocom.units.datetime import TsType, is_year, to_pandas_timestamp
 from pyaerocom.units.datetime.time_config import (
     PANDAS_RESAMPLE_OFFSETS,
     TS_TYPE_DATETIME_CONV,
-    TS_TYPE_TO_PANDAS_FREQ,
     TS_TYPE_TO_FREQ_NAME,
     TS_TYPE_TO_NUMPY_FREQ,
+    TS_TYPE_TO_PANDAS_FREQ,
 )
-from pyaerocom.units.datetime import TsType, is_year, to_pandas_timestamp
 from pyaerocom.variable_helpers import get_variable
-
-from pyaerocom.units import Unit
-import math
 
 logger = logging.getLogger(__name__)
 
@@ -874,7 +873,7 @@ def resample_timeseries(ts, freq, how=None, min_num_obs=None):
         # df = resampler.agg([how, 'count'])
         invalid = numobs < min_num_obs
         if np.any(invalid):
-            data.values[invalid] = np.nan
+            data.mask(invalid, other=np.nan, inplace=True)
     if offset is not None:
         data.index = data.index + offset
     return data

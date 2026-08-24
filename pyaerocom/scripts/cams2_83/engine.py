@@ -17,6 +17,7 @@ from pyaerocom.aeroval.coldatatojson_helpers import (
     init_regions_web,
 )
 from pyaerocom.aeroval.fairmode_statistics import SPECIES, FairmodeStatistics
+from pyaerocom.aeroval.radarplot_statistics import RadarPlotStatistics
 from pyaerocom.exceptions import DataCoverageError, UnknownRegion
 from pyaerocom.io.cams2_83.models import ModelName
 from pyaerocom.units.datetime import TsType
@@ -92,6 +93,7 @@ class CAMS2_83_Engine(ProcessingEngine):
 
         if use_fairmode:
             fairmode_statistics = FairmodeStatistics()
+            radar_statistics = RadarPlotStatistics()
 
         if use_fairmode and len(persistence_coldata) > 0 and var_name in SPECIES:
             persistence_coldata = persistence_coldata[0]
@@ -141,6 +143,7 @@ class CAMS2_83_Engine(ProcessingEngine):
             # results_mqi = {}
         results = {}
         results_fairmode = {}
+        results_radar = {}
 
         for regid, regname in regnames.items():
             results[regname] = {}
@@ -162,6 +165,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                 continue
             for per in periods:
                 results_fairmode[regname] = {}
+                results_radar[regname] = {}
                 for season in seasons:
                     perstr = f"{per}-{season}"
 
@@ -202,6 +206,7 @@ class CAMS2_83_Engine(ProcessingEngine):
                     if use_fairmode and var_name in SPECIES:
 
                         fairmode_subset = subset[0]
+                        radar_subset = subset[0]
                         if SPECIES[var_name]["freq"] != TsType("hourly"):
                             fairmode_subset = fairmode_subset.resample_time(
                                 SPECIES[var_name]["freq"],
@@ -214,6 +219,9 @@ class CAMS2_83_Engine(ProcessingEngine):
                                 fairmode_subset, var_name
                             )
                         )
+
+
+                        results_radar[f"{regname}"][f"{perstr}"] = radar_statistics.get_radarplot_statistics(radar_subset, var_name)
 
                         if calc_forecast_target:
 
@@ -269,6 +277,21 @@ class CAMS2_83_Engine(ProcessingEngine):
                     fairmode_statistics.save_fairmode_stats(
                         self.exp_output,
                         results_fairmode,
+                        obs_name,
+                        var_name_web,
+                        vert_code,
+                        (
+                            modelname
+                            if (modelname == "ENS" or modelname == "MOS")
+                            else model.webname
+                        ),  # MOS/ENS evaluation special case
+                        model_var,
+                        per,
+                        regname,
+                    )
+                    radar_statistics.save_radarplot_stats(
+                        self.exp_output,
+                        results_radar,
                         obs_name,
                         var_name_web,
                         vert_code,

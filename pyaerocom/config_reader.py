@@ -132,8 +132,12 @@ class ConfigReader:
     PATHS_INI_NAME = "paths.ini"
 
     #: boolean specifying whether EBAS DB is copied to local cache for faster
-    #: access, defaults to True
-    EBAS_DB_LOCAL_CACHE = True
+    #: access, defaults to False
+    EBAS_DB_LOCAL_CACHE = False
+
+    #: boolean flag whether EBAS should use station code as display name
+    #: default: False, i.e. use station name as display name
+    EBAS_USE_STATION_CODE_AS_DISPLAY_NAME = False
 
     #: Lowest possible year in data
     MIN_YEAR = 0

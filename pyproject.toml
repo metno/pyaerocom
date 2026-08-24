@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pyaerocom"
-version = "0.36.dev0"
+version = "0.38.dev0"
 authors = [{ name = "MET Norway" }]
 description = "pyaerocom model evaluation software"
 classifiers = [
@@ -24,8 +24,10 @@ requires-python = ">=3.10"
 dependencies = [
     # NOTE: Please also update dependency versions in pyaerocom_env.yml,
     # and minimum versions in the tox config at the bottom of this file!
-    "aerovaldb>=0.5.0, < 0.6.0",
+    "aerovaldb>=0.5.2, < 0.6.0",
     "scitools-iris>=3.11.0",
+    # xxhash and iris incompatibility issue: https://github.com/SciTools/iris/issues/7251
+    "xxhash<4.0.0",
     "xarray>=2022.12.0",
     "cartopy>=0.21.1",
     "matplotlib>=3.7.1",
@@ -233,8 +235,10 @@ deps =
     # Will only run on lowest supported Python version CI test
     # (currently 3.10).
     # Should be incremented when changing dependencies above.
-    aerovaldb ==0.5.0; python_version < "3.11"
+    aerovaldb ==0.5.2; python_version < "3.11"
     scitools-iris ==3.11.0; python_version < "3.11"
+    # xxhash and iris incompatibility issue: https://github.com/SciTools/iris/issues/7251
+    xxhash < 4.0.0
     cartopy ==0.21.1; python_version < "3.11"
     matplotlib ==3.7.1; python_version < "3.11"
     scipy ==1.10.1; python_version < "3.11"
