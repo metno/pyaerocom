@@ -81,6 +81,9 @@ def test_ColocationSetup_model_kwargs_validationerror() -> None:
 def test_ColocationSetup_model_kwargs_start_stop_validationerror():
     stp_none = ColocationSetup(**default_setup)
 
+    assert stp_none.start is None
+    assert stp_none.stop is None
+
     default_setup["start"] = 2000
     default_setup["stop"] = 2010
     stp_int = ColocationSetup(**default_setup)
