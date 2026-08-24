@@ -29,8 +29,8 @@ from pyaerocom.helpers import start_stop, to_datestring_YYYYMMDD
 from pyaerocom.io import ReadCAMS2_83, ReadCAMS2_82, ReadGridded, ReadUngridded
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
-from pyaerocom.stats.mda8.const import MDA8_INPUT_VARS
-from pyaerocom.stats.mda8.mda8 import mda8_colocated_data
+from pyaerocom.stats.mda8.const import MDA8_INPUT_VARS, SOMO30_INPUT_VARS
+from pyaerocom.stats.mda8.mda8 import mda8_colocated_data, somo30_colocated_data
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.units import Unit
 from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
@@ -404,6 +404,13 @@ class Colocator:
         if any(x in ["daily", "monthly", "yearly"] for x in self.colocation_setup.freqs):
             calc_mda8 = True
 
+        # SOMO35 is yearly
+        calc_somo30 = False
+        if self.colocation_setup.main_freq in ["yearly"]:
+            calc_somo30 = True
+        if any(x in ["yearly"] for x in self.colocation_setup.freqs):
+            calc_somo30 = True
+
         data_out = defaultdict(lambda: dict())
         # TODO: see if the following could be solved via custom context manager
         try:
@@ -425,21 +432,49 @@ class Colocator:
                 )  # note this can be ColocatedData or ColocatedDataLists
                 data_out[mod_var][obs_var] = coldata
 
-                if calc_mda8 and (obs_var in MDA8_INPUT_VARS):
-                    try:
-                        mda8 = mda8_colocated_data(
-                            coldata, obs_var=f"{obs_var}mda8", mod_var=f"{mod_var}mda8"
-                        )
-                    except ValueError as e:
-                        logger.debug(e)
-                    else:
-                        self._save_coldata(mda8)
+                if coldata.ts_type == "hourly":
+                    if calc_mda8 and (obs_var in MDA8_INPUT_VARS):
+                        try:
+                            mda8 = mda8_colocated_data(
+                                coldata, obs_var=f"{obs_var}mda8", mod_var=f"{mod_var}mda8"
+                            )
+                        except Exception as e:
+                            logger.error(
+                                f"Exception during colocation of mda8: {e} {traceback.format_exc()} ❌"
+                            )
+                        else:
+                            self._save_coldata(mda8)
+                            logger.info(
+                                "Successfully calculated mda8 for [%s, %s]. 🟢",
+                                obs_var,
+                                mod_var,
+                            )
+                            data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8
+
+                    if calc_somo30 and (obs_var in SOMO30_INPUT_VARS):
+                        try:
+                            somo30 = somo30_colocated_data(
+                                coldata, obs_var=f"{obs_var}somo30", mod_var=f"{mod_var}somo30"
+                            )
+                        except Exception as e:
+                            logger.error(
+                                f"Exception during colocation of somo30: {e} {traceback.format_exc()} ❌"
+                            )
+                        else:
+                            self._save_coldata(somo30)
+                            logger.info(
+                                "Successfully calculated somo30 for [%s, %s]. 🟢",
+                                obs_var,
+                                mod_var,
+                            )
+                            data_out[f"{mod_var}somo30"][f"{obs_var}somo30"] = somo30
+                else:
+                    if (calc_mda8 and (obs_var in MDA8_INPUT_VARS)) or (
+                        calc_somo30 and (obs_var in SOMO30_INPUT_VARS)
+                    ):
                         logger.info(
-                            "Successfully calculated mda8 for [%s, %s]. 🟢",
-                            obs_var,
-                            mod_var,
+                            f"Skipping somo30/mda8 calculation for [{obs_var}, {mod_var}] because ts_type is {coldata.ts_type}, hourly needed ⚠️"
                         )
-                        data_out[f"{mod_var}mda8"][f"{obs_var}mda8"] = mda8
 
                 self._processing_status.append((mod_var, obs_var, 1))
             except Exception:
@@ -947,6 +982,7 @@ class Colocator:
 
         else:
             savename = self._coldata_savename(obs_var, mvar, coldata.ts_type)
+
         fp = coldata.to_netcdf(self.output_dir, savename=savename)
         self.files_written.append(fp)
         msg = f"WRITE: {fp}\n"

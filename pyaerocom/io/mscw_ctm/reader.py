@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from copy import deepcopy
 import functools
 import logging
 import os
@@ -33,7 +34,7 @@ from .additional_variables import (
     calc_conNtno3_emep,
     calc_vmrno2,
     calc_vmro3,
-    calc_vmrox_from_conc,
+    calc_vmrox,
     identity,
     subtract_dataarrays,
     update_EC_units,
@@ -95,8 +96,8 @@ class ReadMscwCtm(GriddedReader):
         "concno3pm25": ["concno3f", "concno3c"],
         "concsspm25": ["concssf", "concssc"],
         "concsspm10": ["concssf", "concssc"],
-        # "vmrox": ["concno2", "vmro3"],
-        "vmrox": ["concno2", "conco3"],
+        "vmrox": ["concno2", "vmro3"],
+        # "vmrox": ["concno2", "conco3"],
         "vmrno2": ["concno2"],
         "concNtno3": ["concoxn"],
         "concNtnh": ["concrdn"],
@@ -108,6 +109,7 @@ class ReadMscwCtm(GriddedReader):
         "concCecpm25": ["concecpm25"],
         "concCocpm25": ["concCocFine"],
         "concCocpm10": ["concCocFine", "concCocCoarse"],
+        "concom10": ["concoaf", "concoac"],
         "concso4t": ["concso4", "concss"],
         "concNno": ["concno"],
         "concNno2": ["concno2"],
@@ -153,8 +155,8 @@ class ReadMscwCtm(GriddedReader):
         "concno3pm25": calc_concno3pm25,
         "concsspm25": calc_concsspm25,
         "concsspm10": add_dataarrays,
-        # "vmrox": calc_vmrox,
-        "vmrox": calc_vmrox_from_conc,
+        "vmrox": calc_vmrox,
+        # "vmrox": calc_vmrox_from_conc,
         "vmrno2": calc_vmrno2,
         "concNtno3": calc_conNtno3_emep,
         "concNtnh": calc_conNtnh_emep,
@@ -166,6 +168,7 @@ class ReadMscwCtm(GriddedReader):
         "concCecpm10": update_EC_units,
         "concCocpm25": identity,
         "concCocpm10": add_dataarrays,
+        "concom10": add_dataarrays,
         "concso4t": calc_concso4t,
         "concNno": calc_concNno,
         "concNno2": calc_concNno2,
@@ -219,6 +222,43 @@ class ReadMscwCtm(GriddedReader):
         data_dir: str | None = None
         file_pattern: re.Pattern
         ts_type: str | None = None
+
+    class _FixMissingVars:
+        """
+        class to add or remove variables from a multi-file dataset to make
+        sure all datasets have the same variables
+
+        The class is callable to be used by xarray.open_mfdataset as the preprocess argument.
+        """
+
+        def __init__(self):
+            self.expected_vars = None
+
+        def __call__(self, ds: xr.Dataset) -> xr.Dataset:
+            """
+            Check if all variables are there. If not:
+            make the rest of the variables, filled with nans.
+            Log a warning when this is done
+            """
+            if self.expected_vars is None:
+                self.expected_vars = list(ds.data_vars)
+            missing = [v for v in self.expected_vars if v not in ds.data_vars]
+            for var in missing:
+                filename = ds.encoding.get("source", "unknown_filename")
+                logger.warning(f"Variable {var} is missing in {filename}. Filling with NaNs")
+                dummy_var = deepcopy(ds[self.expected_vars[0]])
+                ds = ds.assign(**{var: dummy_var * np.nan})
+                attrs = deepcopy(dummy_var.attrs)
+                ds[var] = ds[var].assign_attrs(attrs)
+
+            # drop additional variables that are not in expected_vars
+            additional = [v for v in ds.data_vars if v not in self.expected_vars]
+            for var in additional:
+                filename = ds.encoding.get("source", "unknown_filename")
+                logger.warning(f"Variable {var} is additional in {filename}. Dropping it")
+                ds = ds.drop_vars(var)
+
+            return ds
 
     def __init__(
         self,
@@ -609,7 +649,16 @@ class ReadMscwCtm(GriddedReader):
                 )
 
         logger.info(f"Opening {fps}")
-        ds = xr.open_mfdataset(fps, chunks={"time": 24}, decode_timedelta=True)
+        # join="exact" became new default in xarray 2025.08.0 with `use_new_combine_kwarg_defaults`
+        # use join="outer" since trend-runs might not be 100% homogeneous
+        ds = xr.open_mfdataset(
+            fps,
+            preprocess=self._FixMissingVars(),
+            chunks={"time": 24},
+            decode_timedelta=True,
+            combine="by_coords",
+            join="outer",
+        )
 
         self._private.filedata = ds
 
@@ -848,9 +897,9 @@ class ReadMscwCtm(GriddedReader):
             filedata = self._filedata
             data = filedata[emep_var]
             proj_info = ProjectionInformation.from_xarray(filedata, emep_var)
-        except KeyError:
+        except KeyError as ke:
             raise VarNotAvailableError(
-                f"{var_name_aerocom} ({emep_var}) not available in {self._filename}"
+                f"{var_name_aerocom} ({emep_var}) not available in {self._filename}: {ke}"
             )
         data.attrs["long_name"] = var_name_aerocom
         data.time.attrs["long_name"] = "time"

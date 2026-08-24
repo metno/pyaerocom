@@ -30,5 +30,5 @@ pyaerocom
 .. |Coverage| image:: https://codecov.io/gh/metno/pyaerocom/branch/main-dev/graph/badge.svg?token=A0AdX8YciZ
     :target: https://codecov.io/gh/metno/pyaerocom
 
-.. |DOI| image:: https://zenodo.org/badge/128209701.svg
-  :target: https://doi.org/10.5281/zenodo.4139878
+.. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.20049601.svg
+  :target: https://doi.org/10.5281/zenodo.20049601
