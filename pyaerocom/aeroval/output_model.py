@@ -25,6 +25,7 @@ class MenuEntry(BaseModel):
     type: str
     cat: str
     name: str
+    longname: str
     obs_longnames: dict[str, str] | None = None
     obs: dict[str, MenuLevel]
 
