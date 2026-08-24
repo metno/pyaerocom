@@ -143,6 +143,10 @@ class ObsEntry(BaseModel):
     colocation_layer_limts: tuple[LayerLimits, ...] | None = None
     profile_layer_limits: tuple[LayerLimits, ...] | None = None
     web_interface_name: str | None = None
+
+    longname: str = (
+        ""  # Description of the observation entry, added to menu.json for the frontend to use
+    )
     diurnal_only: bool = False
     obs_type: str | None = None
 

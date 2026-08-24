@@ -25,6 +25,7 @@ from pyaerocom.aeroval.glob_defaults import (
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
+from pyaerocom.aeroval.output_model import Menu
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS, SOMO30_OUTPUT_VARS
@@ -805,9 +806,27 @@ class ExperimentOutput(ProjectOutput):
 
             if self._is_part_of_experiment(obs_name, obs_var, mod_name, mod_var):
                 mcfg = self.cfg.model_cfg.get_entry(mod_name)
+
+                obs_longnames = {}
+                for src_name in self.cfg.obs_cfg.keylist():
+                    ocfg = self.cfg.obs_cfg.get_entry(src_name)
+                    longname = ocfg.longname
+                    webname = ocfg.web_interface_name
+                    if webname is None:
+                        continue
+
+                    if webname in obs_longnames:
+                        if longname != obs_longnames[webname]:
+                            raise ValueError(
+                                f"Different longnames given for same web interface name: {longname} != {obs_longnames[webname]}"
+                            )
+                    else:
+                        obs_longnames[webname] = longname
+
                 var = mcfg.get_varname_web(mod_var, obs_var)
                 if var not in new:
                     new[var] = self._init_menu_entry(var)
+                    new[var]["obs_longnames"] = obs_longnames
 
                 if obs_name not in new[var]["obs"]:
                     new[var]["obs"][obs_name] = {}
@@ -819,6 +838,7 @@ class ExperimentOutput(ProjectOutput):
 
                 new[var]["obs"][obs_name][vert_code][mod_name] = {
                     "model_id": mcfg.model_id,
+                    "longname": mcfg.longname,
                     "model_var": mod_var,
                     "obs_var": obs_var,
                 }
@@ -844,7 +864,9 @@ class ExperimentOutput(ProjectOutput):
                 logger.warning(
                     "Cannot create the entry menu for conco3mda8, entry for conco3 not found"
                 )
-        return new
+
+        return Menu.return_validated(new)
+        # return new
 
     def _sort_menu_entries(self, avail: dict) -> dict:
         """
