@@ -9,17 +9,14 @@ import iris.util
 import numpy as np
 
 from pyaerocom._lowlevel_helpers import merge_dicts
+from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import copy_coords_cube
+from pyaerocom.units import Unit
+from pyaerocom.units.constants import RSPECIFIC
 from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.units.molecular_mass import get_mmr_to_vmr_fac, get_molmass
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
-
-from pyaerocom.griddeddata import GriddedData
-
-
 from pyaerocom.varnameinfo import VarNameInfo
-from pyaerocom.units import Unit
-
 
 logger = logging.getLogger(__name__)
 
@@ -221,9 +218,7 @@ def compute_angstrom_coeff_cubes(cube1, cube2, lambda1=None, lambda2=None):
 
 
 def rho_from_ts_ps(ts, ps):
-    R = 287.058  # R for dry air
-
-    rho = R * divide_cubes(ts, ps)
+    rho = RSPECIFIC * divide_cubes(ts, ps)
 
     rho.attributes.update(merge_meta_cubes(ts, ps))
 
@@ -271,13 +266,11 @@ def conc_from_vmr_STP(
 ):
     cube = _check_input_iscube(cube)[0]
 
-    R = 287.058  # R for dry air
-
     standard_T = 293
     standard_P = 101300
 
     mmr_cube = mmr_from_vmr(cube)
-    rho = R * standard_T / standard_P
+    rho = RSPECIFIC * standard_T / standard_P
 
     cube_out = rho * mmr_cube
 

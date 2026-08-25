@@ -9,7 +9,7 @@ from pyaerocom.io.cnemc.reader import ReadCNEMC
 
 STATION_NAMES = ("1478A", "2706A", "3377A")
 VARS_DEFAULT = {"concco", "concno2", "conco3", "concpm10", "concpm25", "concso2"}
-VARS_PROVIDED = VARS_DEFAULT | {"vmro3", "vmro3max", "vmrno2"}
+VARS_PROVIDED = VARS_DEFAULT | {"vmro3", "vmro3max", "vmrno2", "vmrso2"}
 
 
 @pytest.fixture(scope="module")

@@ -21,7 +21,7 @@ pyaerocom
   :width: 30%
 
 .. |CI| image:: https://github.com/metno/pyaerocom/workflows/CI/badge.svg
-	:target: https://github.com/metno/pyaerocom/actions
+    :target: https://github.com/metno/pyaerocom/actions
 
 .. |Docs| image:: https://readthedocs.org/projects/pyaerocom/badge/?version=latest
  :target: https://pyaerocom.readthedocs.io/en/latest/?badge=latest
@@ -30,5 +30,5 @@ pyaerocom
 .. |Coverage| image:: https://codecov.io/gh/metno/pyaerocom/branch/main-dev/graph/badge.svg?token=A0AdX8YciZ
     :target: https://codecov.io/gh/metno/pyaerocom
 
-.. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.17292961.svg
-  :target: https://doi.org/10.5281/zenodo.17292961
+.. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.20049601.svg
+  :target: https://doi.org/10.5281/zenodo.20049601

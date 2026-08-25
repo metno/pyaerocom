@@ -1,10 +1,18 @@
 import glob
 import logging
+from datetime import datetime, timedelta
 
 import aerovaldb
 import xarray as xr
 
-from pyaerocom import ColocatedData, GriddedData, TsType, __version__, const
+from pyaerocom import (
+    ColocatedData,
+    GriddedData,
+    GriddedDataContainer,
+    TsType,
+    __version__,
+    const,
+)
 from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.json_utils import round_floats
 from pyaerocom.aeroval.modelmaps_helpers import (
@@ -27,12 +35,34 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VarNotAvailableError,
 )
+from pyaerocom.stats.mda8.mda8 import calc_mda8
 from pyaerocom.units.helpers import get_standard_unit
-
 
 logger = logging.getLogger(__name__)
 
 MODELREADERS_USE_MAP_FREQ = ["ReadMscwCtm"]  # , "ReadCAMS2_83"]
+
+
+def calco3mda8(data: GriddedData) -> list[GriddedData]:
+    data2 = data.to_xarray()
+    o3mda8 = (
+        calc_mda8(data2)
+        .rename("conco3mda8")
+        .assign_attrs(
+            long_name="conco3mda8",
+            species="O3 MDA8",
+        )
+    )
+    cubeo3mda8 = o3mda8.to_iris()
+    griddedo3mda8 = GriddedData(
+        cubeo3mda8,
+        var_name="conco3mda8",
+        ts_type="daily",
+        check_unit=True,
+        convert_unit_on_init=True,
+    )
+    griddedo3mda8.metadata["data_id"] = data.data_id
+    return [data, griddedo3mda8]
 
 
 class ModelMapsEngine(ProcessingEngine, DataImporter):
@@ -118,7 +148,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                         model_name, False
                     )
                 if CONTOUR in self.cfg.modelmaps_opts.plot_types or make_contour:
-                    self._process_contour_map_var(model_name, var, self.reanalyse_existing)
+                    self._process_contour_map_var(
+                        model_name,
+                        var,
+                        self.reanalyse_existing,
+                        self.cfg.processing_opts.compute_conco3mda8_contours,
+                    )
 
                 if OVERLAY in self.cfg.modelmaps_opts.plot_types or make_overlay:
                     # create overlay (pixel) plots
@@ -146,7 +181,9 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             data = data.extract_surface_level()
         return data
 
-    def _process_contour_map_var(self, model_name, var, reanalyse_existing):  # pragma: no cover
+    def _process_contour_map_var(
+        self, model_name, var, reanalyse_existing, compute_conco3mda8_contours
+    ):  # pragma: no cover
         """
         Process model data to create map geojson files
 
@@ -170,63 +207,85 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             If model/var data cannot be read
         """
         try:
-            data = self._read_model_data(model_name, var)
+            read_data = self._read_model_data(model_name, var)
         except Exception as e:
             raise ModelVarNotAvailable(
                 f"Cannot read data for model {model_name} (variable {var}): {e}"
             )
 
         var_ranges_defaults = self.cfg.var_scale_colmap
-        if var in var_ranges_defaults.keys():
-            cmapinfo = var_ranges_defaults[var]
-            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
-        else:
-            cmapinfo = var_ranges_defaults["default"]
-            varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
-
-        data = self._check_dimensions(data)
-
         freq = self._get_maps_freq()
-        tst = TsType(data.ts_type)
 
-        if tst < freq:
-            raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
-        elif tst > freq:
-            data = data.resample_time(str(freq))
+        if (
+            var == "conco3"
+            and isinstance(read_data, GriddedData)
+            and read_data.ts_type == "hourly"
+            and compute_conco3mda8_contours
+        ):
+            datalist = calco3mda8(read_data)
+        else:
+            datalist = [read_data]
 
-        data.check_unit()
+        idx = 0
+        for data in datalist:
+            if idx == 1:  # it's conco3mda8
+                var = "conco3mda8"
 
-        if not reanalyse_existing:
-            # check if all files have already been produced
-            # if even just one is missing, all is gonna be recomputed
-            ts = _jsdate_list(data)
+            if var in var_ranges_defaults.keys():
+                cmapinfo = var_ranges_defaults[var]
+                varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
+            else:
+                cmapinfo = var_ranges_defaults["default"]
+                varinfo = VarinfoWeb(var, cmap=cmapinfo["colmap"], cmap_bins=cmapinfo["scale"])
 
-            uris_contour = self.avdb.query(
-                aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
-                project=self.exp_output.proj_id,
-                experiment=self.exp_output.exp_id,
-            )
-            all_times = [int(uri.meta["timestep"]) for uri in uris_contour]
+            data = self._check_dimensions(data)
 
-            if all([date in all_times for date in ts]):
-                logger.info(
-                    f"Skipping contour processing of {var}_{model_name}: data already exists {uris_contour}."
+            tst = TsType(data.ts_type)
+
+            if tst < freq:
+                raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
+            elif tst > freq:
+                data = data.resample_time(str(freq))
+
+            data.check_unit()
+
+            if not reanalyse_existing:
+                # check if all files have already been produced
+                # if even just one is missing, all is gonna be recomputed
+                ts = _jsdate_list(data)
+
+                uris_contour = self.avdb.query(
+                    aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                    project=self.exp_output.proj_id,
+                    experiment=self.exp_output.exp_id,
                 )
-                return
+                all_times = [int(uri.meta["timestep"]) for uri in uris_contour]
 
-        # first calculate and save geojson with contour levels
-        contourjson = calc_contour_json(data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins)
+                if all([date in all_times for date in ts]):
+                    logger.info(
+                        f"Skipping contour processing of {var}_{model_name}: data already exists {uris_contour}."
+                    )
+                    return
 
-        with self.avdb.lock():
-            for time, contour in contourjson.items():
-                self.avdb.put_contour(
-                    contour,
-                    self.exp_output.proj_id,
-                    self.exp_output.exp_id,
-                    self.cfg.model_cfg.get_entry(model_name).model_rename_vars.get(var, var),
-                    model_name,
-                    timestep=time,
-                )
+            # first calculate and save geojson with contour levels
+            contourjson = calc_contour_json(data, cmap=varinfo.cmap, cmap_bins=varinfo.cmap_bins)
+
+            with self.avdb.lock():
+                for time, contour in contourjson.items():
+                    if var == "conco3mda8" and freq == "daily":
+                        # we need to shift 1 h because the frontend expects coherence with the timeseries in ts, which have 13:00 as hour
+                        newtime = datetime.fromtimestamp(int(time) / 1000) + timedelta(hours=1)
+                        time = str(int(newtime.timestamp() * 1000))
+                    self.avdb.put_contour(
+                        contour,
+                        self.exp_output.proj_id,
+                        self.exp_output.exp_id,
+                        self.cfg.model_cfg.get_entry(model_name).model_rename_vars.get(var, var),
+                        model_name,
+                        timestep=time,
+                    )
+
+            idx += 1
 
     def _process_overlay_map_var(self, model_name, var, reanalyse_existing):  # pragma: no cover
         """Process overlay map (pixels) for either model or obserations
@@ -269,13 +328,13 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         if tst < freq:
             raise TemporalResolutionError(f"need {freq} or higher, got{tst}")
         elif tst > freq:
-            if isinstance(data, GriddedData):
+            if isinstance(data, GriddedData | GriddedDataContainer):
                 data = data.resample_time(str(freq))
             elif isinstance(data, xr.DataArray):
                 data = data.resample(time=str(freq)[0].capitalize()).mean()
 
         ts = _jsdate_list(data)
-        if isinstance(data, GriddedData):
+        if isinstance(data, GriddedData | GriddedDataContainer):
             data.check_unit()
             data = data.to_xarray().load()
 
@@ -383,7 +442,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         logger.info(f"Found coarsest freq available as model data: {freq}")
         return freq
 
-    def _read_model_data(self, model_name: str, var: str) -> GriddedData:
+    def _read_model_data(self, model_name: str, var: str) -> GriddedDataContainer:
         """
         Function for reading the model data without going through the colocation object.
         This means that none of the checks normally done in the colocation class are run.
@@ -397,7 +456,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         Returns
         -----------
-        Griddeddata
+        GriddedDataContainer
             the read data
         """
         start, stop = self.cfg.colocation_opts.start, self.cfg.colocation_opts.stop

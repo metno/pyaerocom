@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 from pathlib import Path
+import pandas as pd
+import numpy as np
 
 import pytest
 import xarray as xr
@@ -9,9 +11,15 @@ import xarray as xr
 from pyaerocom.io.cams2_83.models import ModelName, RunType
 from pyaerocom.io.cams2_83.reader import AEROCOM_NAMES, DATA_FOLDER_PATH
 from pyaerocom.io.cams2_83.reader import model_paths as find_model_paths
-from pyaerocom.io.cams2_83.reader import read_dataset
+from pyaerocom.io.cams2_83.reader import (
+    read_dataset,
+    fix_missing_vars,
+    drop_standard_name,
+    fix_names,
+    fix_coord,
+)
 
-TEST_DATE = datetime(2021, 12, 1)
+TEST_DATE = datetime(2024, 12, 1)
 TEST_DATES = [TEST_DATE + timedelta(days=d) for d in range(3)]
 
 
@@ -53,3 +61,62 @@ def test_model_file_contents(model_dataset: xr.Dataset, steps: int):
     for var_name in AEROCOM_NAMES.values():
         assert var_name in model_dataset
     assert len(model_dataset.time) == steps
+    assert len(model_dataset.data_vars) == 11
+
+
+times = pd.date_range(start="2025-07-01", freq="1h", periods=12)
+levels = np.arange(0, 1)
+latitudes = np.arange(20.0, -20.5, -0.5)
+longitudes = np.arange(0.0, 320.0, 0.5)
+
+
+@pytest.fixture
+def dummy_model_data():
+    return xr.Dataset(
+        {
+            "ectot_conc": xr.DataArray(
+                data=np.ones(shape=(len(times), len(levels), len(latitudes), len(longitudes))),
+                dims=["time", "level", "latitude", "longitude"],
+                coords={
+                    "time": times,
+                    "level": levels,
+                    "latitude": latitudes,
+                    "longitude": longitudes,
+                },
+                attrs={
+                    "species": "Total Elementary Carbon",
+                    "units": "µg/m3",
+                    "value": "hourly values",
+                    "standard_name": "Not Defined",
+                },
+            ),
+            "pm10_conc": xr.DataArray(
+                data=np.ones(shape=(len(times), len(levels), len(latitudes), len(longitudes))),
+                dims=["time", "level", "latitude", "longitude"],
+                coords={
+                    "time": times,
+                    "level": levels,
+                    "latitude": latitudes,
+                    "longitude": longitudes,
+                },
+                attrs={
+                    "species": "PM10 Aerosol",
+                    "units": "µg/m3",
+                    "value": "hourly values",
+                    "standard_name": "mass_concentration_of_pm10_ambient_aerosol_in_air",
+                },
+            ),
+        }
+    )
+
+
+def test_from_fix_missing_vars_to_drop_standard_name(dummy_model_data):
+    ds = (
+        dummy_model_data.pipe(fix_missing_vars)
+        .pipe(fix_coord)
+        .pipe(fix_names)
+        .pipe(drop_standard_name)
+    )
+    assert len(ds.data_vars) == 11
+    assert "standard_name" not in ds["concso4pm25"].attrs
+    assert ds.longitude.max() == 180.0

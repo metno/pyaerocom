@@ -1026,7 +1026,7 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
 def _process_map_and_scat(
     data: dict[str, ColocatedData | None],
-    map_data: list[dict],
+    map_meta: list[dict],
     site_indices: list[int],
     periods: list[str],
     scatter_freq: str,
@@ -1043,7 +1043,7 @@ def _process_map_and_scat(
     stats_dummy = _init_stats_dummy(drop_stats=drop_stats)
     scat_data = {}
     scat_dummy = [np.nan]
-    new_map_data: list[dict] = []
+    map_data = deepcopy(map_meta)
     for freq, cd in data.items():
         for per in periods:
             for season in seasons:
@@ -1055,10 +1055,12 @@ def _process_map_and_scat(
                         )
                         jsdate = subset.data.jsdate.values.tolist()
                         use_dummy = False
-                    except (DataCoverageError, TemporalResolutionError):
-                        pass
+                    except (DataCoverageError, TemporalResolutionError) as e:
+                        logger.warning(f"Could not process data: {e}")
+                        continue
 
                 for i, map_stat in zip(site_indices, map_data):
+                    # ms = deepcopy(map_stat)
                     if freq not in map_stat:
                         map_stat[freq] = {}
 
@@ -1136,9 +1138,7 @@ def _process_map_and_scat(
                             "units": units,
                         }
 
-                    new_map_data.append(map_stat)
-
-    return (new_map_data, scat_data)
+    return (map_data, scat_data)
 
 
 def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
@@ -1903,6 +1903,65 @@ def _calculate_fairmode(
 
         for reg in results:
             fairmode_statistics.save_fairmode_stats(
+                exp_output,
+                results,
+                obs_name,
+                var_name_web,
+                vert_code,
+                model_name,
+                model_var,
+                per,
+                reg,
+            )
+
+
+def _calculate_radarplot(
+    coldata: ColocatedData,
+    radarplot_statistics,  #: RadarPlotStatistics,
+    exp_output,  #: ExperimentOutput,
+    obs_name: str,
+    var_name_web: str,
+    vert_code: str,
+    model_name: str,
+    model_var: str,
+    regs: dict,
+    regnames: dict,
+    obs_var: str = None,
+    periods: tuple[str, ...] | None = None,
+    seasons: tuple[str, ...] | None = None,
+    use_meteorological_seasons: bool = False,
+    use_country: bool = True,
+):
+    for per in periods:
+        results = {"ALL": {}}
+        for season in seasons:
+            try:
+                subset = _select_period_season_coldata(
+                    coldata, per, season, use_meteorological_seasons
+                )
+                # jsdate = subset.data.jsdate.values.tolist()
+            except (DataCoverageError, TemporalResolutionError) as e:
+                logger.info(f"Failed to access subset coldata: {e}")
+                return results
+
+            for regid in regs:
+                regname = regnames[regid]
+                reg_subset = subset.filter_region(regid, check_country_meta=use_country)
+
+                perstr = f"{per}-{season}"
+                logger.info(f"Calculating radarplot statistics for {regname} in period {perstr}")
+                fm_stats = radarplot_statistics.get_radarplot_statistics(reg_subset, obs_var)
+
+                if regname not in results:
+                    results[regname] = {}
+
+                if perstr not in results[regname]:
+                    results[regname][perstr] = {}
+
+                results[regname][perstr] = fm_stats
+
+        for reg in results:
+            radarplot_statistics.save_radarplot_stats(
                 exp_output,
                 results,
                 obs_name,

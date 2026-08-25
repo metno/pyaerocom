@@ -1,5 +1,5 @@
 from pyaerocom.aeroval import EvalSetup
-from pyaerocom.aeroval.config.emep.reporting_base import get_CFG
+from pyaerocom.aeroval.config.emep.reporting_base import get_CFG, clean_filters
 
 
 def test_aeroval_config_emep():
@@ -36,3 +36,34 @@ def test_aeroval_config_emep():
     assert stp.periods == ["2021"]
     assert stp.exp_pi == "S. Tsyro, A. Nyiri, H. Klein"
     assert stp.proj_id == "emep"
+
+
+def test_aeroval_config_emep_clean_filters():
+    # Setup for models used in analysis
+    CFG = get_CFG(
+        reportyear=2024,
+        year=2021,
+        model_dir="/lustre/storeB/project/fou/kl/emep/ModelRuns/2024_REPORTING/EMEP01_rv5.3_metyear2021_emis2022",
+    )
+
+    CFG.update(
+        dict(
+            exp_id="test-2021met_2022emis",
+            exp_name="Test runs for 2024 EMEP reporting",
+            exp_descr=(
+                "Test run from Agnes for 2024_REPORTING/EMEP01_rv5.3_metyear2021_emis2022, i.e. 2021met and 2022emis"
+            ),
+            exp_pi="S. Tsyro, A. Nyiri, H. Klein",
+        )
+    )
+
+    CFG_clean = clean_filters(CFG, "EBAS-d-tc")
+
+    assert (
+        list(CFG_clean["obs_cfg"]["EBAS-d-tc"]["obs_filters"].keys())
+        == CFG_clean["obs_cfg"]["EBAS-d-tc"]["obs_vars"]
+    )
+
+    assert len(list(CFG["obs_cfg"]["EBAS-d-tc"]["obs_filters"].keys())) > len(
+        list(CFG_clean["obs_cfg"]["EBAS-d-tc"]["obs_filters"].keys())
+    )

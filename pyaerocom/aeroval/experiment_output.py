@@ -1,4 +1,5 @@
 import itertools
+import json
 import logging
 import os
 import pathlib
@@ -26,7 +27,7 @@ from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
-from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS
+from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS, SOMO30_OUTPUT_VARS
 from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.utils import recursive_defaultdict
@@ -295,7 +296,11 @@ class ExperimentOutput(ProjectOutput):
             infos = ["name", "ovar", "per"]
             res = [[], [], []]
 
-            for uri in self.avdb.query(aerovaldb.routes.Route.CONTOUR_TIMESPLIT):
+            for uri in self.avdb.query(
+                aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                project=self.proj_id,
+                experiment=self.exp_id,
+            ):
                 for i, key in enumerate(["model", "obsvar", "timestep"]):
                     res[i].append(uri.meta[key])
 
@@ -465,8 +470,7 @@ class ExperimentOutput(ProjectOutput):
             return var_ranges_defaults[var]
         try:
             varinfo = VarinfoWeb(var)
-            # TODO: get unit from pyaerocom/data/variables.ini
-            info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap, unit=varinfo.unit)
+            info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap)
         except (VariableDefinitionError, AttributeError):
             info = var_ranges_defaults["default"]
             logger.info(
@@ -566,6 +570,7 @@ class ExperimentOutput(ProjectOutput):
             only_use_in = const.VARS[var].only_use_in.split(" ")
             # only return only_use_in if key exists, otherwise do not
             out["only_use_in"] = only_use_in
+
         except AttributeError:
             pass
         return out
@@ -665,9 +670,11 @@ class ExperimentOutput(ProjectOutput):
 
         """
 
-        # MDA8 is computed on-the-fly ONLY if a MDA8_INPUT_VAR at hourly freq is detected.
+        # MDA8/SOMO30 is computed on-the-fly ONLY if a MDA8/SOMO30_INPUT_VAR at hourly freq is detected.
         # Consequently, it is not specified in a config but should be included as part of the experiment.
         if obs_var in MDA8_OUTPUT_VARS and mod_var in MDA8_OUTPUT_VARS:
+            return True
+        if obs_var in SOMO30_OUTPUT_VARS and mod_var in SOMO30_OUTPUT_VARS:
             return True
 
         # get model entry for model name
@@ -731,6 +738,8 @@ class ExperimentOutput(ProjectOutput):
                 # however menu.json is still needed.
                 if not all_combinations:
                     break
+                if uri.meta["obsvar"] == "conco3mda8":
+                    continue
 
                 try:  # overlay case
                     src_name = uri.meta["source"]
@@ -775,9 +784,11 @@ class ExperimentOutput(ProjectOutput):
                         ),
                         None,
                     )
+
                     if not first_with_mod_name:  # should already be taken care of in new
                         continue
-                    obs_name = first_with_mod_name[0]
+
+                    obs_name = self.cfg.obs_cfg.get_entry(first_with_mod_name[0]).obs_name
                     all_combinations.remove(first_with_mod_name)
                 else:
                     logger.warning(
@@ -814,6 +825,24 @@ class ExperimentOutput(ProjectOutput):
             else:
                 logger.warning(
                     f"Invalid entry: model {mod_name} ({mod_var}), obs {obs_name} ({obs_var}) ⚠️"
+                )
+
+        if self.cfg.processing_opts.compute_conco3mda8_contours:
+            try:
+                newconco3 = new["conco3"].copy()
+                new.update({"conco3mda8": newconco3})
+                new["conco3mda8"]["longname"] = (
+                    "Daily maximum of the 8 hour rolling mean (see EU Directive 2008/50/EC Annex XI) of O3 mass concentration"
+                )
+                new["conco3mda8"]["name"] = "O<sub>3</sub> (MDA8)"
+                # replace conco3 with conco3mda8 in all the nested fields of new["conco3mda8"]
+                conco3mda8_dict_as_text = json.dumps(new["conco3mda8"])
+                new["conco3mda8"] = json.loads(
+                    conco3mda8_dict_as_text.replace("conco3", "conco3mda8")
+                )
+            except KeyError:
+                logger.warning(
+                    "Cannot create the entry menu for conco3mda8, entry for conco3 not found"
                 )
         return new
 
@@ -1033,6 +1062,55 @@ class ExperimentOutput(ProjectOutput):
                 period.replace("/", ""),  # Remove slashes in CAMS2_83 period,
             )
 
+    def add_radarplot_entry(
+        self,
+        entry: dict,
+        region: str,
+        network: str,
+        obsvar: str,
+        layer: str,
+        modelname: str,
+        modvar: str,
+        period: str,
+    ):
+        """Adds a radarplot entry to radarplot
+
+        :param entry: The entry to be added.
+        :param network: Observation network
+        :param obsvar: Observation variable
+        :param layer: Vertical layer
+        :param modelname: Model name
+        :param modvar: Model variable
+        """
+        project = self.proj_id
+        experiment = self.exp_id
+
+        with self.avdb.lock():
+            glob_stats = self.avdb.get_radarplot(
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+                modelname,
+                period.replace("/", ""),  # Remove slashes in CAMS2_83 period,
+                default={},
+            )
+            glob_stats = recursive_defaultdict(glob_stats)
+            glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
+            self.avdb.put_radarplot(
+                glob_stats,
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+                modelname,
+                period.replace("/", ""),  # Remove slashes in CAMS2_83 period,
+            )
+
     def add_heatmap_entry(
         self,
         entry,
@@ -1139,6 +1217,8 @@ class ExperimentOutput(ProjectOutput):
             current = recursive_defaultdict(current)
 
             for freq, coldata in data.items():
+                if coldata is None:
+                    continue
                 model_name = coldata.model_name
 
                 midpoint = (

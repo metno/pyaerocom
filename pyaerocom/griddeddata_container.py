@@ -4,7 +4,6 @@ from copy import deepcopy
 import iris
 
 from .griddeddata import GriddedData
-from pyaerocom.stationdata import StationData
 
 from pyaerocom.io.gridded_reader import GriddedReader
 
@@ -287,12 +286,32 @@ class GriddedDataContainer:
     @property
     @only_one_child
     def latitude_points(self):
-        return self._lat_points
+        return self.children[0].latitude.points
 
     @property
     @only_one_child
     def longitude_points(self):
-        return self._lon_points
+        return self.children[0].longitude.points
+
+    @property
+    @only_one_child
+    def altitude(self):
+        return self.children[0].altitude
+
+    @property
+    @only_one_child
+    def latitude(self):
+        return self.children[0].latitude
+
+    @property
+    @only_one_child
+    def longitude(self):
+        return self.children[0].longitude
+
+    @property
+    @only_one_child
+    def altitude_points(self):
+        return self.children[0].altitude.points
 
     @property
     def longitude_circular(self):
@@ -305,6 +324,10 @@ class GriddedDataContainer:
     @only_one_child
     def get_cube_data(self):
         return self.children[0].cube.data
+
+    @only_one_child
+    def to_xarray(self):
+        return self.children[0].to_xarray()
 
     def get_cube_data_all(self) -> list:
         return [data.cube.data for data in self.children]
@@ -334,6 +357,10 @@ class GriddedDataContainer:
             return iris.coords.DimCoord(np.array(points), var_name="time", **units, **metadata)
 
         return self.children[0].time
+
+    @property
+    def has_time_dim(self):
+        return all([data.has_time_dim for data in self.children])
 
     @property
     def has_latlon_dims(self):
@@ -369,18 +396,18 @@ class GriddedDataContainer:
         """Extract surface level from 4D field"""
         return self.children[0].extract_surface_level()
 
-    def to_time_series(
-        self,
-        sample_points=None,
-        scheme="nearest",
-        vert_scheme=None,
-        add_meta=None,
-        use_iris=False,
-        **coords,
-    ) -> list[StationData]:
-        raise NotImplementedError(
-            "to_time_series is not implemented for this container, due to problems with sorting returned stationdata (compared with the stations datas of the obs)"
-        )
+    # def to_time_series(
+    #     self,
+    #     sample_points=None,
+    #     scheme="nearest",
+    #     vert_scheme=None,
+    #     add_meta=None,
+    #     use_iris=False,
+    #     **coords,
+    # ) -> list[StationData]:
+    #     raise NotImplementedError(
+    #         "to_time_series is not implemented for this container, due to problems with sorting returned stationdata (compared with the stations datas of the obs)"
+    #     )
 
     def register_var_glob(self, delete_existing=True):  # pragma: no cover
         """
@@ -496,6 +523,7 @@ class GriddedDataContainer:
         for i, data in enumerate(self.children):
             self.children[i] = data.resample_time(to_ts_type, how, min_num_obs, use_iris)
 
+        self.ts_type = to_ts_type
         return self
 
     def filter_altitude(self, alt_range=None):  # pragma: no cover
@@ -509,3 +537,45 @@ class GriddedDataContainer:
         )
 
         return self
+
+    def extract(self, constraint, inplace=False):
+        """Extract subset
+
+        Parameters
+        ----------
+        constraint : iris.Constraint
+            constraint that is to be applied
+
+        Returns
+        -------
+        GriddedData
+            new data object containing cropped data
+        """
+
+        obj = self if inplace else self.copy()
+        for i, data in enumerate(obj.children):
+            obj.children[i] = data.extract(constraint, inplace=False)
+        return obj
+
+    @only_one_child
+    def to_time_series(
+        self,
+        sample_points=None,
+        scheme="nearest",
+        vert_scheme=None,
+        add_meta=None,
+        use_iris=False,
+        **coords,
+    ):
+        return self.children[0].to_time_series(
+            sample_points, scheme, vert_scheme, add_meta, use_iris, **coords
+        )
+
+    def collapsed(self, coords, aggregator, **kwargs):
+        obj = self.copy()
+        for i, data in enumerate(obj.children):
+            obj.children[i] = data.collapsed(coords, aggregator, **kwargs)
+        return obj
+
+    def copy(self):
+        return deepcopy(self)

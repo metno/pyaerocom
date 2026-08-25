@@ -138,6 +138,36 @@ def test_ExperimentOutput_update_menu_EMPTY(dummy_expout: ExperimentOutput):
     assert data == {}
 
 
+def test_ExperimentOutput_update_menu_conco3mda8_fail(patched_config, caplog):
+    cfg = EvalSetup(**patched_config)
+    out = ExperimentOutput(cfg)
+    out.update_menu()
+    data = out.avdb.get_menu(out.proj_id, out.exp_id)
+    assert "Cannot create the entry menu for conco3mda8, entry for conco3 not found" in caplog.text
+    assert data == {}
+
+
+def test_ExperimentOutput_update_menu_conco3mda8(patched_config, tmp_path, caplog):
+    patched_config["only_model_maps"] = True
+    cfg = EvalSetup(**patched_config)
+    out = ExperimentOutput(cfg)
+    path = tmp_path / "cams2-83/test/contour/conco3mda8_EMEP"
+    path.mkdir(parents=True)
+    (path / "conco3mda8_EMEP_1740747600000.geojson").touch()
+    path = tmp_path / "cams2-83/test/contour/conco3_EMEP"
+    path.mkdir(parents=True)
+    (path / "conco3_EMEP_1740830400000.geojson").touch()
+    out.update_menu()
+    data = out.avdb.get_menu(out.proj_id, out.exp_id)
+    assert (
+        data["conco3mda8"]["longname"]
+        == "Daily maximum of the 8 hour rolling mean (see EU Directive 2008/50/EC Annex XI) of O3 mass concentration"
+    )
+    assert data["conco3mda8"]["name"] == "O<sub>3</sub> (MDA8)"
+    assert data["conco3"]["longname"] == "Mass concentration of ozone"
+    assert data["conco3"]["name"] == "O<sub>3</sub>"
+
+
 def test_ExperimentOutput_update_interface_EMPTY(dummy_expout: ExperimentOutput):
     dummy_expout.update_interface()
 
