@@ -193,7 +193,11 @@ class ColdataToJsonEngine(ProcessingEngine):
             regions = {k: v for k, v in sorted(regions.items(), key=lambda x: RegionName(x[0]))}
             self.avdb.put_regions(regions, self.exp_output.proj_id, self.exp_output.exp_id)
 
-        use_country = True if regions_how == "country" else False
+        if regions_how == "country" or regions_how == "county":
+            use_country = True
+        else:
+            use_country = False
+        # use_country = True if regions_how == "country" or regions_how == "county" else False
 
         data: dict[str, ColocatedData] = _init_data_default_frequencies(coldata, freqs)
 

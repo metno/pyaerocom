@@ -120,6 +120,15 @@ def init_regions_web(coldata, regions_how):
         regborders.update(coldata.get_country_codes())
         add_regs = _prepare_country_regions(coldata.get_country_codes().keys())
         regs.update(add_regs)
+    elif (
+        regions_how == "county"
+    ):  # Uses norwegian counties as regions. Coldata must have the country coord set with counties. The rest is done in the web interface
+        regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
+        regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
+        coldata.check_set_countries()
+        regborders.update(coldata.get_country_codes())
+        add_regs = _prepare_country_regions(coldata.get_country_codes().keys())
+        regs.update(add_regs)
     elif regions_how == "cities":
         regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
         regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
@@ -577,7 +586,7 @@ def _process_sites(data, regions, regions_how, meta_glob):
     freqs = list(data)
     # (sites, site_types, lats, lons, alts, countries, jsdates)
     coord_arrays = _init_site_coord_arrays(data)
-    if regions_how == "country":
+    if regions_how == "country" or regions_how == "county":
         regs = coord_arrays.countries
     elif regions_how == "htap":
         regs = _get_stat_regions(
@@ -599,7 +608,7 @@ def _process_sites(data, regions, regions_how, meta_glob):
             "longitude": coord_arrays.lons[i],
             "altitude": coord_arrays.alts[i],
         }
-        if regions_how == "country":
+        if regions_how == "country" or regions_how == "county":
             site_meta["region"] = [regs[i]]
         else:
             site_meta["region"] = regs[i]
@@ -1144,7 +1153,7 @@ def _process_map_and_scat(
 def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
     ts_objs = []
     freqs = list(data)
-    check_countries = True if regions_how == "country" else False
+    check_countries = True if (regions_how == "country" or regions_how == "county") else False
     for regid, regname in region_ids.items():
         ts_data = _init_ts_data(freqs)
         ts_data["station_name"] = regname

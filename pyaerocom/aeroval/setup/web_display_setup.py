@@ -10,8 +10,10 @@ class WebDisplaySetup(BaseModel):
     # Pydantic ConfigDict
     model_config = ConfigDict(protected_namespaces=())
     # WebDisplaySetup attributes
-    map_zoom: Literal["World", "Europe", "xEMEP"] = "World"
-    regions_how: Literal["default", "aerocom", "htap", "country", "cities", "solar"] = "default"
+    map_zoom: Literal["World", "Europe", "xEMEP", "Norway"] = "World"
+    regions_how: Literal["default", "aerocom", "htap", "country", "cities", "solar", "county"] = (
+        "default"
+    )
     map_zoom: str = "World"
     add_model_maps: bool = False
     modelorder_from_config: bool = True
