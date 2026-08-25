@@ -30,7 +30,12 @@ from pyaerocom.region import (
     find_closest_region_coord,
     get_all_default_region_ids,
 )
-from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS, EU_CITIES_REGIONS
+from pyaerocom.region_defs import (
+    HTAP_REGIONS_DEFAULT,
+    OLD_AEROCOM_REGIONS,
+    EU_CITIES_REGIONS,
+    SOLAR_STATIONS_REGIONS,
+)
 from pyaerocom.stats.stats import _init_stats_dummy, calculate_statistics
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import (
@@ -82,6 +87,10 @@ def _prepare_cities_regions_json():
     return _prepare_regions_json_helper(EU_CITIES_REGIONS)
 
 
+def _prepare_solar_regions_json():
+    return _prepare_regions_json_helper(SOLAR_STATIONS_REGIONS)
+
+
 def _prepare_country_regions(region_ids):
     regs = {}
     for regid in region_ids:
@@ -115,6 +124,12 @@ def init_regions_web(coldata, regions_how):
         regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
         regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
         add_borders, add_regs = _prepare_cities_regions_json()
+        regborders.update(add_borders)
+        regs.update(add_regs)
+    elif regions_how == "solar":
+        regborders[ALL_REGION_NAME] = regborders_default[ALL_REGION_NAME]
+        regs[ALL_REGION_NAME] = regs_default[ALL_REGION_NAME]
+        add_borders, add_regs = _prepare_solar_regions_json()
         regborders.update(add_borders)
         regs.update(add_regs)
     else:

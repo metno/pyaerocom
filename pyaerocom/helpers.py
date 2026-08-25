@@ -925,7 +925,10 @@ def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
     pd_freq = to.to_pandas_freq()
     invalid = None
     if min_num_obs is not None:
-        invalid = arr.resample(time=pd_freq).count(dim="time") < min_num_obs
+        try:
+            invalid = arr.resample(time=pd_freq).count(dim="time") < min_num_obs
+        except Exception as e:
+            breakpoint()
 
     freq, offset = _get_pandas_freq_and_offset(freq)
     resampler = arr.resample(time=pd_freq)
