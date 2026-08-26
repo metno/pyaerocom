@@ -275,11 +275,16 @@ def only_first_day(ds: xr.Dataset) -> xr.Dataset:
     return ds.sel(time=ds.time.dt.day == first_day)
 
 
+def interpolate_hourly(ds: xr.Dataset) -> xr.Dataset:
+    ds = ds.resample(time="1h").interpolate()
+    return ds
+
+
 def read_dataset(paths: list[Path]) -> xr.Dataset:
     paths = check_files(paths)
 
     def preprocess(ds: xr.Dataset) -> xr.Dataset:
-        return ds.pipe(only_first_day).pipe(drop_vars)
+        return ds.pipe(only_first_day).pipe(drop_vars).pipe(interpolate_hourly)
 
     ds = xr.open_mfdataset(
         paths, preprocess=preprocess, parallel=False, join="outer", chunks={"level": 10, "time": 1}
