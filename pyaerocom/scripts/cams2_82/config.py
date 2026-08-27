@@ -78,7 +78,7 @@ GLOBAL_CONFIG = dict(
     min_num_obs=dict(
         # yearly=dict(monthly=9),
         # monthly=dict(daily=21, weekly=3), # not used
-        daily=dict(hourly=6), # 3-hourly data
+        daily=dict(hourly=18), # hourly data
     ),
 )
 
