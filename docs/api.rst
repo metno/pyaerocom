@@ -160,9 +160,18 @@ Gridded data using AeroCom conventions
 Gridded data using EMEP conventions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.io.read_mscw_ctm
+.. automodule:: pyaerocom.io.mscw_ctm.reader
   :members:
   :undoc-members:
+
+Gridded data using CMIP6 conventions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.io.cmip_ctm.reader
+  :members:
+  :undoc-members:
+
+
 
 Reading of ungridded data
 -------------------------

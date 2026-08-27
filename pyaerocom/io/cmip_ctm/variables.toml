@@ -1,0 +1,71 @@
+# The left hand side is the aerocom variable name, the right hand side is the CMIP variable name
+# names with "3d" in them indicate a 3d variable
+# for pyaerocom 2d fields and CMIP 3d fields, pyaerocom will try to determine the ground level and return that
+# using the same CMIP variable for serveral pyaerocom variables is possible
+[cmip_variables]
+od550aer = "od550aer"
+od550bc = "od550bc"
+od550dust = "od550dust"
+od550lt1aer = "od550lt1aer"
+od550nh4 = "od550nh4"
+od550no3 = "od550no3"
+od550oa = "od550oa"
+od550so4 = "od550so4"
+od550ss = "od550ss"
+od870aer = "od870aer"
+#vmro3 = "o3"
+concso2 = "so2"
+#concso4 = "mmrso4"
+concno2 = "no2"
+concno = "no"
+concnh3 = "nh3"
+#conc = ""
+# profile
+vmro33d = "o3"
+
+# the following defines which additional variables are needed for a given aerocom variable
+# to adjust the CMIP units to pyaerocom units
+[aux_info]
+[aux_info.vmro3]
+# the climate models store vmro3 in the unit mol mol-1 while pyaerocom uses nmol mol-1
+# so there's only a factor of 1.E9 missing
+aux_vars = ["o3_surf"]
+units = "nmol mol-1"
+
+[aux_info.o3_surf]
+aux_vars = ["o3"]
+units = "mol mol-1"
+how = "surface layer"
+
+[aux_info.concso4]
+aux_vars = ["mmrso4_surf", "ps", "tas"]
+units = "ug m-3"
+
+[aux_info.concso2]
+aux_vars = ["so2_surf", "ps", "tas"]
+units = "ug m-3"
+
+[aux_info.concno2]
+aux_vars = ["no2_surf", "ps", "tas"]
+units = "ug m-3"
+
+[aux_info.tas]
+aux_vars = ["ta"]
+units = "K"
+how = "surface layer"
+
+[aux_info.mmrso4_surf]
+aux_vars = ["mmrso4"]
+units = "kg kg-1"
+how = "surface layer"
+
+[aux_info.so2_surf]
+aux_vars = ["so2"]
+units = "mol mol-1"
+how = "surface layer"
+
+# aliases for CMIP variables
+[cmip_aliases]
+[cmip_aliases.ts]
+alias = ["ta"]
+layer = "lowest"
