@@ -276,7 +276,8 @@ def only_first_day(ds: xr.Dataset) -> xr.Dataset:
 
 
 def interpolate_hourly(ds: xr.Dataset) -> xr.Dataset:
-    ds = ds.resample(time="1h").interpolate()
+    if len(ds.time) != 24:
+        ds = ds.resample(time="1h").interpolate(kind="nearest")
     return ds
 
 
