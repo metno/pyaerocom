@@ -303,6 +303,7 @@ def make_ICOS_entry(
         obs_vert_type="Surface",
         ts_type="hourly",
         obs_filters=BASE_FILTER,
+        min_num_obs=dict(daily=dict(hourly=6),),
     )
 
 
