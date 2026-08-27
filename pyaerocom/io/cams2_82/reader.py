@@ -287,7 +287,7 @@ def read_dataset(paths: list[Path]) -> xr.Dataset:
         return ds.pipe(only_first_day).pipe(drop_vars).pipe(interpolate_hourly)
 
     ds = xr.open_mfdataset(
-        paths, preprocess=preprocess, parallel=False, join="outer", chunks={"level": 10, "time": 1}
+        paths, preprocess=preprocess, parallel=False, join="outer", chunks={"level": 10, "time": 2}
     )
     return ds.pipe(fix_missing_vars).pipe(convert_units).pipe(fix_names)
 
