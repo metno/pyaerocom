@@ -48,7 +48,13 @@ def test_ProjectOutput(proj_id: str, json_basedir: str):
 @pytest.mark.parametrize(
     "proj_id,json_basedir,exception,error",
     [
-        pytest.param(42, None, ValueError, "need str, got 42", id="ValueError"),
+        pytest.param(
+            42,
+            None,
+            ValueError,
+            "Expected string or AerovalDB, got <class 'NoneType'>.",
+            id="ValueError",
+        ),
     ],
 )
 def test_ProjectOutput_error(proj_id, json_basedir, exception: type[Exception], error: str):
@@ -109,7 +115,7 @@ def test_ExperimentOutput():
 
 
 def test_ExperimentOutput_error():
-    with pytest.raises(ValueError):
+    with pytest.raises(AttributeError):
         ExperimentOutput(None)
 
 
@@ -130,6 +136,36 @@ def test_ExperimentOutput_update_menu_EMPTY(dummy_expout: ExperimentOutput):
 
     data = dummy_expout.avdb.get_menu(dummy_expout.proj_id, dummy_expout.exp_id)
     assert data == {}
+
+
+def test_ExperimentOutput_update_menu_conco3mda8_fail(patched_config, caplog):
+    cfg = EvalSetup(**patched_config)
+    out = ExperimentOutput(cfg)
+    out.update_menu()
+    data = out.avdb.get_menu(out.proj_id, out.exp_id)
+    assert "Cannot create the entry menu for conco3mda8, entry for conco3 not found" in caplog.text
+    assert data == {}
+
+
+def test_ExperimentOutput_update_menu_conco3mda8(patched_config, tmp_path, caplog):
+    patched_config["only_model_maps"] = True
+    cfg = EvalSetup(**patched_config)
+    out = ExperimentOutput(cfg)
+    path = tmp_path / "cams2-83/test/contour/conco3mda8_EMEP"
+    path.mkdir(parents=True)
+    (path / "conco3mda8_EMEP_1740747600000.geojson").touch()
+    path = tmp_path / "cams2-83/test/contour/conco3_EMEP"
+    path.mkdir(parents=True)
+    (path / "conco3_EMEP_1740830400000.geojson").touch()
+    out.update_menu()
+    data = out.avdb.get_menu(out.proj_id, out.exp_id)
+    assert (
+        data["conco3mda8"]["longname"]
+        == "Daily maximum of the 8 hour rolling mean (see EU Directive 2008/50/EC Annex XI) of O3 mass concentration"
+    )
+    assert data["conco3mda8"]["name"] == "O<sub>3</sub> (MDA8)"
+    assert data["conco3"]["longname"] == "Mass concentration of ozone"
+    assert data["conco3"]["name"] == "O<sub>3</sub>"
 
 
 def test_ExperimentOutput_update_interface_EMPTY(dummy_expout: ExperimentOutput):
@@ -276,7 +312,7 @@ def test_ExperimentOutput_reorder_experiments(
 def test_ExperimentOutput_reorder_experiments_error(dummy_expout: ExperimentOutput):
     with pytest.raises(ValueError) as e:
         dummy_expout.reorder_experiments("b")
-    assert str(e.value) == "need list as input"
+    assert "list" in str(e.value).lower()
 
 
 @pytest.mark.parametrize("cfg,drop_stats,stats_decimals", [("cfgexp1", ("mab", "R_spearman"), 2)])

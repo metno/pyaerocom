@@ -32,12 +32,13 @@ dependencies:
   - pip
   - pip:
     - geocoder_reverse_natural_earth >= 0.0.2
-    - aerovaldb >= 0.4.6, < 0.5.0
+    - aerovaldb >= 0.5.0, < 0.6.0
     - pyaro >= 0.2.0, < 0.3
-    - pyaro-readers >=0.1.4, < 0.2.0
+    - pyaro-readers >=0.1.5, < 0.2.0
 ## testing
   - pytest >=7.4
   - pytest-dependency
   - pytest-cov
   - packaging
   - pytest-xdist
+  - pytest-mock

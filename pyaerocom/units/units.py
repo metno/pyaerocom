@@ -199,10 +199,10 @@ class Unit:
 
         return ""
 
-    def is_convertible(self, other: str | Unit) -> bool:
+    def _validate_convertible(self, other: str | Unit) -> None:
         """
-        Return whether this unit is convertible to other. It handles a couple of
-        additional cases when checking convertibility, namely:
+        Validates whether the unit is convertible to another by raising an exception
+        if not convertible:
 
         - Units that contain elements (eg. kg N m-2) need to have compatible mass ratios:
            - This is assumed to be the case if element and species are the same, the aerocom
@@ -210,6 +210,8 @@ class Unit:
            eg. wetrdn.)
 
         :param other: Other Unit.
+
+        :raises ValueError: If unit is not convertible.
         """
         if isinstance(other, str):
             other = Unit(other)
@@ -228,18 +230,47 @@ class Unit:
         )
 
         if cf_units_only:
-            return self._cfunit.is_convertible(other._cfunit)
+            if not self._cfunit.is_convertible(other._cfunit):
+                raise ValueError(
+                    f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
+                )
+        elif not compatible_element:
+            raise ValueError(
+                f"Element '{self._element}' is not compatible with '{other._element}'."
+            )
+        elif same_species and same_variable:
+            if not self._cfunit.is_convertible(other._cfunit):
+                raise ValueError(
+                    f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
+                )
+        elif (self._element == other._element) and same_variable:
+            if not self._cfunit.is_convertible(other._cfunit):
+                raise ValueError(
+                    f"cfunit '{self._cfunit}' is not convertible to cfunit '{other._cfunit}'."
+                )
+        else:
+            raise ValueError(
+                f"Units {self} not convertible to {other}. If you believe this to be a bug, please raise an issue at https://github.com/metno/pyaerocom"
+            )
 
-        if not compatible_element:
+    def is_convertible(self, other: str | Unit) -> bool:
+        """
+        Return whether this unit is convertible to other. It handles a couple of
+        additional cases when checking convertibility, namely:
+
+        - Units that contain elements (eg. kg N m-2) need to have compatible mass ratios:
+           - This is assumed to be the case if element and species are the same, the aerocom
+           variable is the same (to account for variables that don't have a clear mass ratio —
+           eg. wetrdn.)
+
+        :param other: Other Unit.
+        """
+        try:
+            self._validate_convertible(other)
+        except ValueError:
             return False
 
-        if same_species and same_variable:
-            return self._cfunit.is_convertible(other._cfunit)
-
-        if (self._element == other._element) and same_variable:
-            return self._cfunit.is_convertible(other._cfunit)
-
-        return False
+        return True
 
     def is_dimensionless(self) -> bool:
         """
@@ -338,16 +369,15 @@ class Unit:
         :param kwargs: Will be passed as additional keyword args to PyaerocomUnit.__init__() for 'other'.
         :return: Unit converted data.
         """
-        if isinstance(other, str):
+        if isinstance(other, Unit):
+            to_unit = other
+        elif isinstance(other, str):
             to_unit = Unit(str(other), **kwargs)
         else:
-            assert isinstance(other, Unit)
-            to_unit = other
+            raise TypeError(f"'other' must be of type str | Unit. Got {other}.")
 
-        if not self.is_convertible(to_unit):
-            raise ValueError(
-                f"Unable to convert units. Got incompatible units '{repr(self)}' and '{repr(to_unit)}'."
-            )
+        self._validate_convertible(to_unit)
+
         to_unit_cf = to_unit._cfunit
         factor = float(self._cfunit.convert(1, to_unit_cf, inplace=False))
 

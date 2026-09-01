@@ -41,7 +41,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
 
     """
 
-    ALLOWED_VERT_COORD_TYPES = ["altitude"]
+    ALLOWED_COORD_TYPES = ["longitude", "latitude", "altitude"]
 
     def __init__(self):
         self.metadata = {}
@@ -518,7 +518,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
             if self._check_filter_match(meta, negate, *filters):
                 meta_matches.append(meta_idx)
                 for var in meta["var_info"]:
-                    if var in self.ALLOWED_VERT_COORD_TYPES:
+                    if var in self.ALLOWED_COORD_TYPES:
                         continue  # altitude is not actually a variable but is stored in var_info like one
                     var_matches.append(var)
         totnum = self._len_datapoints(meta_matches, var_matches)
@@ -668,6 +668,7 @@ class UngriddedDataMetadata(UngriddedDataContainer):
             negate,
             *filters,
         )
+
         if len(meta_matches) == len(self.metadata):
             logger.info(f"Input filters {filter_attributes} result in unchanged data object")
             return self
@@ -677,32 +678,43 @@ class UngriddedDataMetadata(UngriddedDataContainer):
         return new
 
     @override
-    def filter_by_projection(
-        self, projection, xrange: tuple[float, float], yrange: tuple[float, float]
+    def filter_by_latlon(
+        self,
+        lat_range: tuple[float, float] | list[tuple[float, float]],
+        lon_range: tuple[float, float] | list[tuple[float, float]],
     ):
-        """Filter the ungridded data to a horizontal bounding box given by a projection
+        """Filter the ungridded data to a horizontal bounding box
 
-        :param projection: a function turning projection(lat, lon) -> (x, y)
-        :param xrange: x range (min/max included) in the projection plane
-        :param yrange: y range (min/max included) in the projection plane
+        :param lat_range: lat range (min/max included) in the projection plane, or list of multiple lat ranges
+        :param lon_range: lon range (min/max included) in the projection plane, or list of multiple lat ranges
         """
+
         meta_matches = []
         totnum = 0
         for meta_idx, meta in self.metadata.items():
             lon = meta["longitude"]
             lat = meta["latitude"]
-            x, y = projection(lat, lon)
 
-            match_x = in_range(x, xrange[0], xrange[1])
-            match_y = in_range(y, yrange[0], yrange[1])
+            if isinstance(lat_range, list):
+                if not isinstance(lon_range, list):
+                    raise ValueError()
+                for latr, lonr in zip(lat_range, lon_range):
+                    match_lat = in_range(lat, latr[0], latr[1])
+                    match_lon = in_range(lon, lonr[0], lonr[1])
 
-            if match_x and match_y:
+                    if match_lat and match_lon:
+                        break
+            else:
+                match_lat = in_range(lat, lat_range[0], lat_range[1])
+                match_lon = in_range(lon, lon_range[0], lon_range[1])
+
+            if match_lat and match_lon:
                 meta_matches.append(meta_idx)
                 for var in meta["var_info"]:
-                    if var in self.ALLOWED_VERT_COORD_TYPES:
+                    if var in self.ALLOWED_COORD_TYPES:
                         continue  # altitude is not actually a variable but is stored in var_info like one
                     try:
-                        totnum += len(self.meta_idx[meta_idx][var])
+                        totnum += len(self.metadata[meta_idx][var])
                     except KeyError:
                         logger.debug(
                             f"Ignoring variable {var} in meta block {meta_idx} "
@@ -710,9 +722,54 @@ class UngriddedDataMetadata(UngriddedDataContainer):
                         )
 
         if len(meta_matches) == len(self.metadata):
+            logger.info("filter_by_latlon result in unchanged data object")
+            return self
+        new = self._new_from_meta_blocks(meta_matches, None)
+        return new
+
+    @override
+    def filter_by_projection(
+        self,
+        projection,
+        xrange: tuple[float, float] | list[tuple[float, float]],
+        yrange: tuple[float, float] | list[tuple[float, float]],
+    ):
+        """Filter the ungridded data to a horizontal bounding box given by a projection
+
+        :param projection: a function turning projection(lat, lon) -> (x, y)
+        :param xrange: x range (min/max included) in the projection plane, or list of multiple x ranges
+        :param yrange: y range (min/max included) in the projection plane, or list of multiple y ranges
+        """
+        meta_matches = []
+        var_matches = []
+        for meta_idx, meta in self.metadata.items():
+            lon = meta["longitude"]
+            lat = meta["latitude"]
+            x, y = projection(lat, lon)
+
+            if isinstance(xrange, list):
+                if not isinstance(yrange, list):
+                    raise ValueError()
+                for xr, yr in zip(xrange, yrange):
+                    match_x = in_range(x, xr[0], xr[1])
+                    match_y = in_range(y, yr[0], yr[1])
+
+                    if match_x and match_y:
+                        break
+            else:
+                match_x = in_range(x, xrange[0], xrange[1])
+                match_y = in_range(y, yrange[0], yrange[1])
+
+            if match_x and match_y:
+                meta_matches.append(meta_idx)
+                for var in meta["var_info"]:
+                    if var in self.ALLOWED_COORD_TYPES:
+                        continue  # altitude is not actually a variable but is stored in var_info like one
+                    var_matches.append(var)
+        if len(meta_matches) == len(self.metadata):
             logger.info("filter_by_projection result in unchanged data object")
             return self
-        new = self._new_from_meta_blocks(meta_matches, totnum)
+        new = self._new_from_meta_blocks(meta_matches, None)
         return new
 
     @override

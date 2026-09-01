@@ -10,6 +10,9 @@ from typing import NamedTuple
 
 import iris
 import numpy as np
+import xarray as xr
+import pandas as pd
+import warnings
 from pyaerocom.units import Unit
 
 from pyaerocom import __version__ as pya_ver
@@ -104,9 +107,9 @@ def _colocate_vertical_profile_gridded(
                 data.extract(
                     iris.Constraint(
                         coord_values={
-                            "altitude": lambda cell: vertical_layer["start"]
-                            < cell
-                            < vertical_layer["end"]
+                            "altitude": lambda cell: (
+                                vertical_layer["start"] < cell.point < vertical_layer["end"]
+                            )
                         }
                     )
                 )
@@ -170,16 +173,61 @@ def _colocate_vertical_profile_gridded(
             obs_stat_this_layer = obs_stat.copy()
 
             try:
-                obs_stat_this_layer[var_ref] = (
-                    obs_stat_this_layer.select_altitude(
-                        var_name=var_ref, altitudes=list(vertical_layer.values())
-                    )
-                    .mean("altitude", skipna=True)  # very important to skip nans here
-                    .to_series()  # make pandas series
+                obs_stat_this_layer[var_ref] = obs_stat_this_layer.select_altitude(
+                    var_name=var_ref, altitudes=list(vertical_layer.values())
                 )
+
+                if isinstance(obs_stat_this_layer[var_ref], xr.DataArray):
+                    obs_stat_this_layer[var_ref] = (
+                        obs_stat_this_layer[var_ref].mean("altitude", skipna=True).to_series()
+                    )  # very important to skip nans here. make pandas series
+                elif isinstance(obs_stat_this_layer[var_ref], pd.Series):
+                    grouped = (
+                        pd.Series(obs_stat_this_layer[var_ref].index)
+                        .groupby(obs_stat_this_layer[var_ref].index)
+                        .groups
+                    )
+                    with warnings.catch_warnings():
+                        warnings.simplefilter(
+                            "ignore", FutureWarning
+                        )  # Ignore pandas warning about directly future versions using np.nanmean directly
+                        warnings.simplefilter(
+                            "ignore", RuntimeWarning
+                        )  # Ignore numpy warning about nanmean empty slice
+                        obs_stat_this_layer[var_ref] = (
+                            obs_stat_this_layer[var_ref]
+                            .groupby(obs_stat_this_layer[var_ref].index)
+                            .agg(np.nanmean)
+                        )
+                    obs_stat_this_layer.dtime = obs_stat_this_layer[var_ref].index
+                    if var_ref in obs_stat_this_layer.data_err:
+                        with warnings.catch_warnings():
+                            warnings.simplefilter(action="ignore", category=RuntimeWarning)
+                            grouped_err = {
+                                ts: np.nanmean(obs_stat_this_layer.data_err[var_ref][indices])
+                                for ts, indices in grouped.items()
+                            }
+                        obs_stat_this_layer.data_err[var_ref] = pd.Series(
+                            grouped_err, index=obs_stat_this_layer[var_ref].index
+                        )
+                    if var_ref in obs_stat_this_layer.data_flagged:
+                        with warnings.catch_warnings():
+                            warnings.simplefilter(action="ignore", category=RuntimeWarning)
+                        grouped_flag = {
+                            ts: np.nanmean(obs_stat_this_layer.data_flagged[var_ref][indices])
+                            for ts, indices in grouped.items()
+                        }
+                        obs_stat_this_layer.data_flagged[var_ref] = pd.Series(
+                            grouped_flag, index=obs_stat_this_layer[var_ref].index
+                        )
+
+                else:
+                    raise TypeError(
+                        f"Unsupported type for {var_ref} in obs_stat_this_layer: {type(obs_stat_this_layer[var_ref])}"
+                    )
             except ValueError:
                 logger.warning(
-                    f"Var: {var_ref}. Skipping {obs_stat_this_layer.station_name} in altitude layer {vertical_layer} because no data"
+                    f"Var: {var_ref}. Skipping {obs_stat_this_layer.station_name} in altitude layer {vertical_layer} because no data ⏭️"
                 )
                 continue
 
@@ -368,13 +416,14 @@ def colocate_vertical_profile_gridded(
         )
 
     data_ref_meta_idxs_with_var_info = []
-    for i in range(len(data_ref.metadata)):
-        if "altitude" not in data_ref.metadata[i]["var_info"]:
+    for key, _ in data_ref.metadata.items():
+        if "altitude" not in data_ref.metadata[key]["var_info"]:
             logger.warning(
-                f"Warning: Station {data_ref.metadata[i]['station_name']} does not have any var_info"
+                f"Warning: Station {data_ref.metadata[key]['station_name']} does not have any var_info"
             )
+
         else:
-            data_ref_meta_idxs_with_var_info.append(i)
+            data_ref_meta_idxs_with_var_info.append(key)
 
     if any(
         data.altitude.units != Unit(data_ref.metadata[i]["var_info"]["altitude"]["units"])
@@ -436,6 +485,7 @@ def colocate_vertical_profile_gridded(
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
+
     all_stats = data_ref.to_station_data_all(
         vars_to_convert=var_ref,
         start=obs_start,

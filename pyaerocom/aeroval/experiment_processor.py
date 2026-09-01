@@ -29,12 +29,43 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
     """
 
+    def __str__(self) -> str:
+        try:
+            obs_keys = self.cfg.obs_cfg.keylist()
+            model_keys = self.cfg.model_cfg.keylist()
+            obs_vars = self.cfg.obs_cfg.get_all_vars()
+
+            entries = [
+                ("Project ID", self.cfg.proj_info.proj_id),
+                ("Experiment ID", self.cfg.exp_info.exp_id),
+                ("Models", f"{len(model_keys)} → {model_keys}"),
+                ("Observation Networks", f"{len(obs_keys)} → {obs_keys}"),
+                ("Observation Variables", f"{len(obs_vars)} → {obs_vars}"),
+                ("Only Model Maps", self.cfg.processing_opts.only_model_maps),
+                ("Only Colocation", self.cfg.processing_opts.only_colocation),
+                ("Only JSON", self.cfg.processing_opts.only_json),
+                ("Obs Only Mode", self.cfg.processing_opts.obs_only),
+                ("Web Interface Dir", self.cfg.path_manager.json_basedir),
+            ]
+
+            max_label_len = max(len(label) for label, _ in entries)
+
+            summary = ["ExperimentProcessor for AeroVal"]
+            for label, value in entries:
+                summary.append(f"  ├─ {label.ljust(max_label_len)} : {value}")
+            summary[-1] = summary[-1].replace("├─", "└─", 1)  # Make last bullet '└─'
+            return "\n".join(summary)
+        except Exception as e:  # since the super class does not have a __str__ method, we catch any exception here
+            summary_lines = [f"EvalSetup Summary: ⚠️ Could not generate full summary ({e})"]
+        return "\n".join(summary_lines)
+
     def _run_single_entry(self, model_name, obs_name, var_list):
         if model_name == obs_name:
-            msg = f"Cannot run same dataset against each other ({model_name} vs. {obs_name})"
+            msg = f"Cannot run same dataset against each other ({model_name} vs. {obs_name}) ➡️⬅️"
             logger.info(msg)
             return
         ocfg = self.cfg.get_obs_entry(obs_name)
+
         if ocfg.is_superobs:
             try:
                 engine = SuperObsEngine(self.cfg)
@@ -47,12 +78,10 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             except Exception:
                 if self.raise_exceptions:
                     raise
-                logger.warning("failed to process superobs...")
+                logger.warning("Failed to process superobs... ❌")
         elif ocfg.only_superobs:
             logger.info(
-                f"Skipping json processing of {obs_name}, as this is "
-                f"marked to be used only as part of a superobs "
-                f"network"
+                f"Skipping json processing of {obs_name}, as this is marked to be used only as part of a superobs network ⏭️"
             )
         elif ocfg.only_json:
             if not ocfg.coldata_dir:
@@ -87,7 +116,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             col = self.get_colocator(model_name, obs_name)
             if self.cfg.processing_opts.only_json:
                 files_to_convert = col.get_available_coldata_files(var_list)
-                logger.info(f"Found files to process: {files_to_convert}")
+                logger.info(f"Found files to process: {files_to_convert} 🔎")
             else:
                 col.run(var_list)
                 files_to_convert = col.files_written
@@ -140,7 +169,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         obs_list = self.cfg.obs_cfg.keylist(obs_name)
         model_list = self.cfg.model_cfg.keylist(model_name)
         if not model_list:
-            logger.info("No model found, will make dummy model data")
+            logger.info("No model found, will make dummy model data 🛠️")
             self.cfg.webdisp_opts.hide_charts = ("scatterplot",)
             self.cfg.webdisp_opts.pages = ("evaluation", "infos")
             model_id = make_dummy_model(obs_list, self.cfg)
@@ -151,18 +180,18 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             model_id = None
             use_dummy_model = False
 
-        logger.info("Start processing")
+        logger.info("Start processing 🚀")
 
         # compute model maps (completely independent of obs-eval processing below)
         if self.cfg.webdisp_opts.add_model_maps:
             engine = ModelMapsEngine(self.cfg)
-
+            maps_model_list = model_list
             if isinstance(
                 self.cfg.modelmaps_opts.plot_types, dict
             ):  # There may be additional obs networks to compute "model" maps for
-                model_list = list(set(model_list) and set(self.cfg.modelmaps_opts.plot_types))
+                maps_model_list = list(set(model_list) and set(self.cfg.modelmaps_opts.plot_types))
 
-            engine.run(model_list=model_list, var_list=var_list)
+            engine.run(model_list=maps_model_list, var_list=var_list)
 
         if not self.cfg.processing_opts.only_model_maps:
             for obs_name in obs_list:
@@ -172,7 +201,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             self.update_interface()
         if use_dummy_model:
             delete_dummy_model(model_id)
-        logger.info("Finished processing.")
+        logger.info("Finished processing. 🦄✨🎉")
 
     def update_interface(self):
         """Update aeroval interface

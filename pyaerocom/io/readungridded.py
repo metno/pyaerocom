@@ -28,6 +28,10 @@ from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.io.read_airnow import ReadAirNow
 from pyaerocom.io.read_earlinet import ReadEarlinet
+from pyaerocom.io.sonde_like.reader import (
+    ReadEvdcOzoneSondeDataHdf,
+    ReadEvdcOzoneSondeDataHarp,
+)
 from pyaerocom.io.read_eprofile import ReadEprofile
 from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
@@ -52,7 +56,7 @@ class ReadUngridded:
 
     """
 
-    SUPPORTED_READERS = [
+    SUPPORTED_READERS: list[type[ReadUngriddedBase]] = [
         ReadAeronetInvV3,
         ReadAeronetSdaV3,
         ReadAeronetSunV3,
@@ -69,6 +73,8 @@ class ReadUngridded:
         ReadCNEMC,
         ReadICOS,
         ReadICPForest,
+        ReadEvdcOzoneSondeDataHdf,
+        ReadEvdcOzoneSondeDataHarp,
     ]
 
     # Creates list of all readers excluding ReadPyaro
@@ -841,7 +847,7 @@ class ReadUngridded:
                 if getattr(data_to_append, "is_vertical_profile", None):
                     data.is_vertical_profile = data_to_append.is_vertical_profile
 
-            logger.info(f"Successfully imported {ds} data")
+            logger.info(f"Successfully imported {ds} data ✅")
         return data
 
     def _check_var_alias(self, var, supported):

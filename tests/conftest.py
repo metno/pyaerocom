@@ -13,9 +13,12 @@ pytest_plugins = [
     "tests.fixtures.aeronet",
     "tests.fixtures.stations",
     "tests.fixtures.collocated_data",
+    "tests.fixtures.dummy_model_data",
     "tests.fixtures.aeroval.config",
     "tests.fixtures.cams2_83.config",
     "tests.fixtures.pyaro",
+    "tests.fixtures.griddeddata_container",
+    "tests.fixtures.lcs",
 ]
 
 TEST_RTOL = 1e-4
@@ -24,7 +27,7 @@ TEST_RTOL = 1e-4
 # (some tests are skipped in this case)
 lustre_unavail = pytest.mark.skipif(
     not const.has_access_lustre,
-    reason="Skipping tests that require access to AEROCOM database on METNo servers",
+    reason="Skipping tests that require access to AEROCOM database on MET Norway servers",
 )
 
 lustre_avail = pytest.mark.skipif(

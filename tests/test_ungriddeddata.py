@@ -196,6 +196,19 @@ def test_filter_by_meta(aeronetsunv3lev2_subset, args, sitenames):
     assert sorted(sitenames) == stats
 
 
+def test_filter_by_projection(aeronetsunv3lev2_subset):
+    data = aeronetsunv3lev2_subset
+
+    def latlon_proj(lat, lon):
+        """unity projection for lat-lon, mapping lat to y and lon to x"""
+        return (lon, lat)
+
+    subset = data.filter_by_projection(latlon_proj, xrange=(0, 20), yrange=(40, 70))
+    sites = [x["station_name"] for x in subset.metadata.values()]
+    stats = sorted(list(dict.fromkeys(sites)))
+    assert sorted(["AAOT", "Avignon", "The_Hague", "Thornton_C-power"]) == stats
+
+
 def test_cache_reload(aeronetsunv3lev2_subset: UngriddedData, tmp_path: Path):
     path = tmp_path / "ungridded_aeronet_subset.pkl"
     file = aeronetsunv3lev2_subset.save_as(file_name=path.name, save_dir=path.parent)
@@ -259,3 +272,13 @@ def test_extract_var_error(aeronetsunv3lev2_subset: UngriddedData):
     data = aeronetsunv3lev2_subset.copy()
     with pytest.raises(VariableDefinitionError):
         data.extract_var("nope")
+
+
+def test__metablock_to_stationdata_nonmonotonically_increasing_index(caplog):
+    station = FAKE_STATION_DATA["station_data_mangled"]
+    d = ungriddeddata.UngriddedData.from_station_data(station)
+    d._metablock_to_stationdata(0, np.str_("od550aer"))
+    assert (
+        "Non monotonically increasing time index for station test station mangled. Possible duplicates."
+        in caplog.text
+    )

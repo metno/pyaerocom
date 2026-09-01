@@ -9,14 +9,14 @@ from pyaerocom.io.icos.reader import ReadICOS
 
 if not const.has_access_lustre:
     pytestmark = pytest.skip(
-        reason="Skipping tests that require access to AEROCOM database on METNo servers",
+        reason="Skipping tests that require access to AEROCOM database on MET Norway servers",
         allow_module_level=True,
     )
 
 VARS_DEFAULT = {"vmrco2", "vmrch4", "vmrco"}
 VARS_PROVIDED = VARS_DEFAULT  # | {} add more if ever needed
 
-station_names = pytest.mark.parametrize("station", ("Birkenes", "Gartow", "Hohenpeissenberg"))
+station_names = pytest.mark.parametrize("station", ("Birkenes_", "Gartow", "Hohenpeissenberg"))
 
 
 @pytest.fixture(scope="module")

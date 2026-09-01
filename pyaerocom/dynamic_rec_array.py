@@ -58,7 +58,7 @@ class DynamicRecArray:
                 raise DynamicRecArrayException(f"missing key {key} in arguments")
             if kwargs[key].shape[0] != kwargs[key0].shape[0]:
                 raise DynamicRecArrayException(
-                    f"array {key} size ({kwargs[key0].shape[0]}) != {key0} size ({kwargs[key0].shape[0]})"
+                    f"array {key} size ({kwargs[key].shape[0]}) != {key0} size ({kwargs[key0].shape[0]})"
                 )
         add_len = kwargs[key0].shape[0]
         if add_len > 0:
@@ -75,10 +75,7 @@ class DynamicRecArray:
 
         :return: np.aarry of type dtype
         """
-        if self._capacity != self._length:
-            self._array = self._array[:][: self._length]
-            self._capacity = len(self._array)
-        return self._array
+        return self._array[:][: self._length]
 
     @data.setter
     def data(self, data):

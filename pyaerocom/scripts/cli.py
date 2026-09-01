@@ -31,7 +31,7 @@ def callback(
 @main.command()
 def browse(database: str = typer.Argument(..., help="Provide database name.")):
     """Browse database (e.g., browse <DATABASE>)"""
-    print(f"Searching database for matches of {database}")
+    print(f"Searching database for matches of {database} 🔎")
     print(browse_database(database))
 
 

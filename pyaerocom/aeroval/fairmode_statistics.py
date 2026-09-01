@@ -13,16 +13,40 @@ logger = logging.getLogger(__name__)
 
 SPECIES = dict(
     concno2=dict(
-        UrRV=0.24, RV=200, alpha=0.2, freq=TsType("hourly"), percentile=99.8, Np=5.2, Nnp=5.5
+        UrRV=0.24,
+        RV=200,
+        alpha=0.2,
+        freq=TsType("hourly"),
+        percentile=99.8,
+        Np=5.2,
+        Nnp=5.5,
     ),
     conco3mda8=dict(
-        UrRV=0.18, RV=120, alpha=0.79, freq=TsType("daily"), percentile=92.9, Np=11.0, Nnp=3.0
+        UrRV=0.18,
+        RV=120,
+        alpha=0.79,
+        freq=TsType("daily"),
+        percentile=92.9,
+        Np=11.0,
+        Nnp=3.0,
     ),
     concpm10=dict(
-        UrRV=0.28, RV=50, alpha=0.25, freq=TsType("daily"), percentile=90.1, Np=20.0, Nnp=1.5
+        UrRV=0.28,
+        RV=50,
+        alpha=0.25,
+        freq=TsType("daily"),
+        percentile=90.1,
+        Np=20.0,
+        Nnp=1.5,
     ),
     concpm25=dict(
-        UrRV=0.36, RV=25, alpha=0.5, freq=TsType("daily"), percentile=90.1, Np=20.0, Nnp=1.5
+        UrRV=0.36,
+        RV=25,
+        alpha=0.5,
+        freq=TsType("daily"),
+        percentile=90.1,
+        Np=20.0,
+        Nnp=1.5,
     ),
 )
 
@@ -61,17 +85,19 @@ class FairmodeStatistics:
         vert_code: str,
         modelname: str,
         model_var: str,
+        period: str,
+        regname: str,
     ):
-        for regname in fairmode_stats:
-            exp_output.add_fairmode_entry(
-                fairmode_stats[regname],
-                regname,
-                obs_name,
-                var_name_web,
-                vert_code,
-                modelname,
-                model_var,
-            )
+        exp_output.add_fairmode_entry(
+            fairmode_stats[regname],
+            regname,
+            obs_name,
+            var_name_web,
+            vert_code,
+            modelname,
+            model_var,
+            period,
+        )
 
     def fairmode_statistics(self, coldata: ColocatedData, var_name: str):
         return self._get_stats(coldata.data, var_name, False)
@@ -183,10 +209,10 @@ class FairmodeStatistics:
         obsex = obsvals > EXC_THRESHOLDS[var_name]
         modex = modvals > EXC_THRESHOLDS[var_name]
 
-        fa = np.sum(np.logical_and(modex, ~obsex), axis=0, where=mask)
-        ma = np.sum(np.logical_and(~modex, obsex), axis=0, where=mask)
-        gan = np.sum(np.logical_and(~obsex, ~modex), axis=0, where=mask)
-        gap = np.sum(np.logical_and(obsex, modex), axis=0, where=mask)
+        fa = np.sum(np.logical_and(modex, ~obsex), axis=0, where=mask, out=None)
+        ma = np.sum(np.logical_and(~modex, obsex), axis=0, where=mask, out=None)
+        gan = np.sum(np.logical_and(~obsex, ~modex), axis=0, where=mask, out=None)
+        gap = np.sum(np.logical_and(obsex, modex), axis=0, where=mask, out=None)
 
         return fa, ma, gan, gap
 
@@ -242,7 +268,7 @@ class FairmodeStatistics:
             return UrRV * np.sqrt(in_sqrt)
 
         return beta * np.sqrt(
-            np.nanmean(np.square(obsuncertainty(obsvals, var_name), where=mask), axis=0)
+            np.nanmean(np.square(obsuncertainty(obsvals, var_name)), where=mask, axis=0)
         )
 
     @staticmethod

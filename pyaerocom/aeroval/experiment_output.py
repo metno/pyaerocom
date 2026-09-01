@@ -1,18 +1,15 @@
 import itertools
+import json
 import logging
 import os
 import pathlib
 import shutil
 
 import aerovaldb
+from attrs import define, field
 
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import (
-    DirLoc,
-    StrType,
-    TypeValidator,
-    sort_dict_by_name,
-)
+from pyaerocom._lowlevel_helpers import sort_dict_by_name
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.collections import ObsCollection
 from pyaerocom.aeroval.glob_defaults import (
@@ -30,22 +27,22 @@ from pyaerocom.aeroval.modelentry import ModelEntry
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
-from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS
+from pyaerocom.stats.mda8.const import MDA8_OUTPUT_VARS, SOMO30_OUTPUT_VARS
 from pyaerocom.stats.stats import _init_stats_dummy
 from pyaerocom.units.helpers import get_standard_unit
 from pyaerocom.utils import recursive_defaultdict
 from pyaerocom.variable_helpers import get_aliases
 
-
 logger = logging.getLogger(__name__)
 
 
+@define
 class ProjectOutput:
     """JSON output for project"""
 
-    proj_id = StrType()
-
-    json_basedir = DirLoc(assert_exists=True)
+    proj_id: str = field()
+    avdb: aerovaldb.AerovalDB = field()
+    json_basedir: str = field()
 
     def __init__(self, proj_id: str, resource: str | pathlib.Path | aerovaldb.AerovalDB):
         self.proj_id = proj_id
@@ -87,10 +84,12 @@ class ProjectOutput:
         return list(self.avdb.get_experiments(self.proj_id, default={}))
 
 
+@define
 class ExperimentOutput(ProjectOutput):
     """JSON output for experiment"""
 
-    cfg = TypeValidator(EvalSetup)
+    cfg: EvalSetup = field()
+    _invalid: dict[str, list] = field()
 
     def __init__(self, cfg: EvalSetup):
         self.cfg = cfg
@@ -106,6 +105,28 @@ class ExperimentOutput(ProjectOutput):
         # dictionary that will be filled by json cleanup methods to check for
         # invalid or outdated json files across different output directories
         self._invalid = dict(models=[], obs=[])
+
+    def __str__(self) -> str:
+        summary_lines = [
+            "ExperimentOutput Summary:",
+            f"  ├─ Project ID      : {self.proj_id}",
+            f"  ├─ Experiment ID   : {self.exp_id}",
+            f"  ├─ Directory       : {self.exp_dir}",
+            f"  ├─ Results Ready   : {'✅' if self.results_available else '❌'}",
+            f"  ├─ Public          : {'Yes' if self.cfg.exp_info.public else 'No'}",
+        ]
+
+        try:
+            result_summary = self._results_summary()
+            if result_summary:
+                summary_lines.append("  └─ Result Summary:")
+                for key, values in result_summary.items():
+                    values_preview = ", ".join(values[:3]) + ("..." if len(values) > 3 else "")
+                    summary_lines.append(f"     • {key:10}: {values_preview}")
+        except Exception as e:
+            summary_lines.append(f"  ⚠️ Could not summarize results: {e}")
+
+        return "\n".join(summary_lines)
 
     @property
     def exp_id(self) -> str:
@@ -128,7 +149,10 @@ class ExperimentOutput(ProjectOutput):
         """
         if self.cfg.processing_opts.only_model_maps:
             contour_routes = self.avdb.query(
-                [aerovaldb.routes.Route.CONTOUR, aerovaldb.routes.Route.CONTOUR_TIMESPLIT],
+                [
+                    aerovaldb.routes.Route.CONTOUR,
+                    aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                ],
                 project=self.proj_id,
                 experiment=self.exp_id,
             )
@@ -145,7 +169,9 @@ class ExperimentOutput(ProjectOutput):
             if (
                 len(
                     self.avdb.query(
-                        aerovaldb.routes.Route.MAP, project=self.proj_id, experiment=self.exp_id
+                        aerovaldb.routes.Route.MAP,
+                        project=self.proj_id,
+                        experiment=self.exp_id,
                     )
                 )
                 == 0
@@ -193,7 +219,7 @@ class ExperimentOutput(ProjectOutput):
 
         """
         if not self.results_available:
-            logger.warning(f"no output available for experiment {self.exp_id} in {self.proj_id}")
+            logger.warning(f"No output available for experiment {self.exp_id} in {self.proj_id} ⚠️")
             return
         exp_data = {"public": self.cfg.exp_info.public}
         self._add_entry_experiments_json(self.exp_id, exp_data)
@@ -226,7 +252,9 @@ class ExperimentOutput(ProjectOutput):
                 }
                 self.avdb.put_regions(all_regions, self.proj_id, self.exp_id)
             for uri in self.avdb.query(
-                aerovaldb.routes.Route.HEATMAP, project=self.proj_id, experiment=self.exp_id
+                aerovaldb.routes.Route.HEATMAP,
+                project=self.proj_id,
+                experiment=self.exp_id,
             ):
                 data = self.avdb.get_by_uri(uri)
                 hm = {}
@@ -268,7 +296,11 @@ class ExperimentOutput(ProjectOutput):
             infos = ["name", "ovar", "per"]
             res = [[], [], []]
 
-            for uri in self.avdb.query(aerovaldb.routes.Route.CONTOUR_TIMESPLIT):
+            for uri in self.avdb.query(
+                aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                project=self.proj_id,
+                experiment=self.exp_id,
+            ):
                 for i, key in enumerate(["model", "obsvar", "timestep"]):
                     res[i].append(uri.meta[key])
 
@@ -320,7 +352,9 @@ class ExperimentOutput(ProjectOutput):
                 modified.append(uri)
 
         for uri in self.avdb.query(
-            aerovaldb.routes.Route.TIMESERIES, project=self.proj_id, experiment=self.exp_id
+            aerovaldb.routes.Route.TIMESERIES,
+            project=self.proj_id,
+            experiment=self.exp_id,
         ):
             if self._check_clean_ts_uri(uri):
                 modified.append(uri)
@@ -334,13 +368,13 @@ class ExperimentOutput(ProjectOutput):
 
         if vert_code not in self.cfg.obs_cfg.all_vert_types:
             logger.warning(
-                f"Invalid or outdated vert code {vert_code} in ts file {uri}. File will be deleted."
+                f"Invalid or outdated vert code {vert_code} in ts file {uri}. File will be deleted. 🗑️"
             )
             self.avdb.rm_by_uri(uri)
             return True
         if obs_name in self._invalid["obs"]:
             logger.info(
-                f"Invalid or outdated obs name {obs_name} in ts file {uri}. File will be deleted."
+                f"Invalid or outdated obs name {obs_name} in ts file {uri}. File will be deleted. 🗑️"
             )
             self.avdb.rm_by_uri(uri)
             return True
@@ -349,7 +383,7 @@ class ExperimentOutput(ProjectOutput):
             try:
                 data = self.avdb.get_by_uri(uri)
             except Exception:
-                logger.exception(f"FATAL: detected corrupt json file: {uri}. Removing file...")
+                logger.exception(f"FATAL: detected corrupt json file: {uri}. Removing file... 🗑️")
                 self.avdb.rm_by_uri(uri)
                 return True
 
@@ -392,7 +426,7 @@ class ExperimentOutput(ProjectOutput):
         if also_coldata:
             coldir = self.cfg.path_manager.get_coldata_dir()
             if os.path.exists(coldir):
-                logger.info(f"Deleting everything under {coldir}")
+                logger.info(f"Deleting everything under {coldir} 🗑️")
                 shutil.rmtree(coldir)
         self._del_entry_experiments_json(self.exp_id)
 
@@ -436,12 +470,11 @@ class ExperimentOutput(ProjectOutput):
             return var_ranges_defaults[var]
         try:
             varinfo = VarinfoWeb(var)
-            # TODO: get unit from pyaerocom/data/variables.ini
-            info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap, unit=varinfo.unit)
+            info = dict(scale=varinfo.cmap_bins, colmap=varinfo.cmap)
         except (VariableDefinitionError, AttributeError):
             info = var_ranges_defaults["default"]
             logger.info(
-                "Failed to infer cmap and variable ranges for '%s', using default settings which are '%s'.",
+                "Failed to infer cmap and variable ranges for '%s', using default settings which are '%s'. 🎨",
                 var,
                 info,
             )
@@ -519,7 +552,7 @@ class ExperimentOutput(ProjectOutput):
             name, tp, cat = self.cfg.var_web_info[var_name]
         else:
             name, tp, cat = var_name, "UNDEFINED", "UNDEFINED"
-            logger.warning(f"Missing menu name definition for var {var_name}.")
+            logger.warning(f"Missing menu name definition for var {var_name}. ⚠️")
 
         return VariableInfo(name, tp, cat)
 
@@ -537,6 +570,7 @@ class ExperimentOutput(ProjectOutput):
             only_use_in = const.VARS[var].only_use_in.split(" ")
             # only return only_use_in if key exists, otherwise do not
             out["only_use_in"] = only_use_in
+
         except AttributeError:
             pass
         return out
@@ -636,9 +670,11 @@ class ExperimentOutput(ProjectOutput):
 
         """
 
-        # MDA8 is computed on-the-fly ONLY if a MDA8_INPUT_VAR at hourly freq is detected.
+        # MDA8/SOMO30 is computed on-the-fly ONLY if a MDA8/SOMO30_INPUT_VAR at hourly freq is detected.
         # Consequently, it is not specified in a config but should be included as part of the experiment.
         if obs_var in MDA8_OUTPUT_VARS and mod_var in MDA8_OUTPUT_VARS:
+            return True
+        if obs_var in SOMO30_OUTPUT_VARS and mod_var in SOMO30_OUTPUT_VARS:
             return True
 
         # get model entry for model name
@@ -671,10 +707,14 @@ class ExperimentOutput(ProjectOutput):
         new = {}
         if self.cfg.processing_opts.only_model_maps:
             uris = self.avdb.query(
-                aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                [
+                    aerovaldb.routes.Route.CONTOUR_TIMESPLIT,
+                    aerovaldb.routes.Route.MAP_OVERLAY,
+                ],
                 project=self.proj_id,
                 experiment=self.exp_id,
             )
+
             all_combinations = list(
                 itertools.product(
                     self.cfg.obs_cfg.keylist(),
@@ -698,19 +738,27 @@ class ExperimentOutput(ProjectOutput):
                 # however menu.json is still needed.
                 if not all_combinations:
                     break
+                if uri.meta["obsvar"] == "conco3mda8":
+                    continue
 
-                mod_name = uri.meta["model"]
-                obs_var = uri.meta["obsvar"]
-                mod_var = uri.meta["obsvar"]
+                try:  # overlay case
+                    src_name = uri.meta["source"]
+                    var = uri.meta["variable"]
+                except KeyError:  # contour case
+                    src_name = uri.meta["model"]
+                    var = uri.meta["obsvar"]
 
-                if mod_name in self.cfg.obs_cfg.keylist():
-                    obs_name = mod_name
+                obs_var = var
+                mod_var = var
+
+                if src_name in self.cfg.obs_cfg.keylist():
+                    obs_name = mod_name = src_name
                     vert_code = self.cfg.obs_cfg.get_entry(obs_name).obs_vert_type
                     first_with_obs_name = next(
                         (
                             item
                             for item in all_combinations
-                            if item[0] == obs_name and item[-1] == obs_var
+                            if item[0] == obs_name and item[-1] == var
                         ),
                         None,
                     )
@@ -718,10 +766,11 @@ class ExperimentOutput(ProjectOutput):
                         continue
                     mod_name = first_with_obs_name[1]
                     all_combinations.remove(first_with_obs_name)
-                elif mod_name in self.cfg.model_cfg.keylist():
+                elif src_name in self.cfg.model_cfg.keylist():
+                    mod_name = src_name
                     vert_code = None
                     for o in self.cfg.obs_cfg.keylist():
-                        if obs_var in self.cfg.obs_cfg.get_entry(o).obs_vars:
+                        if var in self.cfg.obs_cfg.get_entry(o).obs_vars:
                             vert_code = self.cfg.obs_cfg.get_entry(o).obs_vert_type
                     if not vert_code:
                         raise ValueError(
@@ -731,16 +780,21 @@ class ExperimentOutput(ProjectOutput):
                         (
                             item
                             for item in all_combinations
-                            if item[1] == mod_name and item[-1] == obs_var
+                            if item[1] == src_name and item[-1] == var
                         ),
                         None,
                     )
+
                     if not first_with_mod_name:  # should already be taken care of in new
                         continue
-                    obs_name = first_with_mod_name[0]
+
+                    obs_name = self.cfg.obs_cfg.get_entry(first_with_mod_name[0]).obs_name
                     all_combinations.remove(first_with_mod_name)
                 else:
-                    raise ValueError("Failed to infer vert_code in an only_model_maps experiment")
+                    logger.warning(
+                        f"Failed to infer origin of source {src_name} and variable {var}. Check that they are provided in the config file. This may show up as a result of rerunning an experiment with only_model_maps=True, but without the exact same set up in the config as is on disk. Skipping this entry. ⏭️"
+                    )
+                    continue
 
             else:
                 obs_name = uri.meta["network"]
@@ -770,7 +824,25 @@ class ExperimentOutput(ProjectOutput):
                 }
             else:
                 logger.warning(
-                    f"Invalid entry: model {mod_name} ({mod_var}), obs {obs_name} ({obs_var})"
+                    f"Invalid entry: model {mod_name} ({mod_var}), obs {obs_name} ({obs_var}) ⚠️"
+                )
+
+        if self.cfg.processing_opts.compute_conco3mda8_contours:
+            try:
+                newconco3 = new["conco3"].copy()
+                new.update({"conco3mda8": newconco3})
+                new["conco3mda8"]["longname"] = (
+                    "Daily maximum of the 8 hour rolling mean (see EU Directive 2008/50/EC Annex XI) of O3 mass concentration"
+                )
+                new["conco3mda8"]["name"] = "O<sub>3</sub> (MDA8)"
+                # replace conco3 with conco3mda8 in all the nested fields of new["conco3mda8"]
+                conco3mda8_dict_as_text = json.dumps(new["conco3mda8"])
+                new["conco3mda8"] = json.loads(
+                    conco3mda8_dict_as_text.replace("conco3", "conco3mda8")
+                )
+            except KeyError:
+                logger.warning(
+                    "Cannot create the entry menu for conco3mda8, entry for conco3 not found"
                 )
         return new
 
@@ -840,7 +912,7 @@ class ExperimentOutput(ProjectOutput):
             try:
                 del current[exp_id]
             except KeyError:
-                logger.warning(f"no such experiment registered: {exp_id}")
+                logger.warning(f"No such experiment registered: {exp_id}")
             self.avdb.put_experiments(current, self.proj_id)
 
     def reorder_experiments(self, exp_order=None) -> None:
@@ -857,7 +929,7 @@ class ExperimentOutput(ProjectOutput):
         if exp_order is None:
             exp_order = []
         elif not isinstance(exp_order, list):
-            raise ValueError("need list as input")
+            raise ValueError("Need list as input")
 
         with self.avdb.lock():
             current = self.avdb.get_experiments(self.proj_id, default={})
@@ -950,6 +1022,7 @@ class ExperimentOutput(ProjectOutput):
         layer: str,
         modelname: str,
         modvar: str,
+        period: str,
     ):
         """Adds a fairmode entry to fairmode
 
@@ -965,7 +1038,15 @@ class ExperimentOutput(ProjectOutput):
 
         with self.avdb.lock():
             glob_stats = self.avdb.get_fairmode(
-                project, experiment, region, network, obsvar, layer, default={}
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+                modelname,
+                period.replace("/", ""),  # Remove slashes in CAMS2_83 period,
+                default={},
             )
             glob_stats = recursive_defaultdict(glob_stats)
             glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
@@ -977,6 +1058,57 @@ class ExperimentOutput(ProjectOutput):
                 network,
                 obsvar,
                 layer,
+                modelname,
+                period.replace("/", ""),  # Remove slashes in CAMS2_83 period,
+            )
+
+    def add_radarplot_entry(
+        self,
+        entry: dict,
+        region: str,
+        network: str,
+        obsvar: str,
+        layer: str,
+        modelname: str,
+        modvar: str,
+        period: str,
+    ):
+        """Adds a radarplot entry to radarplot
+
+        :param entry: The entry to be added.
+        :param network: Observation network
+        :param obsvar: Observation variable
+        :param layer: Vertical layer
+        :param modelname: Model name
+        :param modvar: Model variable
+        """
+        project = self.proj_id
+        experiment = self.exp_id
+
+        with self.avdb.lock():
+            glob_stats = self.avdb.get_radarplot(
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+                modelname,
+                period.replace("/", ""),  # Remove slashes in CAMS2_83 period,
+                default={},
+            )
+            glob_stats = recursive_defaultdict(glob_stats)
+            glob_stats[obsvar][network][layer][modelname][modvar] = round_floats(entry)
+            self.avdb.put_radarplot(
+                glob_stats,
+                project,
+                experiment,
+                region,
+                network,
+                obsvar,
+                layer,
+                modelname,
+                period.replace("/", ""),  # Remove slashes in CAMS2_83 period,
             )
 
     def add_heatmap_entry(
@@ -1085,6 +1217,8 @@ class ExperimentOutput(ProjectOutput):
             current = recursive_defaultdict(current)
 
             for freq, coldata in data.items():
+                if coldata is None:
+                    continue
                 model_name = coldata.model_name
 
                 midpoint = (

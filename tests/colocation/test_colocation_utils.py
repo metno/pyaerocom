@@ -4,16 +4,17 @@ import pandas as pd
 import pytest
 from cf_units import Unit
 
-from pyaerocom import GriddedData, const, helpers
+from pyaerocom import GriddedData, GriddedDataContainer, const, helpers
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.colocation.colocation_utils import (
     _colocate_site_data_helper,
     _colocate_site_data_helper_timecol,
+    _get_stat_data_vec,
     _regrid_gridded,
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
 )
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.exceptions import UnresolvableTimeDefinitionError
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from tests.conftest import TEST_RTOL, need_iris_32
@@ -33,7 +34,7 @@ S1 = create_fake_station_data(
     10,
     "2010-01-01",
     "2010-12-31",
-    "d",
+    "D",
     {"ts_type": "daily"},
 )
 
@@ -45,7 +46,7 @@ S2 = create_fake_station_data(
     10,
     "2010-01-01",
     "2010-12-31",
-    "d",
+    "D",
     {"ts_type": "daily"},
 )
 
@@ -55,7 +56,7 @@ S3 = create_fake_station_data(
     10,
     "2010-01-01",
     "2010-12-31",
-    "13d",
+    "13D",
     {"ts_type": "13daily"},
 )
 S3["concpm10"][1] = np.nan
@@ -67,7 +68,7 @@ S4 = create_fake_station_data(
     10,
     "2010-01-03",
     "2011-12-31",
-    "d",
+    "D",
     {"ts_type": "daily"},
 )
 
@@ -89,17 +90,17 @@ S4["concpm10"][0:5] = range(5)
             10,
         ),
         (
-            S3,
-            S4,
+            S3,  # model data 13daily for 2010
+            S4,  # obs data daily from 1st march 2010 to end of 2011
             "concpm10",
             "concpm10",
             "monthly",
             "mean",
             {"monthly": {"daily": 25}},
             False,
-            24,
+            11,
         ),
-        (S1, S2, "concpm10", "concpm10", "monthly", "mean", 25, {}, 12),
+        (S1, S2, "concpm10", "concpm10", "monthly", "mean", 25, {}, 11),
         (S2, S1, "concpm10", "concpm10", "monthly", "mean", 25, {}, 11),
     ],
 )
@@ -145,7 +146,9 @@ def test__colocate_site_data_helper(aeronetsunv3lev2_subset):
 def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
     data = data_tm5.copy()
     data.var_name = "od550bc"
-    coldata = colocate_gridded_ungridded(data, aeronetsunv3lev2_subset, var_ref="od550aer")
+    mdata = GriddedDataContainer("test_id")
+    mdata.add_griddeddata(data)
+    coldata = colocate_gridded_ungridded(mdata, aeronetsunv3lev2_subset, var_ref="od550aer")
 
     assert coldata.metadata["var_name"] == ["od550aer", "od550bc"]
 
@@ -205,7 +208,9 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
 def test_colocate_gridded_ungridded(
     data_tm5, aeronetsunv3lev2_subset, addargs, ts_type, shape, obsmean, modmean
 ):
-    coldata = colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset, **addargs)
+    mdata = GriddedDataContainer("test_id")
+    mdata.add_griddeddata(data_tm5)
+    coldata = colocate_gridded_ungridded(mdata, aeronetsunv3lev2_subset, **addargs)
 
     assert isinstance(coldata, ColocatedData)
     assert coldata.ts_type == ts_type
@@ -215,12 +220,98 @@ def test_colocate_gridded_ungridded(
     assert np.nanmean(coldata.data.data[1]) == pytest.approx(modmean, rel=TEST_RTOL)
 
 
+def test_colocate_gridded_ungridded_split(cities_data, lcs_data):
+    mdata_split = GriddedDataContainer("split")
+    mdata_berlin = GriddedDataContainer("whole")
+
+    for tile in cities_data["EMEP_split"]:
+        mdata_split.add_griddeddata(tile)
+
+    mdata_berlin.add_griddeddata(cities_data["EMEP"][1])
+
+    coldata_split = colocate_gridded_ungridded(mdata_split, lcs_data)
+    coldata_berlin = colocate_gridded_ungridded(mdata_berlin, lcs_data)
+
+    assert len(coldata_split.data.station_name) == len(coldata_berlin.data.station_name)
+
+    assert np.nanmean(coldata_split.data.data[0]) == np.nanmean(coldata_berlin.data.data[0])
+    assert np.nanmean(coldata_split.data.data[1]) == np.nanmean(coldata_berlin.data.data[1])
+
+
+def test__get_stat_data(cities_data, lcs_data):
+    from pyaerocom.units.datetime import to_pandas_timestamp
+
+    def proj(lat, lon):
+        return (lon, lat)
+
+    def coord_index(stationdata, points):
+        lat = float(stationdata["latitude"])
+        lon = float(stationdata["longitude"])
+
+        dists2 = [(point[0] - lat) ** 2 + (point[1] - lon) ** 2 for point in points]
+        return np.argmin(dists2)
+
+    data_id = "test_id"
+    var_ref = "concpm25"
+    ts_type = "monthly"
+    obs_start = to_pandas_timestamp("01-2019")
+    obs_stop = to_pandas_timestamp("12-2019")
+    mg = GriddedDataContainer(data_id)
+
+    for gd in cities_data["EMEP"]:
+        mg.add_griddeddata(gd)
+
+    data_ref = lcs_data
+
+    tiles, xranges, yranges = mg.get_tiles()
+
+    data_ref = data_ref.filter_by_projection(proj, xranges, yranges)
+
+    all_stats = data_ref.to_station_data_all(
+        vars_to_convert=var_ref,
+        start=obs_start,
+        stop=obs_stop,
+        by_station_name=True,
+        ts_type_preferred=ts_type,
+    )
+
+    unsorted_obs_stat_data = all_stats["stats"]
+
+    grid_stat_data, obs_stat_data = _get_stat_data_vec(
+        obs_start,
+        obs_stop,
+        var_ref,
+        tiles,
+        xranges,
+        yranges,
+        proj,
+        unsorted_obs_stat_data,
+    )
+
+    points_obs = [(stat["latitude"], stat["longitude"]) for stat in obs_stat_data]
+    points_mod = [(stat["latitude"], stat["longitude"]) for stat in grid_stat_data]
+
+    sorted_grid_stats = sorted(grid_stat_data, key=lambda x: coord_index(x, points_obs))
+    sorted_obs_stats = sorted(unsorted_obs_stat_data, key=lambda x: coord_index(x, points_mod))
+
+    assert sorted_grid_stats == grid_stat_data
+    assert sorted_obs_stats == obs_stat_data
+    assert sum(
+        [i["latitude"] != j["latitude"] for i, j in zip(unsorted_obs_stat_data, obs_stat_data)]
+    )
+    assert sum(
+        [i["longitude"] != j["longitude"] for i, j in zip(unsorted_obs_stat_data, obs_stat_data)]
+    )
+
+
 def test_colocate_gridded_ungridded_wstationtype(data_tm5, aeronetsunv3lev2_subset):
     fake_type = ["faketype"] * len(aeronetsunv3lev2_subset.station_name)
+    mdata = GriddedDataContainer("test_id")
+    mdata.add_griddeddata(data_tm5)
     for i, n in enumerate(fake_type):
         aeronetsunv3lev2_subset.metadata[i].update({"station_type": n})
     coldata = colocate_gridded_ungridded(
-        data_tm5, aeronetsunv3lev2_subset, add_meta_keys=["station_type"]
+        mdata, aeronetsunv3lev2_subset, add_meta_keys=["station_type"]
     )
     assert all(typ == "faketype" for typ in coldata.coords["station_type"].values.tolist())
 
@@ -245,21 +336,27 @@ def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     gridded.var_name = "od550aer"
     gridded.units = Unit("1")
 
-    coldata = colocate_gridded_ungridded(gridded, aeronetsunv3lev2_subset, colocate_time=False)
+    mdata = GriddedDataContainer("test_id")
+    mdata.add_griddeddata(gridded)
+    coldata = colocate_gridded_ungridded(mdata, aeronetsunv3lev2_subset, colocate_time=False)
     assert isinstance(coldata, ColocatedData)
     assert coldata.shape == (2, 2, 2)
 
 
 def test_colocate_gridded_gridded_same_new_var(data_tm5):
     data = data_tm5.copy()
+
     data.var_name = "Blaaa"
-    coldata = colocate_gridded_gridded(data, data_tm5)
+    mdata = GriddedDataContainer("test", data)
+    coldata = colocate_gridded_gridded(mdata, GriddedDataContainer("tast", data_tm5))
 
     assert coldata.metadata["var_name"] == ["od550aer", "Blaaa"]
 
 
 def test_colocate_gridded_gridded_same(data_tm5):
-    coldata = colocate_gridded_gridded(data_tm5, data_tm5)
+    coldata = colocate_gridded_gridded(
+        GriddedDataContainer("test1", data_tm5), GriddedDataContainer("test1", data_tm5)
+    )
 
     assert isinstance(coldata, ColocatedData)
     stats = coldata.calc_statistics()

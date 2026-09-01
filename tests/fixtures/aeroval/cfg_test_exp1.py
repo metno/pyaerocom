@@ -1,4 +1,4 @@
-from pyaerocom.config import ALL_REGION_NAME
+from pyaerocom.config_reader import ALL_REGION_NAME
 
 MODELS = {"TM5-AP3-CTRL": dict(model_id="TM5-met2010_CTRL-TEST")}
 

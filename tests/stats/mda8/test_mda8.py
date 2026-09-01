@@ -4,9 +4,10 @@ import xarray as xr
 
 from pyaerocom.colocation.colocated_data import ColocatedData
 from pyaerocom.stats.mda8.mda8 import (
-    _calc_mda8,
     _daily_max,
     _rolling_average_8hr,
+    calc_mda8,
+    calc_somo30,
     mda8_colocated_data,
 )
 
@@ -18,6 +19,31 @@ def test_data(time, values) -> xr.DataArray:
         dims=["data_source", "time", "station_name"],
         coords={"time": time},
     )
+
+
+@pytest.mark.parametrize(
+    "time,values,exp_somo30",
+    (
+        pytest.param(
+            xr.date_range(start="2023-01-01 00:00", periods=365 * 24, freq="1h"),
+            [0.0] * (365 * 24),
+            [0],
+            id="zeros",
+        ),
+        pytest.param(
+            xr.date_range(start="2024-01-01 01:00", periods=365 * 24, freq="1h"),
+            [31.0] * (365 * 24),
+            [365],
+            id="const 31µg/m3",
+        ),
+    ),
+)
+def test_calc_somo30(test_data, exp_somo30):
+    somo30 = calc_somo30(test_data)
+
+    assert somo30.shape[1] == len(exp_somo30)
+
+    assert all(somo30[0, :, 0] == pytest.approx(exp_somo30, abs=0, nan_ok=True))
 
 
 @pytest.mark.parametrize(
@@ -59,7 +85,7 @@ def test_data(time, values) -> xr.DataArray:
     ),
 )
 def test_calc_mda8(test_data, exp_mda8):
-    mda8 = _calc_mda8(test_data)
+    mda8 = calc_mda8(test_data)
 
     assert mda8.shape[1] == len(exp_mda8)
 
@@ -81,7 +107,7 @@ def test_calc_mda8_with_gap():
 
     arr = xr.concat((arr1, arr2), dim="time")
 
-    mda8 = _calc_mda8(arr)
+    mda8 = calc_mda8(arr)
 
     assert mda8.shape == (1, 6, 1)
     pytest.approx(mda8[0, :, 0], [20.5, 44.5, np.nan, 41.25, 44.5, np.nan], abs=10 * 10**-5)
@@ -97,7 +123,16 @@ def test_coldata_to_mda8(coldata):
     assert mda8.shape == (2, 8, 1)
 
     assert mda8.data.values[0, :, 0] == pytest.approx(
-        [np.nan, np.nan, 1.18741556, 1.18777241, 1.18869106, 1.18879322, 1.18807846, 1.18700801],
+        [
+            np.nan,
+            np.nan,
+            1.18741556,
+            1.18777241,
+            1.18869106,
+            1.18879322,
+            1.18807846,
+            1.18700801,
+        ],
         abs=10**-5,
         nan_ok=True,
     )

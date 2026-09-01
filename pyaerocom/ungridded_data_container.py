@@ -599,13 +599,28 @@ class UngriddedDataContainer(abc.ABC):
         pass
 
     def filter_by_projection(
-        self, projection, xrange: tuple[float, float], yrange: tuple[float, float]
+        self,
+        projection,
+        xrange: tuple[float, float] | list[tuple[float, float]],
+        yrange: tuple[float, float] | list[tuple[float, float]],
     ):
         """Filter the ungridded data to a horizontal bounding box given by a projection
 
         :param projection: a function turning projection(lat, lon) -> (x, y)
         :param xrange: x range (min/max included) in the projection plane
         :param yrange: y range (min/max included) in the projection plane
+        """
+        pass
+
+    def filter_by_latlon(
+        self,
+        lat_range: tuple[float, float] | list[tuple[float, float]],
+        lon_range: tuple[float, float] | list[tuple[float, float]],
+    ):
+        """Filter the ungridded data to a horizontal bounding box
+
+        :param lat_range: lat range (min/max included) in the projection plane, or list of multiple lat ranges
+        :param lon_range: lon range (min/max included) in the projection plane, or list of multiple lat ranges
         """
         pass
 

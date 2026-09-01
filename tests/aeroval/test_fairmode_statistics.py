@@ -223,6 +223,8 @@ def test_save_fairmode_stats(
     vert_code = "Surface"
     modelname = "modelname"
     model_var = "modelvar"
+    period = "2015"
+    region = "ALL"
     fairmode_statistics.save_fairmode_stats(
         fairmode_exp_output,
         fairmode_stats_example,
@@ -231,11 +233,13 @@ def test_save_fairmode_stats(
         vert_code,
         modelname,
         model_var,
+        period,
+        region,
     )
 
     fileout = (
         tmp_path
-        / f"{fairmode_exp_output.cfg.proj_id}/{fairmode_exp_output.cfg.exp_id}/fairmode/{list(fairmode_stats_example.keys())[0]}_{obs_name}_{var_name_web}_{vert_code}.json"
+        / f"{fairmode_exp_output.cfg.proj_id}/{fairmode_exp_output.cfg.exp_id}/fairmode/{list(fairmode_stats_example.keys())[0]}_{obs_name}_{var_name_web}_{vert_code}_{modelname}_{period}.json"
     )
     assert fileout.is_file()
 
