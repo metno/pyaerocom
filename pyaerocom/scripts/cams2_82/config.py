@@ -1,10 +1,6 @@
 ##################################################
 #        The global configs
 ##################################################
-<<<<<<< HEAD
-from pathlib import Path
-
-=======
 from datetime import datetime
 from pathlib import Path
 
@@ -12,7 +8,6 @@ import pandas as pd
 
 from pyaerocom.io import PyaroConfig
 
->>>>>>> main-dev
 GLOBAL_CONFIG = dict(
     # Description of the experiment
     proj_id="cams2-82",  # cannot be changed because it has a role in determining the output subfolders
@@ -40,17 +35,6 @@ GLOBAL_CONFIG = dict(
     # Regional filter for analysis
     filter_name="ALL-wMOUNTAINS",
     # colocation frequency (no statistics in higher resolution can be computed)
-<<<<<<< HEAD
-    ts_type="3hourly",
-    # The size of map used to display the results
-    map_zoom="Europe",
-    # Options for time
-    freqs=["3hourly", "daily"],  # Possible frequencies
-    periods=[
-        "2021-2022"
-    ],  # Periods, can be single years or range, e.g. 2010-2015. EMEP only supports single years as of now
-    main_freq="3hourly",  # default frequency to use. This will be overwritten in most of the observation options (see below)
-=======
     ts_type="hourly",
     # The size of map used to display the results
     map_zoom="World",
@@ -60,7 +44,6 @@ GLOBAL_CONFIG = dict(
         "2021-2022"
     ],  # Periods, can be single years or range, e.g. 2010-2015. EMEP only supports single years as of now
     main_freq="hourly",  # default frequency to use. This will be overwritten in most of the observation options (see below)
->>>>>>> main-dev
     add_seasons=False,
     use_meteorological_seasons=True,
     # This has to be true for the web interface to show diurnal evaluation
@@ -72,17 +55,6 @@ GLOBAL_CONFIG = dict(
     # zeros_to_nan=False,
     zeros_to_nan=True,
     colocate_time=False,
-<<<<<<< HEAD
-    obs_remove_outliers=False,
-    model_remove_outliers=False,
-    harmonise_units=True,
-    regions_how="country",
-    annual_stats_constrained=False,
-    weighted_stats=False,
-    
-    use_fairmode=False,
-    
-=======
     obs_remove_outliers=True,
     model_remove_outliers=False,
     harmonise_units=True,
@@ -90,7 +62,6 @@ GLOBAL_CONFIG = dict(
     annual_stats_constrained=False,
     weighted_stats=False,
     use_fairmode=False,
->>>>>>> main-dev
     # This is just the order at which the different species will be shown in the web interface
     # Species that are not evaluated can still be in this list. The web interface will not show them if they are not evaluated
     var_order_menu=[
@@ -101,13 +72,6 @@ GLOBAL_CONFIG = dict(
         "concpm25",
         "concso2",
         "concco",
-<<<<<<< HEAD
-    ],
-    min_num_obs=dict(
-        # yearly=dict(monthly=9),
-        # monthly=dict(daily=21, weekly=3),
-        daily=dict(hourly=18),
-=======
         "od550aer",
         "ec1064aer",
     ],
@@ -115,7 +79,6 @@ GLOBAL_CONFIG = dict(
         # yearly=dict(monthly=9),
         # monthly=dict(daily=21, weekly=3), # not used
         daily=dict(hourly=18), # hourly data
->>>>>>> main-dev
     ),
 )
 
@@ -140,15 +103,6 @@ ignore_id_dict = dict(
 )
 
 BASE_FILTER = {
-<<<<<<< HEAD
-    "latitude": [30, 82],
-    "longitude": [-30, 90],
-}
-
-EEA_RURAL_FILTER = {
-    "station_classification": ["background"],
-    "area_classification": [
-=======
     # "latitude": [30, 82],
     # "longitude": [-30, 90],
 }
@@ -156,7 +110,6 @@ EEA_RURAL_FILTER = {
 EEA_RURAL_FILTER = {
     "station_type": ["background"],
     "station_area": [
->>>>>>> main-dev
         "rural",
         "rural-nearcity",
         "rural-regional",
@@ -176,51 +129,15 @@ EEA_FILTER = {
     "altitude": [-20, 1000],
 }
 
-<<<<<<< HEAD
-species_list = [
-    # "concno2",
-    # "concco",
-    # "conco3",
-=======
 EEA_SPECIES = [
     "concno2",
     # "concco",
     "conco3",
->>>>>>> main-dev
     # "concso2",
     "concpm10",
     "concpm25",
 ]
 
-<<<<<<< HEAD
-
-def get_ignore_list(species):
-    return ignore_id_dict[species] if species in ignore_id_dict else ["NO0042*"]
-
-
-obs_filters = {
-    key: dict(
-        **BASE_FILTER,
-        station_id=get_ignore_list(key),
-        negate="station_id",
-    )
-    for key in species_list
-}
-
-# Empty observation config
-OBS_CONFIG = {}
-
-# EEA observatio
-OBS_CONFIG["EEA"] = dict(
-    obs_id="CAMS2_83.NRT",
-    # obs_id="EEAAQeRep.NRT",
-    obs_vars=species_list,
-    web_interface_name="EEA-UTD",
-    obs_vert_type="Surface",
-    read_opts_ungridded=dict(files=[], force_caching=True),
-    obs_filters=obs_filters,
-)
-=======
 AERONET_SPECIES = ["od550aer"]
 
 OPENAQ_SPECIES = [
@@ -252,7 +169,6 @@ EPROFILE_SPECIES = ["ec1064aer"]
 # Base observation config with EPROFILE only
 OBS_CONFIG = {}
 
->>>>>>> main-dev
 
 ##################################################
 #        Putting it all together
@@ -262,8 +178,6 @@ CFG = dict(
     obs_cfg=OBS_CONFIG,
     **GLOBAL_CONFIG,
 )
-<<<<<<< HEAD
-=======
 
 
 def make_model_entry(
@@ -498,4 +412,3 @@ def make_EPROFILE_entry(
         ],
         obs_filters={"latitude": [-90, 90], "longitude": [-180, 180]},
     )
->>>>>>> main-dev
