@@ -18,5 +18,6 @@ RUN apt-get update \
         libproj-dev \
         proj-data \
         proj-bin \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+RUN mkdir /lustre/storeB
 

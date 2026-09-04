@@ -1,61 +1,68 @@
-// {
-//   "name": "pyaerocom (Python 3.13)",
-//   "build": {
-//     "dockerfile": "Dockerfile",
-//     "context": ".."
-//   },
-//   "containerEnv": {
-//     "UDUNITS2_XML_PATH": "/usr/share/xml/udunits/udunits2-common.xml"
-//   },
-//   "mounts": [
-//     "source=/lustre/storeB,target=/lustre/storeB,type=bind",
-//     "source=${localEnv:HOME}/MyPyaerocom.apptainer,target=/home/vscode/MyPyaerocom,type=bind,consistency=cached",
-//     // FOR COPILOT
-//     // "source=${env:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind",
-//     // "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
-//     // "source=${localenv:HOME}/.config,target=/home/vscode/.config,type=bind"
-//   ],
-//   "postCreateCommand": "python -m pip install --upgrade pip && python -m pip install -e .[dev,test,docs]",
-//   "customizations": {
-//     "vscode": {
-//       "extensions": [
-//         "ms-python.python",
-//         "ms-python.vscode-pylance",
-//         "charliermarsh.ruff",
-//         "ms-toolsai.jupyter",
-//         "github.copilot",
-//       ]
-//     }
-//   }
-// }
-{
-  // Image-based dev container (no dockerComposeFile/service)
-  "name": "pyaerocom (Python 3.13)",
-  "image": "mcr.microsoft.com/devcontainers/python:3.13",
-  "mounts": [
-    // mount storeB for development and testing
-    "type=bind,source=/lustre/storeB,target=/lustre/storeB"
-    // "source=${localEnv:HOME}/MyPyaerocom.container,target=/home/vscode/MyPyaerocom,type=bind,consistency=cached"
-  ],
-  "runArgs": [
-    "--network=host"
-  ],
-  "postCreateCommand": "pip --no-cache-dir install -e . && mkdir -p ${HOME}/tmp/logging && pya init ",
-
-  // "features": {
-  //   "ghcr.io/mamba-org/devcontainer-features/micromamba:1": {
-  //     "channels": "conda-forge"
-  //   }
-  // },
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "corker.vscode-micromamba",
-        "github.copilot",
-        "ms-toolsai.jupyter"
+ {
+   "name": "pyaerocom (Python 3.13)",
+   "build": {
+     "dockerfile": "Dockerfile",
+     "context": ".."
+   },
+   "containerEnv": {
+     "UDUNITS2_XML_PATH": "/usr/share/xml/udunits/udunits2-common.xml"
+   },
+   "mounts": [
+     "source=/lustre/storeB,target=/lustre/storeB,type=bind,consistency=cached",
+     "source=${localEnv:HOME}/MyPyaerocom.container,target=/root/MyPyaerocom,type=bind,consistency=cached",
+     // FOR COPILOT
+//      "source=${localenv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind",
+//      "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
+//      "source=${localenv:HOME}/.config,target=/home/vscode/.config,type=bind"
+   ],
+   "remoteUser": "root",
+   "postCreateCommand": "python -m pip install --upgrade pip && python -m pip install -e .[dev,test,docs]",
+   "customizations": {
+     "vscode": {
+       "extensions": [
+         "ms-python.python",
+         "ms-python.vscode-pylance",
+         "charliermarsh.ruff",
+         "ms-toolsai.jupyter",
+         "github.copilot",
+       ]
+     },
+     "jetbrains": {
+      "backend": "PyCharm",
+      "plugins": [
+        "com.github.copilot"
       ]
     }
-  }
-}
+   }
+ }
+//{
+//  // Image-based dev container (no dockerComposeFile/service)
+//  "name": "pyaerocom (Python 3.13)",
+//  "image": "mcr.microsoft.com/devcontainers/python:3.13",
+//  "mounts": [
+//    // mount storeB for development and testing
+//    "type=bind,source=/lustre/storeB,target=/lustre/storeB",
+//     "source=${localEnv:HOME}/MyPyaerocom.container,target=/home/vscode/MyPyaerocom,type=bind,consistency=cached"
+//  ],
+//  "runArgs": [
+//    "--network=host"
+//  ],
+//  "postCreateCommand": "pip --no-cache-dir install -e . && mkdir -p ${HOME}/tmp/logging ",
+//
+//  // "features": {
+//  //   "ghcr.io/mamba-org/devcontainer-features/micromamba:1": {
+//  //     "channels": "conda-forge"
+//  //   }
+//  // },
+//  "customizations": {
+//    "vscode": {
+//      "extensions": [
+//        "ms-python.python",
+//        "ms-python.vscode-pylance",
+//        "corker.vscode-micromamba",
+//        "github.copilot",
+//        "ms-toolsai.jupyter"
+//      ]
+//    }
+//  }
+//}
