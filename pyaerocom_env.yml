@@ -33,8 +33,8 @@ dependencies:
   - pip:
     - geocoder_reverse_natural_earth >= 0.0.2
     - aerovaldb >= 0.5.0, < 0.6.0
-    - pyaro >= 0.2.0, < 0.3
-    - pyaro-readers >=0.1.5, < 0.2.0
+    - pyaro >= 0.3.1, < 0.4.0
+    - pyaro-readers >=0.1.10, < 0.2.0
 ## testing
   - pytest >=7.4
   - pytest-dependency
