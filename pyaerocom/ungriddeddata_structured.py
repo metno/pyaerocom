@@ -812,10 +812,10 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 # uarray = np.array(list(set(stationid_tstype.tolist())), dtype=stationid_tstype.dtype)
                 # pandas drop_duplicatates currently fastest and not too much memory usage
                 uarray = pd.DataFrame(
-                        {
-                            "station_id": stationid_tstype["station_id"],
-                            "tstype": stationid_tstype["tstype"],
-                        }
+                    {
+                        "station_id": stationid_tstype["station_id"],
+                        "tstype": stationid_tstype["tstype"],
+                    }
                 ).drop_duplicates(ignore_index=True)
 
                 for _, row in uarray.iterrows():
