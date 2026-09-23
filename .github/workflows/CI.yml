@@ -70,7 +70,7 @@ jobs:
     - name: Run tests
       if: ${{ matrix.python-version != '3.13' }}
       continue-on-error: ${{ matrix.experimental }}
-      run: tox -e py
+      run: tox -e py -- --no-cov
     - name: Upload coverage to Codecov
       if: ${{ success() && matrix.python-version == '3.13' }}
       uses: codecov/codecov-action@v4
