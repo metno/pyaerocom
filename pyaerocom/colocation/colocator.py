@@ -12,6 +12,7 @@ from typing import Any
 
 import pandas as pd
 
+from pyaerocom import GriddedDataContainer
 from pyaerocom import const
 from pyaerocom.colocation.colocation_utils import (
     colocate_gridded_gridded,
@@ -24,9 +25,9 @@ from pyaerocom.exceptions import (
     DataCoverageError,
 )
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom import GriddedDataContainer
 from pyaerocom.helpers import start_stop, to_datestring_YYYYMMDD
 from pyaerocom.io import ReadCAMS2_83, ReadCAMS2_82, ReadGridded, ReadUngridded
+from pyaerocom.io.cmip_ctm.reader import ReadCmipCtm
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.io.mscw_ctm.reader import ReadMscwCtm
 from pyaerocom.stats.mda8.const import MDA8_INPUT_VARS, SOMO30_INPUT_VARS
@@ -35,7 +36,6 @@ from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.units import Unit
 from pyaerocom.units.datetime import get_lowest_resolution, to_pandas_timestamp
 from pyaerocom.units.harmonise import harmonise_units
-
 from .colocated_data import ColocatedData
 from .colocation_3d import ColocatedDataLists, colocate_vertical_profile_gridded
 from .colocation_setup import ColocationSetup
@@ -54,6 +54,7 @@ class Colocator:
     SUPPORTED_GRIDDED_READERS: dict = {
         "ReadGridded": ReadGridded,
         "ReadMscwCtm": ReadMscwCtm,
+        "ReadCmipCtm": ReadCmipCtm,
         "ReadCAMS2_83": ReadCAMS2_83,
         "ReadCAMS2_82": ReadCAMS2_82,
     }
@@ -89,9 +90,16 @@ class Colocator:
         self._processing_status: list[tuple[str | None, str | None, int]] = []
         self.files_written: list[str] = []
 
-        self._model_reader: ReadGridded | ReadMscwCtm | ReadCAMS2_83 | ReadCAMS2_82 | None = None
+        self._model_reader: (
+            ReadGridded | ReadMscwCtm | ReadCAMS2_83 | ReadCAMS2_82 | ReadCmipCtm | None
+        ) = None
         self._model_readers: (
-            list[ReadGridded] | list[ReadMscwCtm] | list[ReadCAMS2_83] | list[ReadCAMS2_82] | None
+            list[ReadGridded]
+            | list[ReadMscwCtm]
+            | list[ReadCAMS2_83]
+            | list[ReadCAMS2_82]
+            | list[ReadCmipCtm]
+            | None
         ) = None
         self._obs_reader: Any | None = None
         self._obs_is_vertical_profile: bool = False

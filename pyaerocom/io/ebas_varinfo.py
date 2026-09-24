@@ -226,8 +226,7 @@ class EbasVarInfo(BrowseDict):
                 if var in requests:
                     # ToDo: check if this can be generalised better
                     raise ValueError(
-                        f"Variable conflict in EBAS SQL request: "
-                        f"{var} cannot depend on itself..."
+                        f"Variable conflict in EBAS SQL request: {var} cannot depend on itself..."
                     )
                 info = EbasVarInfo(var)
                 _reqs = info.make_sql_requests(**constraints)
