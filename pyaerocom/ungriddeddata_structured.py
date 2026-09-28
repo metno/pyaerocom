@@ -887,7 +887,14 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             for stationid_tstype, meta_id in var_metas[var].items():
                 (station_id, tstype) = stationid_tstype
                 station_name = var_data.stations_by_ids([station_id])[0]
-                extra_metadata = stations_with_metadata[str(station_name)].metadata
+                if station_name is None:
+                    logger.warning(
+                        f"Station ID {station_id} does not have a valid name, skipping."
+                    )
+                    continue
+                else:
+                    station_name = str(station_name)
+                extra_metadata = stations_with_metadata[station_name].metadata
                 d = {
                     "data_id": data_id,
                     "data_revision": rev,
@@ -895,7 +902,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     "var_info": {
                         var: {"units": var_units[var]},
                     },
-                    **stations_with_metadata[str(station_name)],
+                    **stations_with_metadata[station_name],
                     **extra_metadata,
                 }
                 if "ts_type" not in d:
