@@ -933,7 +933,7 @@ def get_CFG(
             pyaro_config={
                 "name": "EEA-d-background-rural",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -963,7 +963,6 @@ def get_CFG(
                     "concSso2_from_concso2",
                     "vmro3max_from_conco3",
                 ],
-                "dataset": "verified",
                 "station_area": [
                     "rural",
                     "rural-regional",
@@ -989,7 +988,7 @@ def get_CFG(
             pyaro_config={
                 "name": "EEA-h-diurnal-background-rural",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -1019,7 +1018,6 @@ def get_CFG(
                     "vmrno2_from_concno2",
                     "vmrox_from_vmrno2_vmro3",
                 ],
-                "dataset": "verified",
                 "station_area": [
                     "rural",
                     "rural-regional",
@@ -1050,7 +1048,7 @@ def get_CFG(
             pyaro_config={
                 "name": "EEA-d-background-suburban",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -1080,7 +1078,6 @@ def get_CFG(
                     "concSso2_from_concso2",
                     "vmro3max_from_conco3",
                 ],
-                "dataset": "verified",
                 "station_area": ["suburban"],
                 "station_type": [
                     "background",
@@ -1101,7 +1098,7 @@ def get_CFG(
             pyaro_config={
                 "name": "EEA-h-diurnal-background-suburban",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -1131,7 +1128,6 @@ def get_CFG(
                     "vmrno2_from_concno2",
                     "vmrox_from_vmrno2_vmro3",
                 ],
-                "dataset": "verified",
                 "station_area": ["suburban"],
                 "station_type": [
                     "background",
@@ -1157,7 +1153,7 @@ def get_CFG(
             pyaro_config={
                 "name": "EEA-d-background-urban",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -1187,7 +1183,6 @@ def get_CFG(
                     "concSso2_from_concso2",
                     "vmro3max_from_conco3",
                 ],
-                "dataset": "verified",
                 "station_area": ["urban"],
                 "station_type": [
                     "background",
@@ -1208,7 +1203,7 @@ def get_CFG(
             pyaro_config={
                 "name": "EEA-h-diurnal-background-urban",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -1238,7 +1233,6 @@ def get_CFG(
                     "vmrno2_from_concno2",
                     "vmrox_from_vmrno2_vmro3",
                 ],
-                "dataset": "verified",
                 "station_area": ["urban"],
                 "station_type": [
                     "background",
@@ -1266,7 +1260,7 @@ def get_CFG(
             pyaro_config={
                 "name": "EEA-d-all",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -1296,7 +1290,6 @@ def get_CFG(
                     "concSso2_from_concso2",
                     "vmro3max_from_conco3",
                 ],
-                "dataset": "verified",
             },
             web_interface_name="EEA-all",
             obs_vert_type="Surface",
@@ -1313,7 +1306,7 @@ def get_CFG(
             pyaro_config={
                 "name": "EEA-h-diurnal-all",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -1343,7 +1336,6 @@ def get_CFG(
                     "vmrno2_from_concno2",
                     "vmrox_from_vmrno2_vmro3",
                 ],
-                "dataset": "verified",
             },
             web_interface_name="EEA-h-all",
             obs_vert_type="Surface",
