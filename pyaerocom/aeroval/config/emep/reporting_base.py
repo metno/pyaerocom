@@ -948,6 +948,7 @@ def get_CFG(
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -1003,6 +1004,7 @@ def get_CFG(
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -1063,6 +1065,7 @@ def get_CFG(
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -1113,6 +1116,7 @@ def get_CFG(
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -1168,6 +1172,7 @@ def get_CFG(
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -1218,6 +1223,7 @@ def get_CFG(
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -1275,6 +1281,7 @@ def get_CFG(
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -1321,6 +1328,7 @@ def get_CFG(
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
