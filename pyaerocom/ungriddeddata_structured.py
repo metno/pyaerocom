@@ -773,8 +773,19 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             sorted_keys = keys[sorted_indices]
             sorted_values = values[sorted_indices]
 
+            # find adjacent duplicates in the sarray
+            keep = np.empty(len(sarray), dtype=bool)
+            keep[0] = True
+            keep[1:] = sarray[1:] != sarray[:-1]
+
             # Use np.searchsorted to find indices of structured_array elements in sorted_keys
-            indices = np.searchsorted(sorted_keys, sarray)
+            indices_keep = np.searchsorted(sorted_keys, sarray[keep])
+
+            # Expand the indices to get the full array of indices corresponding to the original sarray
+            counts = (
+                np.cumsum(keep) - 1
+            )  # position in sarray array where the first changed values are
+            indices = indices_keep[counts]
 
             # pick values at indices
             return sorted_values[indices]
