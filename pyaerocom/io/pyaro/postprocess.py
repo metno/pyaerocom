@@ -4,6 +4,7 @@ import numpy as np
 import numpy.typing as npt
 from pyaro.timeseries import (
     Data,
+    DataStationIdStructured,
     Reader,
 )
 
@@ -178,26 +179,20 @@ TRANSFORMATIONS = {
 }
 
 
-class PostProcessingReaderData(Data):
+class ScalingReaderData(Data):
     def __init__(self, data: Data, variable: str, units: str, scaling: float | None):
+        self._data = data
         self._variable = variable
         self._units = units
-        self.data = data
-        self.scaling = scaling
-
-    def keys(self):
-        return self.data.keys()
+        self._scaling = scaling
 
     def slice(self, index):
-        return PostProcessingReaderData(
-            self.data.slice(index),
+        return ScalingReaderData(
+            self._data.slice(index),
             variable=self._variable,
             units=self._units,
-            scaling=self.scaling,
+            scaling=self._scaling,
         )
-
-    def __len__(self):
-        return self.data.__len__()
 
     @property
     def variable(self) -> str:
@@ -209,45 +204,56 @@ class PostProcessingReaderData(Data):
 
     @property
     def values(self):
-        if self.scaling is None:
-            return self.data.values
+        if self._scaling is None:
+            return self._data.values
         else:
-            return self.data.values * self.scaling
-
-    @property
-    def stations(self):
-        return self.data.stations
-
-    @property
-    def latitudes(self):
-        return self.data.latitudes
-
-    @property
-    def longitudes(self):
-        return self.data.longitudes
-
-    @property
-    def altitudes(self):
-        return self.data.altitudes
-
-    @property
-    def start_times(self):
-        return self.data.start_times
-
-    @property
-    def end_times(self):
-        return self.data.end_times
-
-    @property
-    def flags(self):
-        return self.data.flags
+            return self._data.values * self._scaling
 
     @property
     def standard_deviations(self):
-        if self.scaling is None:
-            return self.data.standard_deviations
+        if self._scaling is None:
+            return self._data.standard_deviations
         else:
-            return self.data.standard_deviations * self.scaling
+            return self._data.standard_deviations * self._scaling
+
+    # below functions implement all abstract methods from Wrapped _dataqq
+    def __len__(self):
+        return len(self._data)
+
+    def stations_by_ids(self, ids):
+        return self._data.stations_by_ids(ids)
+
+    @property
+    def stations(self):
+        return self._data.stations
+
+    @property
+    def station_ids(self):
+        return self._data.station_ids
+
+    @property
+    def altitudes(self):
+        return self._data.altitudes
+
+    @property
+    def latitudes(self):
+        return self._data.latitudes
+
+    @property
+    def longitudes(self):
+        return self._data.longitudes
+
+    @property
+    def start_times(self):
+        return self._data.start_times
+
+    @property
+    def end_times(self):
+        return self._data.end_times
+
+    @property
+    def flags(self):
+        return self._data.flags
 
 
 class PostProcessingReaderException(Exception):
@@ -295,7 +301,7 @@ class PostProcessingReader(Reader):
                 to_unit=transform.IN_UNIT,
                 var_name=transform.REQ_VAR,
             )
-            return PostProcessingReaderData(
+            return ScalingReaderData(
                 data, variable=varname, units=transform.OUT_UNIT, scaling=scaling
             )
         if isinstance(transform, VariableCombiner):
@@ -313,13 +319,7 @@ class PostProcessingReader(Reader):
             ]
             shared = np.array(list(set.intersection(*uniqs)))
 
-            new_latitudes = []
-            new_longitudes = []
-            new_starttimes = []
-            new_endtimes = []
-            new_stations = []
-            new_altitudes = []
-            new_values = []
+            new_data = DataStationIdStructured(varname, units=transform.OUT_UNIT)
 
             for lat, lon in shared:  # Per station
                 masks = [(d.latitudes == lat) & (d.longitudes == lon) for d in data]
@@ -330,7 +330,7 @@ class PostProcessingReader(Reader):
 
                 start_times = [s[i] for s, i in zip(start_times, indexings)]
                 end_times = [d.end_times[i] for d, i in zip(data_subset, indexings)]
-                stations = data_subset[0].stations[indexings[0]]
+                station_ids = data_subset[0].station_ids[indexings[0]]
                 altitudes = data_subset[0].altitudes[indexings[0]]
 
                 try:
@@ -341,45 +341,41 @@ class PostProcessingReader(Reader):
                 if not np.all(end_times[0][lindex] == end_times[1][rindex]):
                     continue  # Different durations encountered, skip this station
 
-                new_latitudes.append(np.full(len(lindex), fill_value=lat))
-                new_longitudes.append(np.full(len(lindex), fill_value=lon))
-                new_starttimes.append(start_times[0][lindex])
-                new_endtimes.append(start_times[0][lindex])
-                new_stations.append(stations[lindex])
-                new_altitudes.append(altitudes[lindex])
+                new_latitudes = np.full(len(lindex), fill_value=lat)
+                new_longitudes = np.full(len(lindex), fill_value=lon)
+                new_starttimes = start_times[0][lindex]
+                new_endtimes = end_times[0][lindex]
+                new_stations = data_subset[0].stations_by_ids(station_ids[lindex])
+                new_altitudes = altitudes[lindex]
 
                 if transform.OP == "ADD":
-                    values = (
+                    new_values = (
                         data_subset[0].values[lindex] * scalings[0]
                         + data_subset[1].values[rindex] * scalings[1]
                     )
+                    new_stdev = np.sqrt(
+                        np.square(data_subset[0].standard_deviations[lindex] * scalings[0])
+                        + np.square(data_subset[1].standard_deviations[rindex] * scalings[1])
+                    )
+                    flags = data_subset[0].flags[lindex] | data_subset[1].flags[rindex]
                 else:
                     raise PostProcessingReaderException(
                         f"Transform mode {transform.OP} is not supported"
                     )
-                new_values.append(values)
 
-            newdata = {
-                "latitudes": np.concatenate(new_latitudes),
-                "longitudes": np.concatenate(new_longitudes),
-                "start_times": np.concatenate(new_starttimes),
-                "end_times": np.concatenate(new_endtimes),
-                "stations": np.concatenate(new_stations),
-                "altitudes": np.concatenate(new_altitudes),
-                "values": np.concatenate(new_values),
-            }
+                new_data.append(
+                    station=new_stations,
+                    latitude=new_latitudes,
+                    longitude=new_longitudes,
+                    start_time=new_starttimes,
+                    end_time=new_endtimes,
+                    altitude=new_altitudes,
+                    value=new_values,
+                    standard_deviation=new_stdev,
+                    flag=flags,
+                )
 
-            n = len(newdata["latitudes"])
-            newdata.update(
-                {
-                    "standard_deviations": np.full(n, fill_value=np.nan),
-                    "flags": np.ones(n),
-                }
-            )
-
-            return DictBackedData(
-                newdata, variable=transform.out_varname(), units=transform.OUT_UNIT
-            )
+            return new_data
         else:
             raise PostProcessingReaderException(
                 f"Unknown transform {transform} encountered for variable {varname}"
@@ -425,67 +421,3 @@ def matching_indices(x, y) -> tuple[npt.NDArray[int], npt.NDArray[int]]:
             iy += 1
 
     return x_indices, y_indices
-
-
-class DictBackedData(Data):
-    def __init__(self, data, variable: str, units: str):
-        self._variable = variable
-        self._units = units
-        self._data = data
-
-    def keys(self):
-        return {}.keys()
-
-    def slice(self, index):
-        return DictBackedData(
-            data=self._data()[index],
-            variable=self.variable,
-            units=self._units,
-        )
-
-    def __len__(self):
-        return len(self.values)
-
-    @property
-    def variable(self) -> str:
-        return self._variable
-
-    @property
-    def units(self) -> str:
-        return self._units
-
-    @property
-    def values(self):
-        return self._data["values"]
-
-    @property
-    def stations(self):
-        return self._data["stations"]
-
-    @property
-    def latitudes(self):
-        return self._data["latitudes"]
-
-    @property
-    def longitudes(self):
-        return self._data["longitudes"]
-
-    @property
-    def altitudes(self):
-        return self._data["altitudes"]
-
-    @property
-    def start_times(self):
-        return self._data["start_times"]
-
-    @property
-    def end_times(self):
-        return self._data["end_times"]
-
-    @property
-    def flags(self):
-        return self._data["flags"]
-
-    @property
-    def standard_deviations(self):
-        return self._data["standard_deviations"]

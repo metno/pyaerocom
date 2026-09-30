@@ -155,7 +155,7 @@ def test_vmrox():
         {
             "name": "whatever",
             "reader_id": "eeareader",
-            "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+            "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/unverified/catalog.parquet",
             "filters": {
                 "countries": {"include": ["NO"]},
             },
@@ -168,7 +168,6 @@ def test_vmrox():
                 "vmrno2_from_concno2",
                 "vmrox_from_vmrno2_vmro3",
             ],
-            "dataset": "unverified",
         }
     )
     reader = PyaroToUngriddedData(config)
@@ -179,6 +178,6 @@ def test_vmrox():
     rev is not None
     alldata = data.to_station_data_all()
     stats = alldata["stats"]
-    assert len(stats) >= 4
+    assert len(stats) >= 3  # no time overlap for NO0073
     first = stats[0]
     assert first.units == {"vmrox": "nmol mol-1"}
