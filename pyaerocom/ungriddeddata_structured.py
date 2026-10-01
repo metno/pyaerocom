@@ -773,11 +773,22 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             sorted_keys = keys[sorted_indices]
             sorted_values = values[sorted_indices]
 
-            # Use np.searchsorted to find indices of structured_array elements in sorted_keys
-            indices = np.searchsorted(sorted_keys, sarray)
+            # find adjacent duplicates in the sarray
+            keep = np.empty(len(sarray), dtype=bool)
+            keep[0] = True
+            keep[1:] = sarray[1:] != sarray[:-1]
 
-            # Use np.take to map indices to values
-            return np.take(sorted_values, indices)
+            # Use np.searchsorted to find indices of structured_array elements in sorted_keys
+            indices_keep = np.searchsorted(sorted_keys, sarray[keep])
+
+            # Expand the indices to get the full array of indices corresponding to the original sarray
+            counts = (
+                np.cumsum(keep) - 1
+            )  # position in sarray array where the first changed values are
+            indices = indices_keep[counts]
+
+            # pick values at indices
+            return sorted_values[indices]
 
         class _VariableMetaIds:
             """Class containing for each variable a dictionary of tuples of station and ts_type to
@@ -810,19 +821,22 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 # uarray = np.unique(stationid_tstype)
                 # list(set) requires much additional data
                 # uarray = np.array(list(set(stationid_tstype.tolist())), dtype=stationid_tstype.dtype)
-                # pandas drop_duplicatates currently fastest and not too much memory usage
-                uarray = pd.DataFrame(
-                    {
-                        "station_id": stationid_tstype["station_id"],
-                        "tstype": stationid_tstype["tstype"],
-                    }
-                ).drop_duplicates(ignore_index=True)
+                # pandas drop_duplicatates currently fastest and not too much memory usage, but 2.5 memory
+                logger.debug(f"Removing duplicates from stationid_tstype for variable {var}")
+                # Remove adjacent duplicates first (very fast, and most stations have only one tstype)
+                keep = np.empty(len(stationid_tstype), dtype=bool)
+                keep[0] = True
+                keep[1:] = stationid_tstype[1:] != stationid_tstype[:-1]
+                # Run unique only on the non-adjacent duplicates
+                uarray = np.unique(stationid_tstype[keep])
 
-                for _, row in uarray.iterrows():
+                logger.debug(f"get mapping for variable {var}")
+                for row in uarray:
                     sx = (row["station_id"], row["tstype"])
                     if sx not in mapping:
                         mapping[sx] = self._counter
                         self._counter += 1
+                logger.debug(f"Finished mapping for variable {var}, size {len(mapping)}")
                 return
 
             def __getitem__(self, var) -> dict[tuple[int, str], int]:
@@ -853,6 +867,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 [station_ids, tstype],
                 dtype=[("station_id", station_ids.dtype), ("tstype", tstype.dtype)],
             )
+            del station_ids
 
             # set meta-ids for each variable but ensure that counter
             # is for all vars, var_metas contain (stations, tstype) tuples
@@ -861,17 +876,33 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 continue
 
             var_units[var] = var_data.units
+            meta_id = _stationid_tstype_to_int_array(stationid_tstype, var_metas[var])
+            del stationid_tstype
+
+            # get arrays from var_data, this somehow helps python to optimize memory usage
+            # reading altitude triggers first time reading of station metadata, needs memory
+            dataaltitude = var_data.altitudes.astype("i2")
+            start_time = var_data.start_times
+            end_time = var_data.end_times
+            data = var_data.values
+            stdev = var_data.standard_deviations
+            flag = var_data.flags
+            var_id = np.zeros(len(var_data), dtype="i2") + ugs.var_idx[var]
+
             dra_data = {
-                "meta_id": _stationid_tstype_to_int_array(stationid_tstype, var_metas[var]),
-                "var_id": np.zeros(len(var_data), dtype="i2") + ugs.var_idx[var],
-                "start_time": var_data.start_times,
-                "end_time": var_data.end_times,
-                "data": var_data.values,
-                "stdev": var_data.standard_deviations,
-                "dataaltitude": var_data.altitudes.astype("i2"),
-                "flag": var_data.flags,  # TODO check for common undefined values?
+                "meta_id": meta_id,
+                "var_id": var_id,
+                "start_time": start_time,
+                "end_time": end_time,
+                "data": data,
+                "stdev": stdev,
+                "dataaltitude": dataaltitude,
+                "flag": flag,  # TODO check for common undefined values?
             }
+            # delete temporary arrays as soon as possible to reduce max memory usages
+            del meta_id, var_id, start_time, end_time, data, stdev, dataaltitude, flag
             ugs._dra.append_array(**dra_data)
+            del dra_data
 
         logger.info(f"Converting metadata from pyaro/{data_id} to ungridded")
         rev = None
@@ -887,7 +918,14 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             for stationid_tstype, meta_id in var_metas[var].items():
                 (station_id, tstype) = stationid_tstype
                 station_name = var_data.stations_by_ids([station_id])[0]
-                extra_metadata = stations_with_metadata[str(station_name)].metadata
+                if station_name is None:
+                    logger.warning(
+                        f"Station ID {station_id} does not have a valid name, skipping."
+                    )
+                    continue
+                else:
+                    station_name = str(station_name)
+                extra_metadata = stations_with_metadata[station_name].metadata
                 d = {
                     "data_id": data_id,
                     "data_revision": rev,
@@ -895,7 +933,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                     "var_info": {
                         var: {"units": var_units[var]},
                     },
-                    **stations_with_metadata[str(station_name)],
+                    **stations_with_metadata[station_name],
                     **extra_metadata,
                 }
                 if "ts_type" not in d:
