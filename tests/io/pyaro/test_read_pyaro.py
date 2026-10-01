@@ -7,7 +7,6 @@ import pytest
 
 from pyaerocom.io import ReadPyaro, PyaroConfig
 from pyaerocom.io.pyaro.read_pyaro import PyaroToUngriddedData
-from pyaerocom.io.pyaro.postprocess import matching_indices
 
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from tests.conftest import lustre_unavail, __package_installed
@@ -130,20 +129,14 @@ def test_postprocessing(pyaro_test_data_file):
 
 
 def test_matching_indices():
-    x = [0, 1, 2, 3, 4]
-    y = [1, 1.5, 2, 2.1, 4, 5]
+    x = np.array([0, 1, 2, 3, 4])
+    y = np.array([1, 1.5, 2, 2.1, 4, 5])
 
-    xind, yind = matching_indices(x, y)
+    _, xind, yind = np.intersect1d(x, y, return_indices=True)
 
     assert np.all(xind == [1, 2, 4])
     assert np.all(yind == [0, 2, 4])
-
-    with pytest.raises(ValueError) as e:
-        x = [6, 0, 1, 2, 3, 4]
-        y = [1, 1.5, 2, 2.1, 4, 5]
-        matching_indices(x, y)
-    assert str(e.value) == "x is not monotonically increasing"
-
+    assert np.all(x[xind] == y[yind])
 
 @lustre_unavail
 @pytest.mark.skipif(
