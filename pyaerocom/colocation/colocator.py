@@ -1121,6 +1121,7 @@ class Colocator:
             add_meta_keys=[],
         )
         # check if the station_type key has been passed to the ungridded data object
+        # Do the same for station_area
         # (not all readers may do that, currently only the CAMS2_83 reader does)
         if isinstance(obs_data, UngriddedDataContainer):
             add_meta_keys = []
@@ -1129,6 +1130,12 @@ class Colocator:
                 raise ValueError("some stations have `station_type` metadata while others do not")
             if are_there_station_types == {True}:  # all have station_type
                 add_meta_keys.append("station_type")
+
+            are_there_station_areas = {"station_area" in d for d in obs_data.metadata.values()}
+            if are_there_station_areas == {True, False}:
+                raise ValueError("some stations have `station_area` metadata while others do not")
+            if are_there_station_areas == {True}:  # all have station_area
+                add_meta_keys.append("station_area")
 
             if any("display_name" in d for d in obs_data.metadata.values()):
                 add_meta_keys.append("display_name")
