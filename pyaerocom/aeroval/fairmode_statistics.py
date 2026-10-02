@@ -99,14 +99,21 @@ class FairmodeStatistics:
             period,
         )
 
-    def fairmode_statistics(self, coldata: ColocatedData, var_name: str):
-        return self._get_stats(coldata.data, var_name, False)
+    def fairmode_statistics(
+        self, coldata: ColocatedData, var_name: str, user_area_type: bool = False
+    ) -> dict[str, dict[str, float]]:
+        return self._get_stats(
+            coldata.data, var_name, use_weights=False, user_area_type=user_area_type
+        )
 
     def _get_stats(
-        self, data: xr.DataArray, var_name: str, use_weights: bool
+        self, data: xr.DataArray, var_name: str, use_weights: bool, user_area_type: bool = False
     ) -> dict[str, dict[str, float]]:
         stations = data.station_name.values
-        station_types = data.station_type.values
+        if user_area_type:
+            station_types = data.station_area.values
+        else:
+            station_types = data.station_type.values
 
         obsvals = data.data[0]
         modvals = data.data[1]

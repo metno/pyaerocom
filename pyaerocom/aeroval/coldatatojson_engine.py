@@ -115,6 +115,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         sequential_yrs = self.cfg.statistics_opts.sequential_yrs
         avg_over_trends = self.cfg.statistics_opts.avg_over_trends
         use_fairmode = self.cfg.statistics_opts.use_fairmode
+        fairmode_use_station_area = self.cfg.statistics_opts.fairmode_use_station_area
         use_diurnal = self.cfg.statistics_opts.use_diurnal
 
         # ToDo: some of the checks below could be done automatically in
@@ -219,6 +220,7 @@ class ColdataToJsonEngine(ProcessingEngine):
                         seasons=seasons,
                         regions_how=regions_how,
                         regs=regs,
+                        fairmode_use_station_area=fairmode_use_station_area,
                     )
 
                     self._process_radarplot(
@@ -567,6 +569,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         regions_how: str = "default",
         regs: dict | None = None,
         use_meteorological_seasons: bool = False,
+        fairmode_use_station_area: bool = False,
     ):
         fairmode_statistics = FairmodeStatistics()
         species = fairmode_statistics.species
@@ -599,6 +602,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             periods,
             seasons,
             use_meteorological_seasons,
+            fairmode_use_station_area,
         )
 
     def _process_radarplot(
