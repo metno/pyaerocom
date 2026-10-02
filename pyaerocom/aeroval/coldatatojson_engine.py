@@ -623,7 +623,8 @@ class ColdataToJsonEngine(ProcessingEngine):
         radarplot_statistics = RadarPlotStatistics()
 
         if "hourly" not in data:
-            raise ValueError("Could not find any hourly data to make radar plot")
+            logger.warn("Could not find any hourly data to make radar plot")
+            return
 
         logger.info("Processing radar plot data for all regions...")
         _calculate_radarplot(
