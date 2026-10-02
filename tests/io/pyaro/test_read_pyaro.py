@@ -138,6 +138,7 @@ def test_matching_indices():
     assert np.all(yind == [0, 2, 4])
     assert np.all(x[xind] == y[yind])
 
+
 @lustre_unavail
 @pytest.mark.skipif(
     not __package_installed("pyaro_readers"),
