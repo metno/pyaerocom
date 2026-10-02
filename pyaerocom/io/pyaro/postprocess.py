@@ -2,7 +2,6 @@ import dataclasses
 import logging
 
 import numpy as np
-import numpy.typing as npt
 from pyaro.timeseries import Data, DataStationIdStructured, Reader
 
 from pyaerocom.units.constants import M_N, M_O, M_S
