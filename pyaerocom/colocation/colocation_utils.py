@@ -723,7 +723,11 @@ def colocate_gridded_ungridded(
             f"UngriddedData object to extract single datasets."
         )
 
-    dataset_ref = data_ref.contains_datasets[0]
+    try:
+        dataset_ref = data_ref.contains_datasets[0]
+    except IndexError:
+        logger.error("Error: no datasets found in data_ref.")
+        raise KeyError("No datasets found in data_ref.")
 
     if update_baseyear_gridded is not None:
         # update time dimension in gridded data

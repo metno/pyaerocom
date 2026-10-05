@@ -43,7 +43,8 @@ _MOLMASSES = {
     "glyox": 58.036,
 }
 
-_SPECIES_OVERRIDE = {"concso4c": "SO4"}
+_SPECIES_OVERRIDE = {"concso4c": "SO4",
+                     "concso4t": "SO4",}
 
 
 class UnknownSpeciesError(ValueError):

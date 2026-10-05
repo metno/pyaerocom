@@ -93,6 +93,8 @@ class Unit:
         "/m": "m-1",
         # attenuated backscatter
         "Mm-1.sr-1": "Mm-1 sr-1",
+        # ACTRIS-EBAS stuff
+        "ug /m3": "ug m-3",
     }
 
     def __init__(
