@@ -1857,6 +1857,7 @@ def _calculate_fairmode(
     periods: tuple[str, ...] | None = None,
     seasons: tuple[str, ...] | None = None,
     use_meteorological_seasons: bool = False,
+    fairmode_use_station_area: bool = False,
 ):
     for per in periods:
         results = {"ALL": {}}
@@ -1871,7 +1872,9 @@ def _calculate_fairmode(
                 return results
 
             perstr = f"{per}-{season}"
-            fm_stats = fairmode_statistics.fairmode_statistics(subset, obs_var)
+            fm_stats = fairmode_statistics.fairmode_statistics(
+                subset, obs_var, fairmode_use_station_area
+            )
             for i, station in enumerate(map_meta):
                 station_name = station["station_name"]
                 region = station["region"][0]

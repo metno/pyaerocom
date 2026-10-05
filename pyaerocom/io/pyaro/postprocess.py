@@ -2,13 +2,13 @@ import dataclasses
 import logging
 
 import numpy as np
-import numpy.typing as npt
 from pyaro.timeseries import Data, DataStationIdStructured, Reader
 
 from pyaerocom.units.constants import M_N, M_O, M_S
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
 
 logger = logging.getLogger(__name__)
+
 
 @dataclasses.dataclass
 class VariableScaling:
@@ -327,8 +327,9 @@ class PostProcessingReader(Reader):
                 start_times = [d.start_times for d in data_subset]
                 end_times = [d.end_times for d in data_subset]
                 # build a combined structured array of start/end times[0]
-                start_end_dtype = np.dtype([("start_time", start_times[0].dtype),
-                                            ("end_time", end_times[0].dtype)])
+                start_end_dtype = np.dtype(
+                    [("start_time", start_times[0].dtype), ("end_time", end_times[0].dtype)]
+                )
                 start_end = [np.empty(len(s), dtype=start_end_dtype) for s in start_times]
                 for i, se in enumerate(start_times):
                     start_end[i]["start_time"] = se
@@ -372,7 +373,9 @@ class PostProcessingReader(Reader):
                     flag=flags,
                 )
                 if len(new_stations) > 0:
-                    logger.debug(f"Processed station {new_stations[0]} ({len(new_stations)} values of {varname})")
+                    logger.debug(
+                        f"Processed station {new_stations[0]} ({len(new_stations)} values of {varname})"
+                    )
             logger.info(f"Finished combining variables {transform.REQ_VARS} into {varname}")
             return new_data
         else:

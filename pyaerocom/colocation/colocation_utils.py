@@ -822,6 +822,7 @@ def colocate_gridded_ungridded(
     alts = [np.nan] * stat_num
     station_names = [""] * stat_num
     station_types = [""] * stat_num
+    station_areas = [""] * stat_num
     station_display_names = [None] * stat_num
 
     data_ref_unit = None
@@ -837,6 +838,7 @@ def colocate_gridded_ungridded(
         alts[i] = obs_stat.altitude
         station_names[i] = obs_stat.station_name
         station_types[i] = getattr(obs_stat, "station_type", "")
+        station_areas[i] = getattr(obs_stat, "station_area", "")
         station_display_names[i] = getattr(obs_stat, "display_name", None)
 
         # ToDo: consider removing to keep ts_type_src_ref (this was probably
@@ -962,6 +964,7 @@ def colocate_gridded_ungridded(
         "time": time_idx,
         "station_name": station_names,
         "station_type": ("station_name", station_types),
+        "station_area": ("station_name", station_areas),
         "latitude": ("station_name", lats),
         "longitude": ("station_name", lons),
         "altitude": ("station_name", alts),
