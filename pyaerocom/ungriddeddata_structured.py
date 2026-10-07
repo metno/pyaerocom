@@ -1,4 +1,3 @@
-import datetime
 import fnmatch
 import logging
 import sys
@@ -12,8 +11,12 @@ from pyaro.timeseries import Reader
 
 from pyaerocom import const
 from pyaerocom.dynamic_rec_array import DynamicRecArray
-from pyaerocom.exceptions import (DataCoverageError, DataExtractionError,
-                                  MetaDataError, VarNotAvailableError)
+from pyaerocom.exceptions import (
+    DataCoverageError,
+    DataExtractionError,
+    MetaDataError,
+    VarNotAvailableError,
+)
 from pyaerocom.helpers import merge_station_data, start_stop
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.stationdata import StationData
@@ -29,6 +32,7 @@ else:
     from typing_extensions import override
 
 logger = logging.getLogger(__name__)
+
 
 class _NpArrayIndexer:
     def __init__(self, array: npt.NDArray):
@@ -64,8 +68,6 @@ class _NpArrayIndexer:
             return np.array([], dtype=np.uint32)
         start, end = self._ranges[int(value)]
         return self._order[start:end]
-
-
 
 
 class UngriddedDataStructured(UngriddedDataMetadata):
@@ -388,7 +390,9 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             data = self._dra.data
         FOUND_ONE = False
         for var in vars_avail:
-            if getattr(self, "_meta_indexer", None) is not None and len(data) == len(self._dra.data):
+            if getattr(self, "_meta_indexer", None) is not None and len(data) == len(
+                self._dra.data
+            ):
                 # use metaindex if exists
                 # and if data is not already a subset of the full array (see to_station_data())
                 subset_tmp = self._dra.data[self._meta_indexer.get_indices(meta_idx)]
