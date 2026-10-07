@@ -1,9 +1,9 @@
+import datetime
 import fnmatch
 import logging
 import sys
 from collections.abc import Iterator
 from copy import deepcopy
-import datetime
 
 import numpy as np
 import numpy.typing as npt
@@ -12,12 +12,8 @@ from pyaro.timeseries import Reader
 
 from pyaerocom import const
 from pyaerocom.dynamic_rec_array import DynamicRecArray
-from pyaerocom.exceptions import (
-    DataCoverageError,
-    DataExtractionError,
-    MetaDataError,
-    VarNotAvailableError,
-)
+from pyaerocom.exceptions import (DataCoverageError, DataExtractionError,
+                                  MetaDataError, VarNotAvailableError)
 from pyaerocom.helpers import merge_station_data, start_stop
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.stationdata import StationData
@@ -392,10 +388,6 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             data = self._dra.data
         FOUND_ONE = False
         for var in vars_avail:
-            # get indices of this station and variable
-            timestamp = datetime.datetime.now()
-            # _meta_indexer row positions refer to the full array, not to a pre-filtered `data`
-
             if getattr(self, "_meta_indexer", None) is not None and len(data) == len(self._dra.data):
                 # use metaindex if exists
                 # and if data is not already a subset of the full array (see to_station_data())
