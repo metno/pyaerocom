@@ -8,7 +8,7 @@ import pytest
 from pyaerocom import ungriddeddata
 from pyaerocom.exceptions import DataCoverageError, VariableDefinitionError
 from pyaerocom.ungridded_data_container import UngriddedDataContainer
-from pyaerocom.ungriddeddata_structured import UngriddedDataStructured
+from pyaerocom.ungriddeddata_structured import UngriddedDataStructured, _NpArrayIndexer
 from tests.fixtures.stations import FAKE_STATION_DATA
 
 
@@ -24,6 +24,22 @@ def aeronetsunv3lev2_subset_uds(aeronetsunv3lev2_subset):
     uds.merge(aeronetsunv3lev2_subset, new_obj=False)
     assert not uds.is_empty
     return uds
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [(4, [1, 4]), (7, [0, 3, 5]), (9, [2]), (5, [])],
+)
+def test_np_array_indexer(value, expected):
+    indexer = _NpArrayIndexer(np.array([7, 4, 9, 7, 4, 7], dtype="i4"))
+    indices = indexer.get_indices(value)
+    assert indices.dtype == np.uint32
+    np.testing.assert_array_equal(indices, expected)
+
+
+def test_np_array_indexer_empty():
+    indexer = _NpArrayIndexer(np.array([], dtype="i4"))
+    assert len(indexer.get_indices(1)) == 0
 
 
 def test_ungridded_new():

@@ -3,6 +3,7 @@ import logging
 import sys
 from collections.abc import Iterator
 from copy import deepcopy
+import datetime
 
 import numpy as np
 import numpy.typing as npt
@@ -32,6 +33,43 @@ else:
     from typing_extensions import override
 
 logger = logging.getLogger(__name__)
+
+class _NpArrayIndexer:
+    def __init__(self, array: npt.NDArray):
+        """generate an index to all unique elements in array and offer fast
+        lookup
+
+        :param array: an integer-type array, preferrably given as np.ascontiguousarray()
+        """
+        logger.info("Initializing _NpArrayIndexer with array of length %d", len(array))
+
+        self._order = np.argsort(array, kind="stable")
+        length = len(array)
+        if length <= np.iinfo(np.uint32).max:
+            self._order = self._order.astype(np.uint32, copy=False)
+        self._ranges: dict[int, tuple[int, int]] = {}
+        if length > 0:
+            sorted_ids = array[self._order]
+            starts = np.flatnonzero(np.concatenate(([True], sorted_ids[1:] != sorted_ids[:-1])))
+            ends = np.concatenate((starts[1:], [length]))
+            self._ranges = {
+                int(value): (int(start), int(end))
+                for value, start, end in zip(sorted_ids[starts], starts, ends)
+            }
+        logger.info("Finished initializing _NpArrayIndexer with array of length %d", len(array))
+
+    def get_indices(self, value: int) -> npt.NDArray[np.uint32]:
+        """get the indices of the given value in the original array
+
+        :param value: the value to look for
+        :return: array of indices
+        """
+        if int(value) not in self._ranges:
+            return np.array([], dtype=np.uint32)
+        start, end = self._ranges[int(value)]
+        return self._order[start:end]
+
+
 
 
 class UngriddedDataStructured(UngriddedDataMetadata):
@@ -141,6 +179,13 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         obj._add_to_filter_history("set_flags_nan")
         return obj
 
+    def to_station_data_all(self, *args, **kwargs):
+        """wrapper around super().to_station_data_all() to add temporarily a fast index for lookup"""
+        self._meta_indexer = _NpArrayIndexer(np.ascontiguousarray(self._dra.data["meta_id"]))
+        ret = super().to_station_data_all(*args, **kwargs)
+        del self._meta_indexer
+        return ret
+
     def to_station_data(
         self,
         meta_idx,
@@ -185,6 +230,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             subdata = self._dra.data[sub_idx]
         else:
             subdata = self._dra.data
+
         for idx in meta_idx:
             try:
                 stat = self._metablock_to_stationdata(
@@ -347,10 +393,17 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         FOUND_ONE = False
         for var in vars_avail:
             # get indices of this station and variable
-            idx = (data["meta_id"] == meta_idx) & (data["var_id"] == self.var_idx[var])
+            timestamp = datetime.datetime.now()
+            # _meta_indexer row positions refer to the full array, not to a pre-filtered `data`
 
-            # get subset
-            subset = data[idx]
+            if getattr(self, "_meta_indexer", None) is not None and len(data) == len(self._dra.data):
+                # use metaindex if exists
+                # and if data is not already a subset of the full array (see to_station_data())
+                subset_tmp = self._dra.data[self._meta_indexer.get_indices(meta_idx)]
+            else:
+                subset_tmp = data[data["meta_id"] == meta_idx]
+            # get subset of the variable
+            subset = subset_tmp[subset_tmp["var_id"] == self.var_idx[var]]
 
             # vector of timestamps corresponding to this variable
             dtime = subset["start_time"]
@@ -499,6 +552,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                         obj._dra.data["var_id"] == self.var_idx[var_name]
                     )
                     obj._dra.data["data"][idx] *= fac
+                    obj._dra.data["stdev"][idx] *= fac
                 meta["var_info"][var_name]["units"] = to_unit
 
         return obj
