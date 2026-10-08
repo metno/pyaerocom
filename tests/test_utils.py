@@ -1,6 +1,7 @@
 from collections import defaultdict
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from pyaerocom import utils
@@ -110,3 +111,19 @@ def test_recursive_default_dict_2():
             check_dict_keys_and_values(d1[k], d2[k])
 
     check_dict_keys_and_values(input_dict, d)
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [(4, [1, 4]), (7, [0, 3, 5]), (9, [2]), (5, [])],
+)
+def test_np_array_indexer(value, expected):
+    indexer = utils.NpArrayIndexer(np.array([7, 4, 9, 7, 4, 7], dtype="i4"))
+    indices = indexer.get_indices(value)
+    assert indices.dtype == np.uint32
+    np.testing.assert_array_equal(indices, expected)
+
+
+def test_np_array_indexer_empty():
+    indexer = utils.NpArrayIndexer(np.array([], dtype="i4"))
+    assert len(indexer.get_indices(1)) == 0

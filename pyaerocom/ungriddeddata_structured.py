@@ -24,6 +24,7 @@ from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
 from pyaerocom.units.datetime import TsType
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
+from pyaerocom.utils import NpArrayIndexer
 from pyaerocom.vertical_profile import VerticalProfile
 
 if sys.version_info >= (3, 12):
@@ -32,42 +33,6 @@ else:
     from typing_extensions import override
 
 logger = logging.getLogger(__name__)
-
-
-class _NpArrayIndexer:
-    def __init__(self, array: npt.NDArray):
-        """generate an index to all unique elements in array and offer fast
-        lookup
-
-        :param array: an integer-type array, preferrably given as np.ascontiguousarray()
-        """
-        logger.info("Initializing _NpArrayIndexer with array of length %d", len(array))
-
-        self._order = np.argsort(array, kind="stable")
-        length = len(array)
-        if length <= np.iinfo(np.uint32).max:
-            self._order = self._order.astype(np.uint32, copy=False)
-        self._ranges: dict[int, tuple[int, int]] = {}
-        if length > 0:
-            sorted_ids = array[self._order]
-            starts = np.flatnonzero(np.concatenate(([True], sorted_ids[1:] != sorted_ids[:-1])))
-            ends = np.concatenate((starts[1:], [length]))
-            self._ranges = {
-                int(value): (int(start), int(end))
-                for value, start, end in zip(sorted_ids[starts], starts, ends)
-            }
-        logger.info("Finished initializing _NpArrayIndexer with array of length %d", len(array))
-
-    def get_indices(self, value: int) -> npt.NDArray[np.uint32]:
-        """get the indices of the given value in the original array
-
-        :param value: the value to look for
-        :return: array of indices
-        """
-        if int(value) not in self._ranges:
-            return np.array([], dtype=np.uint32)
-        start, end = self._ranges[int(value)]
-        return self._order[start:end]
 
 
 class UngriddedDataStructured(UngriddedDataMetadata):
@@ -179,7 +144,11 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
     def to_station_data_all(self, *args, **kwargs):
         """wrapper around super().to_station_data_all() to add temporarily a fast index for lookup"""
-        self._meta_indexer = _NpArrayIndexer(np.ascontiguousarray(self._dra.data["meta_id"]))
+        logger.info(
+            "Creating meta indexer for station data lookup with %d points", len(self._dra.data)
+        )
+        self._meta_indexer = NpArrayIndexer(np.ascontiguousarray(self._dra.data["meta_id"]))
+        logger.info("Finished creating meta indexer for station data lookup")
         ret = super().to_station_data_all(*args, **kwargs)
         del self._meta_indexer
         return ret

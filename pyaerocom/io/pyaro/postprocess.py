@@ -6,6 +6,7 @@ from pyaro.timeseries import Data, DataStationIdStructured, Reader
 
 from pyaerocom.units.constants import M_N, M_O, M_S
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
+from pyaerocom.utils import NpArrayIndexer
 
 logger = logging.getLogger(__name__)
 
@@ -287,6 +288,15 @@ class PostProcessingReader(Reader):
     def metadata(self) -> dict[str, str]:
         return self.reader.metadata()
 
+    @staticmethod
+    def _as_lat_lon_pairs(latitudes: np.ndarray, longitudes: np.ndarray):
+        """Return unique lat/lon pairs and their indices"""
+        pairs = np.empty(
+            latitudes.shape[0], dtype=[("lat", latitudes.dtype), ("lon", longitudes.dtype)]
+        )
+        pairs["lat"], pairs["lon"] = latitudes, longitudes
+        return pairs
+
     def data(self, varname: str) -> Data:
         if varname not in self.compute_vars:
             data = self.reader.data(varname)
@@ -310,19 +320,33 @@ class PostProcessingReader(Reader):
                 for d, out_unit in zip(data, transform.IN_UNITS)
             ]
 
-            # Find unique shared data based on lat/lon and times
-            groupbys = [np.array((d.latitudes, d.longitudes)) for d in data]
-            uniqs = [
-                set(map(tuple, np.unique(group, axis=1).transpose().tolist()))
-                for group in groupbys
+            # Find unique shared data based on lat/lon
+            latlons = [self._as_lat_lon_pairs(d.latitudes, d.longitudes) for d in data]
+            uniq_idx = [np.unique(ll, return_index=True)[1] for ll in latlons]
+
+            # Find shared lat/lon pairs between the first two datasets
+            sharedll, shared_idx_0, shared_idx_1 = np.intersect1d(
+                latlons[0][uniq_idx[0]], latlons[1][uniq_idx[1]], return_indices=True
+            )
+
+            # get station_ids for the shared lat/lon pairs
+            station_id = [
+                data[0].station_ids[uniq_idx[0]][shared_idx_0],
+                data[1].station_ids[uniq_idx[1]][shared_idx_1],
             ]
-            shared = np.array(list(set.intersection(*uniqs)))
+            # index the station_ids so we can quickly find all values belonging to a station
+            station_indexers = [NpArrayIndexer(np.ascontiguousarray(d.station_ids)) for d in data]
 
             new_data = DataStationIdStructured(varname, units=transform.OUT_UNIT)
 
-            for lat, lon in shared:  # Per station
-                masks = [(d.latitudes == lat) & (d.longitudes == lon) for d in data]
-                data_subset = [d[mask] for d, mask in zip(data, masks)]
+            for i, latlon in enumerate(sharedll):  # Per station
+                lat, lon = latlon
+                data_subset = []
+                for j, si in enumerate(station_indexers):
+                    indices = si.get_indices(station_id[j][i])
+                    mask = np.zeros(len(data[j]), dtype=bool)
+                    mask[indices] = True
+                    data_subset.append(data[j][mask])
 
                 start_times = [d.start_times for d in data_subset]
                 end_times = [d.end_times for d in data_subset]
