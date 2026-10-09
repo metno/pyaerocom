@@ -314,12 +314,17 @@ class PostProcessingReader(Reader):
             )
         if isinstance(transform, VariableCombiner):
             logger.info(f"Combining variables {transform.REQ_VARS} into {varname}")
-            data = [self.data(var) for var in transform.REQ_VARS]
-            scalings = [
-                get_unit_conversion_fac(from_unit=d.units, to_unit=out_unit)
-                for d, out_unit in zip(data, transform.IN_UNITS)
-            ]
+            data = []
+            scalings = []
+            for i, var in enumerate(transform.REQ_VARS):
+                logger.info(f"Reading data for variable {var}")
+                d = self.data(var)
+                data.append(d)
+                scalings.append(
+                    get_unit_conversion_fac(from_unit=d.units, to_unit=transform.IN_UNITS[i])
+                )
 
+            logger.info("Finding unique shared lat/lon / stations pairs for the data")
             # Find unique shared data based on lat/lon
             latlons = [self._as_lat_lon_pairs(d.latitudes, d.longitudes) for d in data]
             uniq_idx = [np.unique(ll, return_index=True)[1] for ll in latlons]
@@ -335,15 +340,24 @@ class PostProcessingReader(Reader):
                 data[1].station_ids[uniq_idx[1]][shared_idx_1],
             ]
             # index the station_ids so we can quickly find all values belonging to a station
+            logger.info(
+                "Indexing station IDs for quick lookup, number of points: %d %d",
+                len(data[0]),
+                len(data[1]),
+            )
             station_indexers = [NpArrayIndexer(np.ascontiguousarray(d.station_ids)) for d in data]
 
             new_data = DataStationIdStructured(varname, units=transform.OUT_UNIT)
 
             for i, latlon in enumerate(sharedll):  # Per station
                 lat, lon = latlon
+                if i % 100 == 0:
+                    logger.info("Processing station %d of %d", i, len(sharedll))
                 data_subset = []
+                first = []
                 for j, si in enumerate(station_indexers):
                     indices = si.get_indices(station_id[j][i])
+                    first.append(indices[0])
                     mask = np.zeros(len(data[j]), dtype=bool)
                     mask[indices] = True
                     data_subset.append(data[j][mask])
@@ -361,14 +375,26 @@ class PostProcessingReader(Reader):
 
                 _, lindex, rindex = np.intersect1d(start_end[0], start_end[1], return_indices=True)
 
-                station_ids = data_subset[0].station_ids[lindex]
-                new_altitudes = data_subset[0].altitudes[lindex]
+                station_ids = np.full(
+                    len(lindex), fill_value=station_id[0][i], dtype=station_id[0].dtype
+                )
+                # no check of station-altitude changes here, we assume it is constant
+                new_latitudes = np.full(len(lindex), fill_value=lat, dtype=np.float64)
+                new_longitudes = np.full(len(lindex), fill_value=lon, dtype=np.float64)
+                if lindex.size > 0:
+                    new_altitudes = np.full(
+                        len(lindex), fill_value=data_subset[0].altitudes[lindex[0]], dtype=np.int16
+                    )
+                    station_name = data[0].stations_by_ids(station_ids[0])
+                else:
+                    new_altitudes = np.array([], dtype=np.int16)
+                    station_name = np.array([], dtype="<U64")
+                new_stations = np.full(
+                    len(lindex), fill_value=station_name, dtype=station_name.dtype
+                )
 
-                new_latitudes = np.full(len(lindex), fill_value=lat)
-                new_longitudes = np.full(len(lindex), fill_value=lon)
                 new_starttimes = start_times[0][lindex]
                 new_endtimes = end_times[0][lindex]
-                new_stations = data_subset[0].stations_by_ids(station_ids)
 
                 if transform.OP == "ADD":
                     new_values = (
