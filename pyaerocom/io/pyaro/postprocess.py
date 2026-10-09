@@ -369,15 +369,12 @@ class PostProcessingReader(Reader):
                     [("start_time", start_times[0].dtype), ("end_time", end_times[0].dtype)]
                 )
                 start_end = [np.empty(len(s), dtype=start_end_dtype) for s in start_times]
-                for i, se in enumerate(start_times):
-                    start_end[i]["start_time"] = se
-                    start_end[i]["end_time"] = end_times[i]
+                for k, se in enumerate(start_times):
+                    start_end[k]["start_time"] = se
+                    start_end[k]["end_time"] = end_times[k]
 
                 _, lindex, rindex = np.intersect1d(start_end[0], start_end[1], return_indices=True)
 
-                station_ids = np.full(
-                    len(lindex), fill_value=station_id[0][i], dtype=station_id[0].dtype
-                )
                 # no check of station-altitude changes here, we assume it is constant
                 new_latitudes = np.full(len(lindex), fill_value=lat, dtype=np.float64)
                 new_longitudes = np.full(len(lindex), fill_value=lon, dtype=np.float64)
@@ -385,7 +382,7 @@ class PostProcessingReader(Reader):
                     new_altitudes = np.full(
                         len(lindex), fill_value=data_subset[0].altitudes[lindex[0]], dtype=np.int16
                     )
-                    station_name = data[0].stations_by_ids(station_ids[0])
+                    station_name = data[0].stations_by_ids(station_id[0][i])
                 else:
                     new_altitudes = np.array([], dtype=np.int16)
                     station_name = np.array([], dtype="<U64")
