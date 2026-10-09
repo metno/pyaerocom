@@ -24,6 +24,7 @@ from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
 from pyaerocom.units.datetime import TsType
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
+from pyaerocom.utils import NpArrayIndexer
 from pyaerocom.vertical_profile import VerticalProfile
 
 if sys.version_info >= (3, 12):
@@ -141,6 +142,17 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         obj._add_to_filter_history("set_flags_nan")
         return obj
 
+    def to_station_data_all(self, *args, **kwargs):
+        """wrapper around super().to_station_data_all() to add temporarily a fast index for lookup"""
+        logger.info(
+            "Creating meta indexer for station data lookup with %d points", len(self._dra.data)
+        )
+        self._meta_indexer = NpArrayIndexer(np.ascontiguousarray(self._dra.data["meta_id"]))
+        logger.info("Finished creating meta indexer for station data lookup")
+        ret = super().to_station_data_all(*args, **kwargs)
+        del self._meta_indexer
+        return ret
+
     def to_station_data(
         self,
         meta_idx,
@@ -185,6 +197,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             subdata = self._dra.data[sub_idx]
         else:
             subdata = self._dra.data
+
         for idx in meta_idx:
             try:
                 stat = self._metablock_to_stationdata(
@@ -346,11 +359,16 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             data = self._dra.data
         FOUND_ONE = False
         for var in vars_avail:
-            # get indices of this station and variable
-            idx = (data["meta_id"] == meta_idx) & (data["var_id"] == self.var_idx[var])
-
-            # get subset
-            subset = data[idx]
+            if getattr(self, "_meta_indexer", None) is not None and len(data) == len(
+                self._dra.data
+            ):
+                # use metaindex if exists
+                # and if data is not already a subset of the full array (see to_station_data())
+                subset_tmp = self._dra.data[self._meta_indexer.get_indices(meta_idx)]
+            else:
+                subset_tmp = data[data["meta_id"] == meta_idx]
+            # get subset of the variable
+            subset = subset_tmp[subset_tmp["var_id"] == self.var_idx[var]]
 
             # vector of timestamps corresponding to this variable
             dtime = subset["start_time"]
@@ -499,6 +517,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                         obj._dra.data["var_id"] == self.var_idx[var_name]
                     )
                     obj._dra.data["data"][idx] *= fac
+                    obj._dra.data["stdev"][idx] *= fac
                 meta["var_info"][var_name]["units"] = to_unit
 
         return obj
