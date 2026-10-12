@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from pyaerocom._lowlevel_helpers import BrowseDict
@@ -204,3 +205,36 @@ def dicts_equal(d1: dict, d2: dict) -> bool:
                 return False
 
     return True
+
+
+class NpArrayIndexer:
+    def __init__(self, array: npt.NDArray):
+        """generate an index to all unique elements in array and offer fast
+        lookup
+
+        :param array: an integer-type array, preferrably given as np.ascontiguousarray()
+        """
+        self._order = np.argsort(array, kind="stable")
+        length = len(array)
+        if length <= np.iinfo(np.uint32).max:
+            self._order = self._order.astype(np.uint32, copy=False)
+        self._ranges: dict[int, tuple[int, int]] = {}
+        if length > 0:
+            sorted_ids = array[self._order]
+            starts = np.flatnonzero(np.concatenate(([True], sorted_ids[1:] != sorted_ids[:-1])))
+            ends = np.concatenate((starts[1:], [length]))
+            self._ranges = {
+                int(value): (int(start), int(end))
+                for value, start, end in zip(sorted_ids[starts], starts, ends)
+            }
+
+    def get_indices(self, value: int) -> npt.NDArray[np.uint32]:
+        """get the indices of the given value in the original array
+
+        :param value: the value to look for
+        :return: array of indices
+        """
+        if int(value) not in self._ranges:
+            return np.array([], dtype=np.uint32)
+        start, end = self._ranges[int(value)]
+        return self._order[start:end]
