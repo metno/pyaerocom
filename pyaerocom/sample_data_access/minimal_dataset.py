@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 __all__ = ["download_minimal_dataset"]
 
 #: tarfile to download
-DEFAULT_TESTDATA_FILE = "testdata-minimal.tar.gz.20251014"
+DEFAULT_TESTDATA_FILE = "testdata-minimal.tar.gz.20251104"
 
 minimal_dataset = pooch.create(
     path=const.OUTPUTDIR,  # ~/MyPyaerocom/
@@ -35,6 +35,8 @@ minimal_dataset = pooch.create(
         "testdata-minimal.tar.gz.20250911": "md5:5607d7b300ce0680b7bbce78cf8abe64",
         "testdata-minimal.tar.gz.20250916": "md5:e0477c787c359455b50404abe960e5fc",
         "testdata-minimal.tar.gz.20251014": "md5:cd02b19e6b34d547c460056e5cb13d72",
+        "testdata-minimal.tar.gz.20251030": "md5:9127ce2a9eab34af77130499ec952fb6",
+        "testdata-minimal.tar.gz.20251104": "md5:74a38fdeeb088cf5c2ea8e677dfc1196",
     },
 )
 

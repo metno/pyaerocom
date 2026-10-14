@@ -699,3 +699,28 @@ def test_read_error(reader: ReadEbas, ebas_files: list[Path]):
     with pytest.raises(DataCoverageError) as e:
         reader.read("ac550aer", files=ebas_files)
     assert str(e.value) == "UngriddedData object appears to be empty"
+
+
+@pytest.mark.parametrize(
+    "vars_to_retrieve,file_vars,num_meta,num_stats",
+    [
+        ("concpm10", "concpm10", 4, 4),
+    ],
+)
+def test_read_local(
+    reader: ReadEbas,
+    vars_to_retrieve: list[str] | str,
+    ebas_files: list[Path] | None,
+    num_meta: int,
+    num_stats: int,
+):
+    data = reader.read(vars_to_retrieve, files=ebas_files)
+    assert isinstance(data, UngriddedDataMetadata)
+    assert len(data.metadata) == num_meta
+    assert len(data.unique_station_names) == num_stats
+
+    if isinstance(vars_to_retrieve, str):
+        vars_to_retrieve = [vars_to_retrieve]
+    for var in vars_to_retrieve:
+        for meta in data.metadata.values():
+            assert meta["var_info"][var]["units"] == const.VARS[var].units
