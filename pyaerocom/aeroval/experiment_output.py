@@ -1228,10 +1228,23 @@ class ExperimentOutput(ProjectOutput):
                 if "z" not in current[model_name]:
                     current[model_name]["z"] = [midpoint]  # initialize with midpoint
 
-                if (
-                    midpoint > current[model_name]["z"][-1]
-                ):  # only store incremental increases in the layers
+
+
+                # if (
+                #     midpoint > current[model_name]["z"][-1]
+                # ):  # only store incremental increases in the layers
+                #     current[model_name]["z"].append(midpoint)
+
+                if midpoint not in current[model_name]["z"]:
                     current[model_name]["z"].append(midpoint)
+                # current[model_name]["z"] = sorted(current[model_name]["z"])
+                sorted_indices = sorted(
+                    range(len(current[model_name]["z"])),
+                    key=lambda i: current[model_name]["z"][i],
+                )
+
+                current[model_name]["z"] = [current[model_name]["z"][i] for i in sorted_indices
+                ]
 
                 # old boilerplate to get around recursive_default_dict issues
                 if "obs" not in current[model_name]:
@@ -1261,6 +1274,9 @@ class ExperimentOutput(ProjectOutput):
                         current[model_name]["mod"][freq][perstr].append(
                             profile_viz["mod"][freq][perstr]
                         )
+
+                        current[model_name]["obs"][freq][perstr] = [current[model_name]["obs"][freq][perstr][i] for i in sorted_indices]
+                        current[model_name]["mod"][freq][perstr] = [current[model_name]["mod"][freq][perstr][i] for i in sorted_indices]
 
                 if "metadata" not in current[model_name]:
                     current[model_name]["metadata"] = {

@@ -285,13 +285,29 @@ class ColocatedData(BaseModel):
     def model_name(self):
         if "model_name" in self.metadata:
             return self.metadata["model_name"]
-        return self.data_source[1].values
+        if isinstance(self.data_source[1], str):
+            return self.data_source[1]
+        val = self.data_source[1].values
+        if isinstance(val, str):
+            return val
+        elif isinstance(val, np.ndarray):
+            return str(val)
+
+        
 
     @property
     def obs_name(self):
         if "obs_name" in self.metadata:
             return self.metadata["obs_name"]
-        return self.data_source[0]
+
+        if isinstance(self.data_source[0], str):
+            return self.data_source[0]
+        
+        val = self.data_source[0].values    
+        if isinstance(val, str):
+            return val
+        elif isinstance(val, np.ndarray):
+            return str(val)
 
     @property
     def var_name(self):
