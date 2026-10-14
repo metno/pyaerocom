@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import sys
 
 if sys.version_info >= (3, 12):
@@ -38,12 +39,19 @@ _MOLMASSES = {
     # Override molecular masses used for species that do not constitute molecular
     # formulas with only single letter elements.
     "air_dry": 28.9647,
+    "concpm10": 28.9647,
+    "concpm25": 28.9647,
+    "concoa": 28.9647,
+    "concbc": 28.9647,
     "isop": 68.12,
     "glyoxal": 58.036,
     "glyox": 58.036,
 }
 
-_SPECIES_OVERRIDE = {"concso4c": "SO4"}
+_SPECIES_OVERRIDE = {
+    "concso4c": "SO4",
+    "concso4t": "SO4",
+}
 
 
 class UnknownSpeciesError(ValueError):
