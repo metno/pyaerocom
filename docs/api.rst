@@ -582,7 +582,7 @@ Basic configuration class
 
 Will be initiated on input and is accessible via `pyaerocom.const`.
 
-.. automodule:: pyaerocom.config
+.. automodule:: pyaerocom.config_reader
    :members:
    :undoc-members:
 
