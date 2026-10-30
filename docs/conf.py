@@ -7,6 +7,8 @@
 # -- Path setup --------------------------------------------------------------
 
 import datetime
+from pathlib import Path
+import pypandoc
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -19,6 +21,11 @@ import sys
 # -- clone pyaerocom-tutorials repo --------------------------------------
 TUTREPO = "pyaerocom-tutorials"
 TUTURL = f"https://github.com/metno/{TUTREPO}.git"
+
+
+# Ensure pandoc is available in the PATH for pypandoc
+pandoc_dir = Path(pypandoc.get_pandoc_path()).parent
+os.environ["PATH"] = str(pandoc_dir) + os.pathsep + os.environ["PATH"]
 
 
 def init_tutorials():

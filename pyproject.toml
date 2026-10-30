@@ -78,6 +78,7 @@ docs = [
     "sphinx-argparse",
     "nbsphinx",
     "snowballstemmer<3",
+    "pypandoc_binary",
 ]
 test = [
     "pytest>=7.4",
