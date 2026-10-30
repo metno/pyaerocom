@@ -9,7 +9,7 @@ jobs:
   lint-docs-package:
     runs-on: ubuntu-latest
     env:
-      PYTHON: "3.12"
+      PYTHON: "3.10"
     steps:
     - uses: actions/checkout@v5
     - name: Set up Python ${{ env.PYTHON }}
