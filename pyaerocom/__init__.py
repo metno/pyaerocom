@@ -1,6 +1,7 @@
 # isort:skip_file
 from importlib import metadata
 
+import netCDF4  # import netCDF4 before xarray/numpy is loaded to avoid issues
 import xarray
 
 from ._logging import change_verbosity
