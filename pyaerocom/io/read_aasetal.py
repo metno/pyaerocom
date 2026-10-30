@@ -135,8 +135,7 @@ class ReadAasEtal(ReadUngriddedBase):
         df["dtime"] = self._get_time_stamps(df)
 
         # array av numpy.datetime64
-        df.rename(columns={"Sampler": "instrument_name"}, inplace=True)
-        grouped = df.groupby(by="station_name")
+        grouped = df.rename(columns={"Sampler": "instrument_name"}).groupby(by="station_name")
 
         # Looping over every station:
         for name, station_group in grouped:

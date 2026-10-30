@@ -951,8 +951,8 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     if obs_trend["data"] is None or mod_trend["data"] is None:
         raise TrendsError("Trends came back as None", obs_trend["data"], mod_trend["data"])
 
-    obs_trend["data"] = obs_trend["data"].to_json()
-    mod_trend["data"] = mod_trend["data"].to_json()
+    obs_trend["data"] = obs_trend["data"].to_json(date_format="iso")
+    mod_trend["data"] = mod_trend["data"].to_json(date_format="iso")
 
     obs_trend["map_var"] = f"slp_{start}"
     mod_trend["map_var"] = f"slp_{start}"
