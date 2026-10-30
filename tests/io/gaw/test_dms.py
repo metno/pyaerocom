@@ -94,7 +94,7 @@ def test_vmrdms_ams_subset(data_vmrdms_ams_cvo):
 
     assert_array_equal(
         [str(stat.dtime.min()), str(stat.dtime.max())],
-        ["2000-01-15T00:00:00.000000000", "2007-12-15T00:00:00.000000000"],
+        ["2000-01-15T00:00:00.000000", "2007-12-15T00:00:00.000000"],
     )
     assert stat.ts_type == "monthly"
     assert stat.ts_type_src == "daily"
