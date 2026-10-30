@@ -25,6 +25,7 @@ dependencies = [
     # NOTE: Please also update dependency versions in pyaerocom_env.yml,
     # and minimum versions in the tox config at the bottom of this file!
     "aerovaldb>=0.5.2, < 0.6.0",
+    "attrs>=23.0.0",
     "scitools-iris>=3.11.0",
     # xxhash and iris incompatibility issue: https://github.com/SciTools/iris/issues/7251
     "xxhash<4.0.0",
