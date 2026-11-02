@@ -30,7 +30,7 @@ dependencies:
   - importlib-resources >=5.10
   - typing-extensions >=4.6.1
   # required for pyaro-readers, before pip
-  - polars >= 1.3.1 < 2.0.0
+  - polars >= 1.3.1
   - async-lru >= 2.0.0
   - filetype >= 1.2.0
 ## from pip
