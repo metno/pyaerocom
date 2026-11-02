@@ -82,7 +82,7 @@ jobs:
   conda:
     runs-on: ubuntu-latest
     env:
-      PYTHON: "3.11"
+      PYTHON: "3.13"
     defaults:
       run:
         shell: bash -l {0}
