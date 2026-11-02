@@ -127,6 +127,8 @@ filterwarnings = [
     'ignore::DeprecationWarning:^(?!pyaerocom|tests).*:',
     'ignore::FutureWarning:^(?!pyaerocom|tests).*:',
     'ignore::FutureWarning:^(?!xarray).*:',
+    # ignore warnings of netcdf4 in conda  https://github.com/Unidata/netcdf4-python/issues/1354
+    'ignore:numpy.ndarray size changed, may indicate binary incompatibility:RuntimeWarning',
     'ignore::iris.warnings.IrisLoadWarning:^(?!pyaerocom|tests).*', # https://github.com/metno/pyaerocom/issues/1710
     # and not on this list
     "ignore:Using DEFAULT_SPHERICAL_EARTH_RADIUS:UserWarning:iris.*:", # Issue #1394
