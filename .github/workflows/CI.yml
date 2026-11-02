@@ -42,11 +42,11 @@ jobs:
       matrix:
         python-version: ['3.11', '3.12', '3.13']
         experimental: [false]
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
         #include:
         #  - python-version: '3.13'
         #    experimental: true
-        #    os: ubuntu-22.04
+        #    os: ubuntu-24.04
     steps:
     - uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-version }}
@@ -82,7 +82,7 @@ jobs:
   conda:
     runs-on: ubuntu-latest
     env:
-      PYTHON: "3.13"
+      PYTHON: "3.14"
     defaults:
       run:
         shell: bash -l {0}
