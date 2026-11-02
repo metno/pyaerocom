@@ -134,7 +134,7 @@ def create_varinfo_table(
 
     df = pd.DataFrame(result, columns=header)
     if sort_by_cols:
-        df.sort_values(sort_by_cols, inplace=True)
+        df = df.sort_values(sort_by_cols)
     return df
 
 
