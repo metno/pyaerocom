@@ -7,6 +7,7 @@ from collections.abc import Iterator
 import numpy as np
 from geonum.atmosphere import T0_STD, p0
 from tqdm import tqdm
+from functools import partial
 
 from pyaerocom import ConfigReader
 from pyaerocom._lowlevel_helpers import BrowseDict
@@ -31,6 +32,7 @@ from pyaerocom.aux_var_helpers import (
     make_proxy_drydep_from_O3,
     make_proxy_wetdep_from_O3,
     vmrx_to_concx,
+    convert_ec_oc_C_units,
 )
 from pyaerocom.units import UnitConversionError
 from pyaerocom.exceptions import (
@@ -239,6 +241,7 @@ class ReadEbas(ReadUngriddedBase):
         "sc700dryaer": ["sc700aer", "scrh"],
         "ac550dryaer": ["ac550aer", "acrh"],
         "ang4470dryaer": ["sc440dryaer", "sc700dryaer"],
+        "concecpm25": ["concCecpm25"],
         "wetoxs": ["concprcpoxs", "pr"],
         "wetoxsc": ["concprcpoxsc", "pr"],
         "wetoxst": ["concprcpoxst", "pr"],
@@ -313,6 +316,9 @@ class ReadEbas(ReadUngriddedBase):
         "sc700dryaer": compute_sc700dryaer,
         "ac550dryaer": compute_ac550dryaer,
         "ang4470dryaer": compute_ang4470dryaer_from_dry_scat,
+        "concecpm25": partial(
+            convert_ec_oc_C_units, var_name="concCecpm25", new_var_name="concecpm25"
+        ),
         "wetoxs": compute_wetoxs_from_concprcpoxs,
         "wetoxsc": compute_wetoxs_from_concprcpoxsc,
         "wetoxst": compute_wetoxs_from_concprcpoxst,

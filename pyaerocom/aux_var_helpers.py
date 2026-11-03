@@ -942,3 +942,19 @@ def make_proxy_wetdep_from_O3(data):
 
     data.data_flagged[new_var_name] = flags
     return new_var_data
+
+
+def convert_ec_oc_C_units(data, var_name, new_var_name):
+    # Converts units for EC and OC from ug C m-3 to ug m-3
+
+    flags = data.data_flagged[var_name]
+    new_var_data = data[var_name]
+
+    if new_var_name not in data.var_info:
+        data.var_info[new_var_name] = {}
+    data.var_info[new_var_name] = data.var_info[var_name]
+    data.var_info[new_var_name]["units"] = "ug m-3"
+
+    data.data_flagged[new_var_name] = flags
+
+    return new_var_data

@@ -14,7 +14,7 @@ from pyaerocom.io.cams2_83.models import ModelName, RunType
 from pyaerocom.io.cams2_83.read_obs import DATA_FOLDER_PATH as DEFAULT_OBS_PATH
 from pyaerocom.io.cams2_83.read_obs import obs_paths
 from pyaerocom.io.cams2_83.reader import DATA_FOLDER_PATH as DEFAULT_MODEL_PATH
-from pyaerocom.scripts.cams2_83.config import CFG
+from pyaerocom.scripts.cams2_83.config import CFG, acsm_species_list, ACSM_CFG
 from pyaerocom.scripts.cams2_83.evaluation import (
     EvalType,
     date_range,
@@ -39,6 +39,7 @@ def make_model_entry(
     return dict(
         model_id=f"CAMS2-83.{model.name}.day{leap}.{run_type.name}",
         model_data_dir=str(model_path.resolve()),
+        model_ts_type_read="hourly",
         gridded_reader_id={"model": "ReadCAMS2_83"},
         model_kwargs=dict(
             daterange=[f"{start_date:%F}", f"{end_date:%F}"],
@@ -67,6 +68,7 @@ def make_config(
     fairmode: bool,
     medianscores: bool,
     useanalysisobsset: bool,
+    use_acsm: bool = False,
 ) -> dict:
     logger.info("Making the configuration")
 
@@ -111,6 +113,11 @@ def make_config(
             useanalysisobsset=useanalysisobsset,
         )
     ]
+    if use_acsm:
+        cfg["obs_cfg"]["ACSM"] = ACSM_CFG
+
+        # cfg["obs_cfg"] = {"ACSM": ACSM_CFG}
+
 
     if run_type == RunType.AN or useanalysisobsset:
         cfg.update(forecast_days=1)
@@ -210,6 +217,11 @@ def main(
         "-n",
         help="Will only make and print the config without running the evaluation",
     ),
+    acsm: bool = typer.Option(
+        False,
+        "--acsm",
+        help="If true, the ACSM data will be included",
+    ),
     pool: int = typer.Option(
         1,
         "--pool",
@@ -247,6 +259,7 @@ def main(
         fairmode,
         medianscores,
         useanalysisobsset,
+        use_acsm=acsm
     )
 
     # we do not want the cache produced in previous runs to be silently cleared

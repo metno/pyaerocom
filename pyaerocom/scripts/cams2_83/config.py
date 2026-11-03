@@ -119,7 +119,7 @@ EEA_RURAL_FILTER = {
     ],
 }
 EBAS_FILTER = {
-    "data_level": [None, 2],
+    #"data_level": [None, 2],
     **BASE_FILTER,
     "altitude": [-20, 1000],
     "set_flags_nan": True,
@@ -132,12 +132,20 @@ EEA_FILTER = {
 }
 
 species_list = [
-    "concno2",
-    "concco",
-    "conco3",
-    "concso2",
-    "concpm10",
-    "concpm25",
+    # "concno2",
+    # "concco",
+    # "conco3",
+    # "concso2",
+    # "concpm10",
+    # "concpm25",
+]
+
+acsm_species_list = [
+    # ACSM
+    # "concecpm25",
+    # "concso4pm25",
+    "concno3pm25",
+    # "concnh4pm25",
 ]
 
 
@@ -154,6 +162,13 @@ obs_filters = {
     for key in species_list
 }
 
+obs_filters_acsm = {
+    key: dict(
+        **EBAS_FILTER,
+        station_id=get_ignore_list(key),
+        negate="station_id",) for key in acsm_species_list
+}
+
 # Empty observation config
 OBS_CONFIG = {}
 
@@ -166,6 +181,21 @@ OBS_CONFIG["EEA"] = dict(
     obs_vert_type="Surface",
     read_opts_ungridded=dict(files=[], force_caching=True),
     obs_filters=obs_filters,
+)
+
+ACSM_CFG = dict(
+    obs_id="EBASMC",
+    obs_vars=acsm_species_list,
+    web_interface_name="EBAS-ACSM",
+    obs_vert_type="Surface",
+    ts_type="hourly",
+    # read_opts_ungridded=dict(files=[], force_caching=True),
+   # obs_filters=obs_filters_acsm,
+   min_num_obs=dict(
+           # yearly=dict(monthly=9),
+           # monthly=dict(daily=21, weekly=3),
+           daily=dict(hourly=1),
+       ),
 )
 
 ##################################################
