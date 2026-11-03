@@ -582,6 +582,7 @@ class ExperimentOutput(ProjectOutput):
         mrv = mcfg.model_rename_vars
 
         mvar_aliases = get_aliases(mod_var)
+
         for ovar, mvars in mcfg.model_add_vars.items():
             if obs_var in mvars:
                 # for evaluation of entries in model_add_vars, the output json
@@ -698,6 +699,7 @@ class ExperimentOutput(ProjectOutput):
             # obs dataset is not part of experiment
             return False
         # first, check model_add_vars
+
         for ocfg in obs_matches:
             if self._check_ovar_mvar_entry(mcfg, mod_var, ocfg, obs_var):
                 return True
@@ -1228,8 +1230,6 @@ class ExperimentOutput(ProjectOutput):
                 if "z" not in current[model_name]:
                     current[model_name]["z"] = [midpoint]  # initialize with midpoint
 
-
-
                 # if (
                 #     midpoint > current[model_name]["z"][-1]
                 # ):  # only store incremental increases in the layers
@@ -1243,8 +1243,7 @@ class ExperimentOutput(ProjectOutput):
                     key=lambda i: current[model_name]["z"][i],
                 )
 
-                current[model_name]["z"] = [current[model_name]["z"][i] for i in sorted_indices
-                ]
+                current[model_name]["z"] = [current[model_name]["z"][i] for i in sorted_indices]
 
                 # old boilerplate to get around recursive_default_dict issues
                 if "obs" not in current[model_name]:
@@ -1275,8 +1274,12 @@ class ExperimentOutput(ProjectOutput):
                             profile_viz["mod"][freq][perstr]
                         )
 
-                        current[model_name]["obs"][freq][perstr] = [current[model_name]["obs"][freq][perstr][i] for i in sorted_indices]
-                        current[model_name]["mod"][freq][perstr] = [current[model_name]["mod"][freq][perstr][i] for i in sorted_indices]
+                        current[model_name]["obs"][freq][perstr] = [
+                            current[model_name]["obs"][freq][perstr][i] for i in sorted_indices
+                        ]
+                        current[model_name]["mod"][freq][perstr] = [
+                            current[model_name]["mod"][freq][perstr][i] for i in sorted_indices
+                        ]
 
                 if "metadata" not in current[model_name]:
                     current[model_name]["metadata"] = {
