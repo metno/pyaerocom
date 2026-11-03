@@ -380,6 +380,7 @@ class UngriddedDataContainer(abc.ABC):
                 - stats: list of :class:`StationData` objects
                 - station_name: list of corresponding station names
                 - station_type: list of corresponding station types, might be empty
+                - station_area: list of corresponding station areas, might be empty
                 - latitude: list of latitude coordinates
                 - longitude: list of longitude coordinates
 
@@ -388,6 +389,7 @@ class UngriddedDataContainer(abc.ABC):
             "stats": [],
             "station_name": [],
             "station_type": [],
+            "station_area": [],
             "latitude": [],
             "failed": [],
             "longitude": [],
@@ -415,6 +417,12 @@ class UngriddedDataContainer(abc.ABC):
                 else:
                     logger.debug(
                         "No station_type found in StationData, station_type will be blank"
+                    )
+                if hasattr(data, "station_area"):
+                    out_data["station_area"].append(data["station_area"])
+                else:
+                    logger.debug(
+                        "No station_area found in StationData, station_area will be blank"
                     )
                 out_data["stats"].append(data)
 
