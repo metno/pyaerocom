@@ -13,7 +13,7 @@ _VARIABLES = "emep_variables.toml"
 
 
 def emep_variables() -> dict[str, str]:
-    """Read variable definitions from emep_variables.ini file
+    """Read variable definitions from emep_variables.toml file
 
     Returns
     -------
