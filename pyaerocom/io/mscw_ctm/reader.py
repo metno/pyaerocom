@@ -6,6 +6,7 @@ import re
 import warnings
 
 import numpy as np
+import iris
 import xarray as xr
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
@@ -210,6 +211,8 @@ class ReadMscwCtm(GriddedReader):
 
     #: pattern for 4-digit years for 19XX and 20XX used for trend subdirectories
     YEAR_PATTERN = r".*((?:19|20)\d\d).*"
+
+    Z_COORDNAME = "Z_MID"
 
     class _PrivateFields:
         filename: str | None = None
@@ -708,15 +711,16 @@ class ReadMscwCtm(GriddedReader):
         """
 
         temp_arrs = []
+        aux = None
         req = self.AUX_REQUIRES[var_name_aerocom]
         aux_func = self.AUX_FUNS[var_name_aerocom]
         logger.info(f"computing {var_name_aerocom} from {req} using {aux_func}")
         proj_info = None
         for aux_var in self.AUX_REQUIRES[var_name_aerocom]:
-            arr, proj_info = self._load_var(aux_var, ts_type)
+            arr, proj_info, aux = self._load_var(aux_var, ts_type)
             temp_arrs.append(arr)
 
-        return aux_func(*temp_arrs), proj_info
+        return aux_func(*temp_arrs), proj_info, aux
 
     def _load_var(self, var_name_aerocom: str, ts_type: str):
         """
@@ -785,16 +789,20 @@ class ReadMscwCtm(GriddedReader):
 
         ts_type = self._ts_type
 
-        arr, proj_info = self._load_var(var_name_aerocom, ts_type)
+        arr, proj_info, aux = self._load_var(var_name_aerocom, ts_type)
         if arr.units in Unit._UALIASES:
             arr.attrs["units"] = Unit._UALIASES[arr.units]
         try:
             cube = arr.to_iris()
+
         except MemoryError as e:  # pragma: no cover
             raise NotImplementedError from e
 
         if ts_type == "hourly":
             cube.coord("time").convert_units("hours since 1900-01-01")
+
+        if aux is not None:
+            cube.add_aux_coord(aux, data_dims=tuple(range(cube.ndim)))
         gridded = GriddedData(
             cube,
             var_name=var_name_aerocom,
@@ -844,10 +852,24 @@ class ReadMscwCtm(GriddedReader):
         """
         emep_var = self.var_map[var_name_aerocom]
 
+        aux = None
+
         try:
             filedata = self._filedata
             data = filedata[emep_var]
             proj_info = ProjectionInformation.from_xarray(filedata, emep_var)
+
+            if self.Z_COORDNAME in filedata:
+                zcube = filedata[self.Z_COORDNAME].transpose(*data.dims)
+                if data.shape != zcube.shape:
+                    raise ValueError(f"Shape mismatch: data={data.shape}, zcube={zcube.shape}")
+                aux = iris.coords.AuxCoord(
+                    zcube.to_iris().core_data(),
+                    standard_name="height",
+                    long_name="height above surface",
+                    units=zcube.units,
+                )
+
         except KeyError:
             raise VarNotAvailableError(
                 f"{var_name_aerocom} ({emep_var}) not available in {self._filename}"
@@ -857,7 +879,7 @@ class ReadMscwCtm(GriddedReader):
         data.time.attrs["standard_name"] = "time"
         prefix = emep_var.split("_")[0]
         data.attrs["units"] = self._preprocess_units(data.units, prefix)
-        return data, proj_info
+        return data, proj_info, aux
 
     @staticmethod
     def _preprocess_units(units: str, prefix: str | None = None):

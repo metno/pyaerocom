@@ -10,6 +10,7 @@ from typing import NamedTuple
 
 import iris
 import numpy as np
+import numpy.ma as ma
 import xarray as xr
 import pandas as pd
 import warnings
@@ -46,6 +47,52 @@ logger = logging.getLogger(__name__)
 class ColocatedDataLists(NamedTuple):
     colocateddata_for_statistics: list[ColocatedData]
     colocateddata_for_profile_viz: list[ColocatedData]
+
+
+def is_meter_coord(coord):
+    try:
+        return coord.units.is_convertible("m")
+    except Exception:
+        return False
+
+
+def get_altitude_coord_and_vertical_dim(data):
+    vertical_coord = None
+
+    for coord in data.dim_coords:
+        if len(data.coord_dims(coord)) != 1:
+            continue
+
+        if is_meter_coord(coord):
+            vertical_coord = coord
+            break
+
+        if coord.standard_name == "atmosphere_hybrid_sigma_pressure_coordinate":
+            vertical_coord = coord
+            break
+
+    if vertical_coord is None:
+        raise ValueError("Could not find a usable vertical dimension coordinate.")
+
+    vertical_dim_name = vertical_coord.name()
+
+    if is_meter_coord(vertical_coord):
+        return vertical_coord, vertical_dim_name
+
+    if vertical_coord.standard_name == "atmosphere_hybrid_sigma_pressure_coordinate":
+        for name in ("height", "altitude"):
+            try:
+                z_coord = data.coord(name)
+                if is_meter_coord(z_coord):
+                    return z_coord, vertical_dim_name
+            except iris.exceptions.CoordinateNotFoundError:
+                pass
+
+        raise ValueError(
+            "Cube has hybrid sigma-pressure coordinate but no 'height' or 'altitude' aux coord in meters."
+        )
+
+    raise ValueError("Unsupported vertical coordinate.")
 
 
 def _colocate_vertical_profile_gridded(
@@ -98,27 +145,52 @@ def _colocate_vertical_profile_gridded(
     ts_type_src_data = data.ts_type
 
     list_of_colocateddata_objects = []
+    try:
+        altitude_coord, vertical_dim_name = get_altitude_coord_and_vertical_dim(data.get_cube())
+        z = altitude_coord.points
+    except Exception as e:
+        logger.warning("No usable vertical height coordinate in model data")
+        logger.debug(f"Raised: {e}")
+        z = None
+        vertical_dim_name = None
+    cube_data = data.get_cube_data()
+
+    if z is not None:
+        z_mask = z
+        if z_mask.shape == cube_data.shape:
+            pass
+        elif np.transpose(z_mask, (0, 2, 3, 1)).shape == cube_data.shape:
+            z_mask = np.transpose(z_mask, (0, 2, 3, 1))
+        else:
+            raise ValueError(
+                f"Height coord shape {z.shape} is not compatible with cube data shape {cube_data.shape}"
+            )
+    else:
+        z_mask = None
     for vertical_layer in layer_limits:
         # Think about efficiency here in terms of order of loops. candidate for parallelism
         # create the 2D layer data
         arr = np.full((2, time_num, stat_num), np.nan)
+
         try:
+            if z_mask is None or vertical_dim_name is None:
+                raise ValueError("No usable altitude/height coordinate available.")
+
+            layer_mask = (z_mask <= vertical_layer["start"]) | (z_mask >= vertical_layer["end"])
+
+            logger.info(f"Shapes of data and layer mask: {cube_data.shape}, {layer_mask.shape}")
+
             data_this_layer = (
-                data.extract(
-                    iris.Constraint(
-                        coord_values={
-                            "altitude": lambda cell: (
-                                vertical_layer["start"] < cell.point < vertical_layer["end"]
-                            )
-                        }
-                    )
-                )
-                .collapsed("altitude", iris.analysis.MEAN)
-                .copy()
+                data.get_cube()
+                .copy(np.ma.masked_where(layer_mask, cube_data))
+                .collapsed(vertical_dim_name, iris.analysis.MEAN)
             )
+
+            data_this_layer = data.set_cube(data_this_layer)
+
         except Exception as e:
-            logger.warning(f"No altitude in model data layer {vertical_layer}")
-            logger.debug(f"Raised: {e}")
+            logger.warning(f"Could not build model data layer {vertical_layer}")
+            logger.warning(f"Raised: {e}")
             continue
 
         grid_stat_data_this_layer = data_this_layer.to_time_series(
@@ -334,7 +406,9 @@ def _colocate_vertical_profile_gridded(
         coldata.longitude.attrs["standard_name"] = data.longitude.standard_name
         coldata.longitude.attrs["units"] = str(data.longitude.units)
 
-        coldata.data.attrs["altitude_units"] = str(data.altitude.units)
+        coldata.data.attrs["altitude_units"] = str(
+            altitude_coord.units
+        )  # str(data.altitude.units)
 
         coldata.vertical_layer = vertical_layer
 
@@ -425,12 +499,16 @@ def colocate_vertical_profile_gridded(
         else:
             data_ref_meta_idxs_with_var_info.append(key)
 
+    altitude_coord, _ = get_altitude_coord_and_vertical_dim(data.get_cube())
+
     if any(
-        data.altitude.units != Unit(data_ref.metadata[i]["var_info"]["altitude"]["units"])
+        altitude_coord.units != Unit(data_ref.metadata[i]["var_info"]["altitude"]["units"])
         for i in data_ref_meta_idxs_with_var_info
     ):
         logger.info(
-            f"Mismatching units in colocation_3d.py. Model has units {data.altitude.units} whereas not all observations have this unit. Debug to find out where."
+            "Mismatching units in colocation_3d.py. "
+            f"Model has units {altitude_coord.units} whereas not all observations have this unit. "
+            "Debug to find out where."
         )
         raise DataUnitError
 
@@ -473,7 +551,8 @@ def colocate_vertical_profile_gridded(
 
     latitude = data.latitude.points
     longitude = data.longitude.points
-    altitude = data.altitude.points
+    altitude = altitude_coord.points  # data.altitude.points
+
     lat_range = [np.min(latitude), np.max(latitude)]
     lon_range = [np.min(longitude), np.max(longitude)]
     alt_range = [np.min(altitude), np.max(altitude)]

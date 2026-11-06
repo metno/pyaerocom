@@ -137,3 +137,6 @@ concecFineNonResAgeEM = "SURF_ug_EMEC_F_NONRES_AGE"
 concecCoarseResEM = "SURF_ug_EMEC_C_RES"
 concecCoarseNonResEM = "SURF_ug_EMEC_C_NONRES"
 
+
+#Dust
+ec1020aer = "EXT_1020nm"

@@ -326,6 +326,10 @@ class GriddedDataContainer:
         return self.children[0].cube.data
 
     @only_one_child
+    def get_cube(self):
+        return self.children[0].cube
+
+    @only_one_child
     def to_xarray(self):
         return self.children[0].to_xarray()
 
@@ -579,3 +583,13 @@ class GriddedDataContainer:
 
     def copy(self):
         return deepcopy(self)
+
+    @only_one_child
+    def cube_copy(self, data=None):
+        return self.children[0].copy(data=data)
+
+    @only_one_child
+    def set_cube(self, cube, inplace=False):
+        obj = self if inplace else self.copy()
+        obj.children[0].cube = cube
+        return obj
