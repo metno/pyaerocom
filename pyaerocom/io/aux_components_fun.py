@@ -120,10 +120,19 @@ def calc_concNnh4(concnh4):
 
 
 def calc_concno3pm25(concno3f, concno3c, fine_from_coarse_fraction: float = 0.134):
-    # mult_fun = CUBE_MATHS["multiply"]
-    # concno3pm25 = add_cubes(concno3f, mult_fun(concno3c, fine_from_coarse_fraction))
+    """
+    Make no3pm25 from no3f and no3c. The fine_from_coarse_fraction is set to 0.134 as of now, but this should be updated to a more accurate value in the future.
+    """
+    mult_fun = CUBE_MATHS["multiply"]
+    concno3f, concno3c = _check_input_iscube(
+        concno3f, concno3c
+    )  # Explicitly check that the inputs are cubes, due to prev problems with model data
+    concno3f, concno3c = _check_same_units(
+        concno3f, concno3c
+    )  # Explicitly check that the inputs have the same units, due to prev problems with model data
+    concno3pm25 = add_cubes(concno3f, mult_fun(concno3c, fine_from_coarse_fraction))
 
-    return concno3f
+    return concno3pm25
 
 
 def calc_concno3pm10(concno3f, concno3c):
