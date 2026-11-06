@@ -40,6 +40,7 @@ from pyaerocom.trends_helpers import (
     _init_trends_result_dict,
 )
 from pyaerocom.units.datetime import TsType
+from pyaerocom.units.datetime.time_config import TS_TYPE_TO_PANDAS_FREQ
 
 # from pyaerocom.aeroval.fairmode_statistics import FairmodeStatistics
 
@@ -951,8 +952,8 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     if obs_trend["data"] is None or mod_trend["data"] is None:
         raise TrendsError("Trends came back as None", obs_trend["data"], mod_trend["data"])
 
-    obs_trend["data"] = obs_trend["data"].to_json()
-    mod_trend["data"] = mod_trend["data"].to_json()
+    obs_trend["data"] = obs_trend["data"].to_json(date_format="iso")
+    mod_trend["data"] = mod_trend["data"].to_json(date_format="iso")
 
     obs_trend["map_var"] = f"slp_{start}"
     mod_trend["map_var"] = f"slp_{start}"
@@ -1510,7 +1511,11 @@ def _process_statistics_timeseries(
     tstr = TsType(freq).to_numpy_freq()
     # list of strings of output timestamps (used below to select the
     # individual periods)
-    to_idx_str = [str(x) for x in to_idx.astype(f"datetime64[{tstr}]")]
+    to_idx_sel = [str(x) for x in to_idx.astype(f"datetime64[{tstr}]")]
+    if freq == "weekly":
+        # for weekly, normal presentation does not fit, so use period instead
+        periods = pd.DatetimeIndex(to_idx).to_period(TS_TYPE_TO_PANDAS_FREQ[freq])
+        to_idx_sel = [slice(p.start_time, p.end_time) for p in periods]
     jsdate = _get_jsdate(to_idx)
 
     for regid, regname in region_ids.items():
@@ -1520,7 +1525,7 @@ def _process_statistics_timeseries(
         except DataCoverageError:
             continue
         for i, js in enumerate(jsdate):
-            per = to_idx_str[i]
+            per = to_idx_sel[i]
             try:
                 arr = ColocatedData(data=subset.data.sel(time=per))
                 stats = arr.calc_statistics(use_area_weights=use_weights, drop_stats=drop_stats)
@@ -1857,6 +1862,7 @@ def _calculate_fairmode(
     periods: tuple[str, ...] | None = None,
     seasons: tuple[str, ...] | None = None,
     use_meteorological_seasons: bool = False,
+    fairmode_use_station_area: bool = False,
 ):
     for per in periods:
         results = {"ALL": {}}
@@ -1871,7 +1877,9 @@ def _calculate_fairmode(
                 return results
 
             perstr = f"{per}-{season}"
-            fm_stats = fairmode_statistics.fairmode_statistics(subset, obs_var)
+            fm_stats = fairmode_statistics.fairmode_statistics(
+                subset, obs_var, fairmode_use_station_area
+            )
             for i, station in enumerate(map_meta):
                 station_name = station["station_name"]
                 region = station["region"][0]

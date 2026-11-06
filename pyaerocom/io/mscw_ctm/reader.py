@@ -198,16 +198,12 @@ class ReadMscwCtm(GriddedReader):
     FREQ_CODES = {
         "hour": "hourly",
         "day": "daily",
+        "week": "weekly",
         "month": "monthly",
         "fullrun": "yearly",
     }
 
-    REVERSE_FREQ_CODES = {
-        "hourly": "hour",
-        "daily": "day",
-        "monthly": "month",
-        "yearly": "fullrun",
-    }
+    REVERSE_FREQ_CODES = {v: k for k, v in FREQ_CODES.items()}
 
     DEFAULT_FILE_NAME = "Base_day.nc"
 
@@ -636,7 +632,7 @@ class ReadMscwCtm(GriddedReader):
             start_date = None
             end_date = None
             for fp in fps:
-                with xr.open_dataset(fp, decode_timedelta=True) as nc:
+                with xr.open_dataset(fp, decode_timedelta=True, chunks={"time": 24}) as nc:
                     file_start_date = nc["time"][:].data.min()
                     file_end_date = nc["time"][:].data.max()
 

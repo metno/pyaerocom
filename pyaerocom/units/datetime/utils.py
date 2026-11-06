@@ -135,7 +135,7 @@ def get_tot_number_of_seconds(ts_type: str, dtime: pd.Series | None = None):
 
         # find seconds from dtime
         # TODO generalize this
-        days_in_month = dtime.dt.daysinmonth
+        days_in_month = dtime.dt.days_in_month
 
         return days_in_month * SECONDS_IN_DAY
 

@@ -264,6 +264,7 @@ def test_PROVIDES_VARIABLES(reader: ReadEbas):
         "concoc",
         "concCoc",
         "concCocpm25",
+        "conclevoglucosan",
         "concss",
         "concsspm10",
         "concsspm25",

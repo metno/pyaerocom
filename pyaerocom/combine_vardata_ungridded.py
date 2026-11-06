@@ -167,7 +167,7 @@ def _combine_2_sites(
     )
 
     # remove timestamps where both observations are NaN
-    df.dropna(axis=0, how="all", inplace=True)
+    df = df.dropna(axis=0, how="all")
 
     # NOTE: the dataframe returned by _colocate_site_data_helper has ref as first
     # column and the first input data as 2nd!

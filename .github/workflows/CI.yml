@@ -9,7 +9,7 @@ jobs:
   lint-docs-package:
     runs-on: ubuntu-latest
     env:
-      PYTHON: "3.10"
+      PYTHON: "3.12"
     steps:
     - uses: actions/checkout@v5
     - name: Set up Python ${{ env.PYTHON }}
@@ -40,13 +40,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.10', '3.12', '3.13']
+        python-version: ['3.11', '3.12', '3.13']
         experimental: [false]
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
         #include:
         #  - python-version: '3.13'
         #    experimental: true
-        #    os: ubuntu-22.04
+        #    os: ubuntu-24.04
     steps:
     - uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-version }}
@@ -63,11 +63,16 @@ jobs:
         pip install --upgrade pip
         pip install tox
         tox -e py --notest
-    - name: Run tests
+    - name: Run tests with coverage
+      if: ${{ matrix.python-version == '3.13' }}
       continue-on-error: ${{ matrix.experimental }}
       run: tox -e py -- --cov --no-cov-on-fail --cov-report xml
+    - name: Run tests
+      if: ${{ matrix.python-version != '3.13' }}
+      continue-on-error: ${{ matrix.experimental }}
+      run: tox -e py -- --no-cov
     - name: Upload coverage to Codecov
-      if: ${{ success() }}
+      if: ${{ success() && matrix.python-version == '3.13' }}
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -77,7 +82,7 @@ jobs:
   conda:
     runs-on: ubuntu-latest
     env:
-      PYTHON: "3.11"
+      PYTHON: "3.14"
     defaults:
       run:
         shell: bash -l {0}
@@ -98,4 +103,4 @@ jobs:
     - name: Install pyaerocom
       run: python -m pip install . --no-deps
     - name: Run pytest
-      run: python -m pytest -n auto -ra -q --cov --no-cov-on-fail --cov-report xml
+      run: python -m pytest -n auto -ra -q

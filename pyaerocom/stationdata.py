@@ -808,9 +808,9 @@ class StationData(StationMetaData):
                     removed = s1[overlap]
                     # NOTE JGLISS: updated on 8.5.2020, cf. issue #106
                     # s1 = s1.drop(index=overlap, inplace=True)
-                    s1.drop(index=overlap, inplace=True)
-                    e1.drop(index=overlap, inplace=True)
-                    f1.drop(index=overlap, inplace=True)
+                    s1 = s1.drop(index=overlap)
+                    e1 = e1.drop(index=overlap)
+                    f1 = f1.drop(index=overlap)
                 # compute merged time series
                 if len(s1) > 0:
                     s0 = pd.concat([s0, s1], verify_integrity=True)
@@ -844,7 +844,7 @@ class StationData(StationMetaData):
         if removed is not None:
             if var_name in self.overlap:
                 self.overlap[var_name] = pd.concat([self.overlap[var_name], removed])
-                self.overlap[var_name].sort_index(inplace=True)
+                self.overlap[var_name] = self.overlap[var_name].sort_index()
             else:
                 self.overlap[var_name] = removed
 
