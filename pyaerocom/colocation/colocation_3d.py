@@ -146,37 +146,53 @@ def _colocate_vertical_profile_gridded(
 
     list_of_colocateddata_objects = []
     try:
-        altitude_coord, vertical_dim_name = get_altitude_coord_and_vertical_dim(data.get_cube())
-        z = altitude_coord.points
+        cube = data.get_cube()
+
+        altitude_coord, vertical_dim_name = get_altitude_coord_and_vertical_dim(cube)
+
+        z_top_coord = cube.coord("layer_top_height")
+        z_top = z_top_coord.points
+
     except Exception as e:
-        logger.warning("No usable vertical height coordinate in model data")
+        logger.warning("No usable vertical layer boundary coordinate in model data")
         logger.debug(f"Raised: {e}")
-        z = None
+        z_top = None
         vertical_dim_name = None
+        altitude_coord = (
+            data.altitude
+        )  # use altitude coordinate for units in output, even if not used for colocation
+
     cube_data = data.get_cube_data()
 
-    if z is not None:
-        z_mask = z
-        if z_mask.shape == cube_data.shape:
+    if z_top is not None:
+        z_top_mask = z_top
+
+        if z_top_mask.shape == cube_data.shape:
             pass
-        elif np.transpose(z_mask, (0, 2, 3, 1)).shape == cube_data.shape:
-            z_mask = np.transpose(z_mask, (0, 2, 3, 1))
+        elif np.transpose(z_top_mask, (0, 2, 3, 1)).shape == cube_data.shape:
+            z_top_mask = np.transpose(z_top_mask, (0, 2, 3, 1))
         else:
             raise ValueError(
-                f"Height coord shape {z.shape} is not compatible with cube data shape {cube_data.shape}"
+                f"Layer-top coord shape {z_top.shape} is not compatible with cube data shape {cube_data.shape}"
             )
+
+        z_bot_mask = np.empty_like(z_top_mask)
+        z_bot_mask[..., :-1] = z_top_mask[..., 1:]
+        z_bot_mask[..., -1] = 0.0
     else:
-        z_mask = None
+        z_top_mask = None
+        z_bot_mask = None
     for vertical_layer in layer_limits:
         # Think about efficiency here in terms of order of loops. candidate for parallelism
         # create the 2D layer data
         arr = np.full((2, time_num, stat_num), np.nan)
 
         try:
-            if z_mask is None or vertical_dim_name is None:
-                raise ValueError("No usable altitude/height coordinate available.")
+            if z_top_mask is None or z_bot_mask is None or vertical_dim_name is None:
+                raise ValueError("No usable altitude/height boundary coordinate available.")
 
-            layer_mask = (z_mask <= vertical_layer["start"]) | (z_mask >= vertical_layer["end"])
+            keep = (z_top_mask > vertical_layer["start"]) & (z_bot_mask < vertical_layer["end"])
+            layer_mask = ~keep
 
             logger.info(f"Shapes of data and layer mask: {cube_data.shape}, {layer_mask.shape}")
 

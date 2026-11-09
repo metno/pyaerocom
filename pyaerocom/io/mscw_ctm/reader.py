@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from copy import deepcopy
 import functools
 import logging
 import os
@@ -34,7 +35,7 @@ from .additional_variables import (
     calc_conNtno3_emep,
     calc_vmrno2,
     calc_vmro3,
-    calc_vmrox_from_conc,
+    calc_vmrox,
     identity,
     subtract_dataarrays,
     update_EC_units,
@@ -96,8 +97,8 @@ class ReadMscwCtm(GriddedReader):
         "concno3pm25": ["concno3f", "concno3c"],
         "concsspm25": ["concssf", "concssc"],
         "concsspm10": ["concssf", "concssc"],
-        # "vmrox": ["concno2", "vmro3"],
-        "vmrox": ["concno2", "conco3"],
+        "vmrox": ["concno2", "vmro3"],
+        # "vmrox": ["concno2", "conco3"],
         "vmrno2": ["concno2"],
         "concNtno3": ["concoxn"],
         "concNtnh": ["concrdn"],
@@ -109,6 +110,7 @@ class ReadMscwCtm(GriddedReader):
         "concCecpm25": ["concecpm25"],
         "concCocpm25": ["concCocFine"],
         "concCocpm10": ["concCocFine", "concCocCoarse"],
+        "concom10": ["concoaf", "concoac"],
         "concso4t": ["concso4", "concss"],
         "concNno": ["concno"],
         "concNno2": ["concno2"],
@@ -154,8 +156,8 @@ class ReadMscwCtm(GriddedReader):
         "concno3pm25": calc_concno3pm25,
         "concsspm25": calc_concsspm25,
         "concsspm10": add_dataarrays,
-        # "vmrox": calc_vmrox,
-        "vmrox": calc_vmrox_from_conc,
+        "vmrox": calc_vmrox,
+        # "vmrox": calc_vmrox_from_conc,
         "vmrno2": calc_vmrno2,
         "concNtno3": calc_conNtno3_emep,
         "concNtnh": calc_conNtnh_emep,
@@ -167,6 +169,7 @@ class ReadMscwCtm(GriddedReader):
         "concCecpm10": update_EC_units,
         "concCocpm25": identity,
         "concCocpm10": add_dataarrays,
+        "concom10": add_dataarrays,
         "concso4t": calc_concso4t,
         "concNno": calc_concNno,
         "concNno2": calc_concNno2,
@@ -196,16 +199,12 @@ class ReadMscwCtm(GriddedReader):
     FREQ_CODES = {
         "hour": "hourly",
         "day": "daily",
+        "week": "weekly",
         "month": "monthly",
         "fullrun": "yearly",
     }
 
-    REVERSE_FREQ_CODES = {
-        "hourly": "hour",
-        "daily": "day",
-        "monthly": "month",
-        "yearly": "fullrun",
-    }
+    REVERSE_FREQ_CODES = {v: k for k, v in FREQ_CODES.items()}
 
     DEFAULT_FILE_NAME = "Base_day.nc"
 
@@ -213,6 +212,7 @@ class ReadMscwCtm(GriddedReader):
     YEAR_PATTERN = r".*((?:19|20)\d\d).*"
 
     Z_COORDNAME = "Z_MID"
+    Z_COORDNAME_BOUNDS = "Z_BND"
 
     class _PrivateFields:
         filename: str | None = None
@@ -222,6 +222,43 @@ class ReadMscwCtm(GriddedReader):
         data_dir: str | None = None
         file_pattern: re.Pattern
         ts_type: str | None = None
+
+    class _FixMissingVars:
+        """
+        class to add or remove variables from a multi-file dataset to make
+        sure all datasets have the same variables
+
+        The class is callable to be used by xarray.open_mfdataset as the preprocess argument.
+        """
+
+        def __init__(self):
+            self.expected_vars = None
+
+        def __call__(self, ds: xr.Dataset) -> xr.Dataset:
+            """
+            Check if all variables are there. If not:
+            make the rest of the variables, filled with nans.
+            Log a warning when this is done
+            """
+            if self.expected_vars is None:
+                self.expected_vars = list(ds.data_vars)
+            missing = [v for v in self.expected_vars if v not in ds.data_vars]
+            for var in missing:
+                filename = ds.encoding.get("source", "unknown_filename")
+                logger.warning(f"Variable {var} is missing in {filename}. Filling with NaNs")
+                dummy_var = deepcopy(ds[self.expected_vars[0]])
+                ds = ds.assign(**{var: dummy_var * np.nan})
+                attrs = deepcopy(dummy_var.attrs)
+                ds[var] = ds[var].assign_attrs(attrs)
+
+            # drop additional variables that are not in expected_vars
+            additional = [v for v in ds.data_vars if v not in self.expected_vars]
+            for var in additional:
+                filename = ds.encoding.get("source", "unknown_filename")
+                logger.warning(f"Variable {var} is additional in {filename}. Dropping it")
+                ds = ds.drop_vars(var)
+
+            return ds
 
     def __init__(
         self,
@@ -599,7 +636,7 @@ class ReadMscwCtm(GriddedReader):
             start_date = None
             end_date = None
             for fp in fps:
-                with xr.open_dataset(fp, decode_timedelta=True) as nc:
+                with xr.open_dataset(fp, decode_timedelta=True, chunks={"time": 24}) as nc:
                     file_start_date = nc["time"][:].data.min()
                     file_end_date = nc["time"][:].data.max()
 
@@ -612,7 +649,16 @@ class ReadMscwCtm(GriddedReader):
                 )
 
         logger.info(f"Opening {fps}")
-        ds = xr.open_mfdataset(fps, chunks={"time": 24}, decode_timedelta=True)
+        # join="exact" became new default in xarray 2025.08.0 with `use_new_combine_kwarg_defaults`
+        # use join="outer" since trend-runs might not be 100% homogeneous
+        ds = xr.open_mfdataset(
+            fps,
+            preprocess=self._FixMissingVars(),
+            chunks={"time": 24},
+            decode_timedelta=True,
+            combine="by_coords",
+            join="outer",
+        )
 
         self._private.filedata = ds
 
@@ -717,10 +763,10 @@ class ReadMscwCtm(GriddedReader):
         logger.info(f"computing {var_name_aerocom} from {req} using {aux_func}")
         proj_info = None
         for aux_var in self.AUX_REQUIRES[var_name_aerocom]:
-            arr, proj_info, aux = self._load_var(aux_var, ts_type)
+            arr, proj_info, aux, aux_bnd = self._load_var(aux_var, ts_type)
             temp_arrs.append(arr)
 
-        return aux_func(*temp_arrs), proj_info, aux
+        return aux_func(*temp_arrs), proj_info, aux, aux_bnd
 
     def _load_var(self, var_name_aerocom: str, ts_type: str):
         """
@@ -789,7 +835,7 @@ class ReadMscwCtm(GriddedReader):
 
         ts_type = self._ts_type
 
-        arr, proj_info, aux = self._load_var(var_name_aerocom, ts_type)
+        arr, proj_info, aux, aux_bnd = self._load_var(var_name_aerocom, ts_type)
         if arr.units in Unit._UALIASES:
             arr.attrs["units"] = Unit._UALIASES[arr.units]
         try:
@@ -803,6 +849,9 @@ class ReadMscwCtm(GriddedReader):
 
         if aux is not None:
             cube.add_aux_coord(aux, data_dims=tuple(range(cube.ndim)))
+
+        if aux_bnd is not None:
+            cube.add_aux_coord(aux_bnd, data_dims=tuple(range(cube.ndim)))
         gridded = GriddedData(
             cube,
             var_name=var_name_aerocom,
@@ -853,6 +902,7 @@ class ReadMscwCtm(GriddedReader):
         emep_var = self.var_map[var_name_aerocom]
 
         aux = None
+        aux_bnd = None
 
         try:
             filedata = self._filedata
@@ -869,17 +919,26 @@ class ReadMscwCtm(GriddedReader):
                     long_name="height above surface",
                     units=zcube.units,
                 )
+            if self.Z_COORDNAME_BOUNDS in filedata:
+                zbnd = filedata[self.Z_COORDNAME_BOUNDS].transpose(*data.dims)
+                if data.shape != zbnd.shape:
+                    raise ValueError(f"Shape mismatch: data={data.shape}, zbnd={zbnd.shape}")
+                aux_bnd = iris.coords.AuxCoord(
+                    zbnd.to_iris().core_data(),
+                    long_name="layer_top_height",
+                    units=zbnd.units,
+                )
 
-        except KeyError:
+        except KeyError as ke:
             raise VarNotAvailableError(
-                f"{var_name_aerocom} ({emep_var}) not available in {self._filename}"
+                f"{var_name_aerocom} ({emep_var}) not available in {self._filename}: {ke}"
             )
         data.attrs["long_name"] = var_name_aerocom
         data.time.attrs["long_name"] = "time"
         data.time.attrs["standard_name"] = "time"
         prefix = emep_var.split("_")[0]
         data.attrs["units"] = self._preprocess_units(data.units, prefix)
-        return data, proj_info, aux
+        return data, proj_info, aux, aux_bnd
 
     @staticmethod
     def _preprocess_units(units: str, prefix: str | None = None):
