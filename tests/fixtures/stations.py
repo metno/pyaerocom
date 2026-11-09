@@ -175,7 +175,7 @@ def create_fake_stationdata_list() -> list[StationData]:
         10,
         "2010-01-01",
         "2010-12-31",
-        "d",
+        "D",
         {
             "awesomeness": 10,
             "data_revision": 20120101,
@@ -193,7 +193,7 @@ def create_fake_stationdata_list() -> list[StationData]:
         20,
         "2010-06-01",
         "2011-12-31",
-        "d",
+        "D",
         {
             "awesomeness": 12,
             "data_revision": 20110101,
@@ -228,7 +228,7 @@ def create_fake_stationdata_list() -> list[StationData]:
         20,
         "1850",
         "2020",
-        "1000d",
+        "1000D",
         {
             "awesomeness": 15,
             "data_revision": 20130101,
@@ -264,7 +264,7 @@ def create_fake_stationdata_list() -> list[StationData]:
         0.1,
         "2008",
         "2009",
-        "60d",
+        "60D",
         {
             "awesomeness": 46,
             "data_revision": 20200101,
@@ -282,7 +282,7 @@ def create_fake_stationdata_list() -> list[StationData]:
         0.2,
         "2010",
         "2016",
-        "10d",
+        "10D",
         {
             "awesomeness": 30,
             "data_revision": 20200101,

@@ -89,7 +89,7 @@ def test_merge_station_data_error(statlist, use, exception, error):
 
 def test__get_pandas_freq_and_offset():
     val = helpers._get_pandas_freq_and_offset("monthly")
-    assert val == ("MS", pd.Timedelta(14, "d"))
+    assert val == ("MS", pd.Timedelta(14, "D"))
 
 
 @pytest.fixture(scope="module")

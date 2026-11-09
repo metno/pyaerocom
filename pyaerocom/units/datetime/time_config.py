@@ -50,8 +50,8 @@ TS_TYPE_TO_PANDAS_FREQ = {
     "yearly": "YS",
 }
 PANDAS_RESAMPLE_OFFSETS = {
-    "YS": pd.Timedelta(181, "d"),
-    "MS": pd.Timedelta(14, "d"),
+    "YS": pd.Timedelta(181, "D"),
+    "MS": pd.Timedelta(14, "D"),
     "D": pd.Timedelta(12, "h"),
     "h": pd.Timedelta(30, "m"),
 }

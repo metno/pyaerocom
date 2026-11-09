@@ -10,7 +10,14 @@ CFG = {
     "obs_cfg": {
         "EEA": {
             "obs_id": "CAMS2_83.NRT",
-            "obs_vars": ["concno2", "concco", "conco3", "concso2", "concpm10", "concpm25"],
+            "obs_vars": [
+                "concno2",
+                "concco",
+                "conco3",
+                "concso2",
+                "concpm10",
+                "concpm25",
+            ],
             "web_interface_name": "EEA-UTD",
             "obs_vert_type": "Surface",
             "read_opts_ungridded": {
@@ -84,6 +91,7 @@ CFG = {
     "main_freq": "hourly",
     "add_seasons": False,
     "use_meteorological_seasons": True,
+    "compute_conco3mda8_contours": True,
     "use_diurnal": False,
     "resample_how": {"vmro3": {"daily": {"hourly": "max"}}},
     "zeros_to_nan": True,

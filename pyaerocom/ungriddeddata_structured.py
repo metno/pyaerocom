@@ -24,6 +24,7 @@ from pyaerocom.ungridded_data_container import UngriddedDataContainer
 from pyaerocom.ungridded_data_metadata import UngriddedDataMetadata
 from pyaerocom.units.datetime import TsType
 from pyaerocom.units.units_helpers import get_unit_conversion_fac
+from pyaerocom.utils import NpArrayIndexer
 from pyaerocom.vertical_profile import VerticalProfile
 
 if sys.version_info >= (3, 12):
@@ -57,8 +58,8 @@ class UngriddedDataStructured(UngriddedDataMetadata):
     _nan_types = {
         "meta_id": np.iinfo("i4").min,
         "var_id": np.iinfo("i2").min,
-        "start_time": np.datetime64("NaT"),
-        "end_time": np.datetime64("NaT"),
+        "start_time": np.datetime64("NaT", "D"),
+        "end_time": np.datetime64("NaT", "D"),
         "data": np.nan,
         "stdev": np.nan,
         "dataaltitude": np.iinfo("i2").min,
@@ -141,6 +142,17 @@ class UngriddedDataStructured(UngriddedDataMetadata):
         obj._add_to_filter_history("set_flags_nan")
         return obj
 
+    def to_station_data_all(self, *args, **kwargs):
+        """wrapper around super().to_station_data_all() to add temporarily a fast index for lookup"""
+        logger.info(
+            "Creating meta indexer for station data lookup with %d points", len(self._dra.data)
+        )
+        self._meta_indexer = NpArrayIndexer(np.ascontiguousarray(self._dra.data["meta_id"]))
+        logger.info("Finished creating meta indexer for station data lookup")
+        ret = super().to_station_data_all(*args, **kwargs)
+        del self._meta_indexer
+        return ret
+
     def to_station_data(
         self,
         meta_idx,
@@ -185,6 +197,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             subdata = self._dra.data[sub_idx]
         else:
             subdata = self._dra.data
+
         for idx in meta_idx:
             try:
                 stat = self._metablock_to_stationdata(
@@ -346,11 +359,16 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             data = self._dra.data
         FOUND_ONE = False
         for var in vars_avail:
-            # get indices of this station and variable
-            idx = (data["meta_id"] == meta_idx) & (data["var_id"] == self.var_idx[var])
-
-            # get subset
-            subset = data[idx]
+            if getattr(self, "_meta_indexer", None) is not None and len(data) == len(
+                self._dra.data
+            ):
+                # use metaindex if exists
+                # and if data is not already a subset of the full array (see to_station_data())
+                subset_tmp = self._dra.data[self._meta_indexer.get_indices(meta_idx)]
+            else:
+                subset_tmp = data[data["meta_id"] == meta_idx]
+            # get subset of the variable
+            subset = subset_tmp[subset_tmp["var_id"] == self.var_idx[var]]
 
             # vector of timestamps corresponding to this variable
             dtime = subset["start_time"]
@@ -499,6 +517,7 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                         obj._dra.data["var_id"] == self.var_idx[var_name]
                     )
                     obj._dra.data["data"][idx] *= fac
+                    obj._dra.data["stdev"][idx] *= fac
                 meta["var_info"][var_name]["units"] = to_unit
 
         return obj
@@ -749,20 +768,20 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             # Use np.take to map indices to values
             return np.take(uniq_tstypes, indices)
 
-        def _station_tstype_to_int_array(
-            sarray: np.ndarray, mapping: dict[tuple[str, str], int]
+        def _stationid_tstype_to_int_array(
+            sarray: np.ndarray, mapping: dict[tuple[int, str], int]
         ) -> np.ndarray:
-            """converter an array-view consisting of two str columns ("stations", "tstype") to an
+            """converter an array-view consisting of a int/str columns ("station_ids", "tstype") to an
             int-array using a mapping
 
-            :param sarray: station,tstype view of a structured array
-            :param mapping: (station,tstype) -> int mapping dictionary
+            :param sarray: station_id, tstype view of a structured array
+            :param mapping: (station_id, tstype) -> int mapping dictionary
             :return: array of ints
             """
             keys = np.array(
                 list(mapping.keys()),
                 dtype=[
-                    ("stations", sarray["stations"].dtype),
+                    ("station_id", sarray["station_id"].dtype),
                     ("tstype", sarray["tstype"].dtype),
                 ],
             )
@@ -773,11 +792,22 @@ class UngriddedDataStructured(UngriddedDataMetadata):
             sorted_keys = keys[sorted_indices]
             sorted_values = values[sorted_indices]
 
-            # Use np.searchsorted to find indices of structured_array elements in sorted_keys
-            indices = np.searchsorted(sorted_keys, sarray)
+            # find adjacent duplicates in the sarray
+            keep = np.empty(len(sarray), dtype=bool)
+            keep[0] = True
+            keep[1:] = sarray[1:] != sarray[:-1]
 
-            # Use np.take to map indices to values
-            return np.take(sorted_values, indices)
+            # Use np.searchsorted to find indices of structured_array elements in sorted_keys
+            indices_keep = np.searchsorted(sorted_keys, sarray[keep])
+
+            # Expand the indices to get the full array of indices corresponding to the original sarray
+            counts = (
+                np.cumsum(keep) - 1
+            )  # position in sarray array where the first changed values are
+            indices = indices_keep[counts]
+
+            # pick values at indices
+            return sorted_values[indices]
 
         class _VariableMetaIds:
             """Class containing for each variable a dictionary of tuples of station and ts_type to
@@ -788,36 +818,48 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 self._counter: int = 0
                 # a meta must be split by variable as well as station and tstype
                 # dictionary about var_meta[var][(station,ts_type)] = meta_id
-                self._mapping: dict[str, dict[tuple[str, str], int]] = {}
+                self._mapping: dict[str, dict[tuple[int, str], int]] = {}
 
-            def append_var_station_tstype(
+            def append_var_stationid_tstype(
                 self,
                 var: str,
-                station_tstype: np.ndarray | None,
+                stationid_tstype: np.ndarray | None,
             ):
                 """append values of an array containing station and ts_type tuples
                 :param var: variable
-                :param station_tstype: structured array of stations and tstype
+                :param stationid_tstype: structured array of station_ids and tstype
                 """
                 if var not in self._mapping:
                     self._mapping[var] = {}
-                if len(station_tstype) == 0:
+                if len(stationid_tstype) == 0:
                     return
 
                 mapping = self._mapping[var]
-                # below line is for EEA-data about 10x faster than
-                # uarray = np.unique(station_tstype, axis=0)
-                uarray = np.array(list(set(station_tstype.tolist())), dtype=station_tstype.dtype)
+                # np.unique not hash-based for structured arrays (yet, currently only for strings),
+                # very slow
+                # uarray = np.unique(stationid_tstype)
+                # list(set) requires much additional data
+                # uarray = np.array(list(set(stationid_tstype.tolist())), dtype=stationid_tstype.dtype)
+                # pandas drop_duplicatates currently fastest and not too much memory usage, but 2.5 memory
+                logger.debug(f"Removing duplicates from stationid_tstype for variable {var}")
+                # Remove adjacent duplicates first (very fast, and most stations have only one tstype)
+                keep = np.empty(len(stationid_tstype), dtype=bool)
+                keep[0] = True
+                keep[1:] = stationid_tstype[1:] != stationid_tstype[:-1]
+                # Run unique only on the non-adjacent duplicates
+                uarray = np.unique(stationid_tstype[keep])
 
+                logger.debug(f"get mapping for variable {var}")
                 for row in uarray:
-                    sx = (row[0], row[1])
+                    sx = (row["station_id"], row["tstype"])
                     if sx not in mapping:
                         mapping[sx] = self._counter
                         self._counter += 1
+                logger.debug(f"Finished mapping for variable {var}, size {len(mapping)}")
                 return
 
-            def __getitem__(self, var) -> dict[tuple[str, str], int]:
-                """Get the (stations, tstype) -> metaid dictionary
+            def __getitem__(self, var) -> dict[tuple[int, str], int]:
+                """Get the (station_id, tstype) -> metaid dictionary
 
                 :param var: variable name
                 :return: dictionary of tuple of stations and tstype to meta_ids
@@ -839,30 +881,47 @@ class UngriddedDataStructured(UngriddedDataMetadata):
                 var_data = reader.data(varname=var)
             logger.info(f"Converting data of {var} from pyaro/{data_id} to ungridded")
             tstype = _calculate_ts_type(start=var_data.start_times, end=var_data.end_times)
-            stations = var_data.stations
-            station_tstype = np.rec.array(
-                [stations, tstype],
-                dtype=[("stations", stations.dtype), ("tstype", tstype.dtype)],
+            station_ids = var_data.station_ids
+            stationid_tstype = np.rec.array(
+                [station_ids, tstype],
+                dtype=[("station_id", station_ids.dtype), ("tstype", tstype.dtype)],
             )
+            del station_ids
 
             # set meta-ids for each variable but ensure that counter
             # is for all vars, var_metas contain (stations, tstype) tuples
-            var_metas.append_var_station_tstype(var, station_tstype)
+            var_metas.append_var_stationid_tstype(var, stationid_tstype)
             if len(var_data) == 0:
                 continue
 
             var_units[var] = var_data.units
+            meta_id = _stationid_tstype_to_int_array(stationid_tstype, var_metas[var])
+            del stationid_tstype
+
+            # get arrays from var_data, this somehow helps python to optimize memory usage
+            # reading altitude triggers first time reading of station metadata, needs memory
+            dataaltitude = var_data.altitudes.astype("i2")
+            start_time = var_data.start_times
+            end_time = var_data.end_times
+            data = var_data.values
+            stdev = var_data.standard_deviations
+            flag = var_data.flags
+            var_id = np.zeros(len(var_data), dtype="i2") + ugs.var_idx[var]
+
             dra_data = {
-                "meta_id": _station_tstype_to_int_array(station_tstype, var_metas[var]),
-                "var_id": np.zeros(len(var_data), dtype="i2") + ugs.var_idx[var],
-                "start_time": var_data.start_times,
-                "end_time": var_data.end_times,
-                "data": var_data.values,
-                "stdev": var_data.standard_deviations,
-                "dataaltitude": var_data.altitudes.astype("i2"),
-                "flag": var_data.flags,  # TODO check for common undefined values?
+                "meta_id": meta_id,
+                "var_id": var_id,
+                "start_time": start_time,
+                "end_time": end_time,
+                "data": data,
+                "stdev": stdev,
+                "dataaltitude": dataaltitude,
+                "flag": flag,  # TODO check for common undefined values?
             }
+            # delete temporary arrays as soon as possible to reduce max memory usages
+            del meta_id, var_id, start_time, end_time, data, stdev, dataaltitude, flag
             ugs._dra.append_array(**dra_data)
+            del dra_data
 
         logger.info(f"Converting metadata from pyaro/{data_id} to ungridded")
         rev = None
@@ -875,8 +934,16 @@ class UngriddedDataStructured(UngriddedDataMetadata):
 
         stations_with_metadata = reader.stations()
         for var in vars_to_retrieve:
-            for station_tstype, meta_id in var_metas[var].items():
-                (station_name, tstype) = station_tstype
+            for stationid_tstype, meta_id in var_metas[var].items():
+                (station_id, tstype) = stationid_tstype
+                station_name = var_data.stations_by_ids([station_id])[0]
+                if station_name is None:
+                    logger.warning(
+                        f"Station ID {station_id} does not have a valid name, skipping."
+                    )
+                    continue
+                else:
+                    station_name = str(station_name)
                 extra_metadata = stations_with_metadata[station_name].metadata
                 d = {
                     "data_id": data_id,

@@ -422,9 +422,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         try:
             min_diff = np.min(diff_unsorted)
         except ValueError:
-            min_diff = 0
+            min_diff = np.timedelta64(0, "s")
 
-        if min_diff < 0:
+        if min_diff < np.timedelta64(0, "s"):
             # data needs to be sorted
             ordered_idx = np.argsort(data_dict[self.START_TIME_NAME][:lineidx])
             data_out["dtime"] = (

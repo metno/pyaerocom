@@ -40,6 +40,7 @@ from pyaerocom.trends_helpers import (
     _init_trends_result_dict,
 )
 from pyaerocom.units.datetime import TsType
+from pyaerocom.units.datetime.time_config import TS_TYPE_TO_PANDAS_FREQ
 
 # from pyaerocom.aeroval.fairmode_statistics import FairmodeStatistics
 
@@ -951,8 +952,8 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     if obs_trend["data"] is None or mod_trend["data"] is None:
         raise TrendsError("Trends came back as None", obs_trend["data"], mod_trend["data"])
 
-    obs_trend["data"] = obs_trend["data"].to_json()
-    mod_trend["data"] = mod_trend["data"].to_json()
+    obs_trend["data"] = obs_trend["data"].to_json(date_format="iso")
+    mod_trend["data"] = mod_trend["data"].to_json(date_format="iso")
 
     obs_trend["map_var"] = f"slp_{start}"
     mod_trend["map_var"] = f"slp_{start}"
@@ -1045,6 +1046,7 @@ def _process_map_and_scat(
                         continue
 
                 for i, map_stat in zip(site_indices, map_data):
+                    # ms = deepcopy(map_stat)
                     if freq not in map_stat:
                         map_stat[freq] = {}
 
@@ -1509,7 +1511,11 @@ def _process_statistics_timeseries(
     tstr = TsType(freq).to_numpy_freq()
     # list of strings of output timestamps (used below to select the
     # individual periods)
-    to_idx_str = [str(x) for x in to_idx.astype(f"datetime64[{tstr}]")]
+    to_idx_sel = [str(x) for x in to_idx.astype(f"datetime64[{tstr}]")]
+    if freq == "weekly":
+        # for weekly, normal presentation does not fit, so use period instead
+        periods = pd.DatetimeIndex(to_idx).to_period(TS_TYPE_TO_PANDAS_FREQ[freq])
+        to_idx_sel = [slice(p.start_time, p.end_time) for p in periods]
     jsdate = _get_jsdate(to_idx)
 
     for regid, regname in region_ids.items():
@@ -1519,7 +1525,7 @@ def _process_statistics_timeseries(
         except DataCoverageError:
             continue
         for i, js in enumerate(jsdate):
-            per = to_idx_str[i]
+            per = to_idx_sel[i]
             try:
                 arr = ColocatedData(data=subset.data.sel(time=per))
                 stats = arr.calc_statistics(use_area_weights=use_weights, drop_stats=drop_stats)
@@ -1856,6 +1862,7 @@ def _calculate_fairmode(
     periods: tuple[str, ...] | None = None,
     seasons: tuple[str, ...] | None = None,
     use_meteorological_seasons: bool = False,
+    fairmode_use_station_area: bool = False,
 ):
     for per in periods:
         results = {"ALL": {}}
@@ -1870,7 +1877,9 @@ def _calculate_fairmode(
                 return results
 
             perstr = f"{per}-{season}"
-            fm_stats = fairmode_statistics.fairmode_statistics(subset, obs_var)
+            fm_stats = fairmode_statistics.fairmode_statistics(
+                subset, obs_var, fairmode_use_station_area
+            )
             for i, station in enumerate(map_meta):
                 station_name = station["station_name"]
                 region = station["region"][0]
@@ -1887,6 +1896,65 @@ def _calculate_fairmode(
 
         for reg in results:
             fairmode_statistics.save_fairmode_stats(
+                exp_output,
+                results,
+                obs_name,
+                var_name_web,
+                vert_code,
+                model_name,
+                model_var,
+                per,
+                reg,
+            )
+
+
+def _calculate_radarplot(
+    coldata: ColocatedData,
+    radarplot_statistics,  #: RadarPlotStatistics,
+    exp_output,  #: ExperimentOutput,
+    obs_name: str,
+    var_name_web: str,
+    vert_code: str,
+    model_name: str,
+    model_var: str,
+    regs: dict,
+    regnames: dict,
+    obs_var: str = None,
+    periods: tuple[str, ...] | None = None,
+    seasons: tuple[str, ...] | None = None,
+    use_meteorological_seasons: bool = False,
+    use_country: bool = True,
+):
+    for per in periods:
+        results = {"ALL": {}}
+        for season in seasons:
+            try:
+                subset = _select_period_season_coldata(
+                    coldata, per, season, use_meteorological_seasons
+                )
+                # jsdate = subset.data.jsdate.values.tolist()
+            except (DataCoverageError, TemporalResolutionError) as e:
+                logger.info(f"Failed to access subset coldata: {e}")
+                return results
+
+            for regid in regs:
+                regname = regnames[regid]
+                reg_subset = subset.filter_region(regid, check_country_meta=use_country)
+
+                perstr = f"{per}-{season}"
+                logger.info(f"Calculating radarplot statistics for {regname} in period {perstr}")
+                fm_stats = radarplot_statistics.get_radarplot_statistics(reg_subset, obs_var)
+
+                if regname not in results:
+                    results[regname] = {}
+
+                if perstr not in results[regname]:
+                    results[regname][perstr] = {}
+
+                results[regname][perstr] = fm_stats
+
+        for reg in results:
+            radarplot_statistics.save_radarplot_stats(
                 exp_output,
                 results,
                 obs_name,

@@ -87,6 +87,7 @@ class StatisticsSetup(BaseModel, extra="allow"):
     forecast_evaluation: bool = False
     forecast_days: PositiveInt = 4
     use_fairmode: bool = False
+    fairmode_use_station_area: bool = False
     use_diurnal: bool = False
     obs_only_stats: bool = False
     model_only_stats: bool = False

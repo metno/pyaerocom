@@ -136,6 +136,7 @@ def test_make_config(
         models=models,
         add_map=True,
         only_map=True,
+        conco3mda8_contours=True,
         add_seasons=True,
         fairmode=True,
         medianscores=True,
@@ -144,5 +145,6 @@ def test_make_config(
     assert cfg["periods"] == ["20250301-20250308"]
     assert cfg["add_model_maps"]
     assert cfg["only_model_maps"]
+    assert cfg["compute_conco3mda8_contours"]
     assert cfg["use_cams2_83_fairmode"] == use_cams2_83_fairmode_flag
     assert cfg["use_fairmode"] == use_fairmode_flag

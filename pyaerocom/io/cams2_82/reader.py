@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Iterator
+from copy import deepcopy
 from datetime import date, datetime
 from pathlib import Path
 
@@ -256,12 +257,12 @@ def fix_missing_vars(ds: xr.Dataset) -> xr.Dataset:
     if nb_vars < 6:
         logger.warning(f"Found only {vars_list}. Filling the rest with NaNs")
 
-        dummy_var = ds[vars_list[0]]
+        dummy_var = deepcopy(ds[vars_list[0]])
         dummy_var_name = vars_list[0]
         for species in AEROCOM_NAMES:
             if species not in vars_list:
                 ds = ds.assign(**{species: dummy_var * np.nan})
-                attrs = ds[dummy_var_name].attrs
+                attrs = deepcopy(ds[dummy_var_name].attrs)
                 attrs["species"] = FULL_NAMES[species]
                 attrs["standard_name"] = STANDARD_NAMES[species]
                 ds[species] = ds[species].assign_attrs(attrs)
@@ -269,18 +270,25 @@ def fix_missing_vars(ds: xr.Dataset) -> xr.Dataset:
 
 
 def only_first_day(ds: xr.Dataset) -> xr.Dataset:
+    ds = ds.sortby("time")
     first_day = ds.time[0].dt.day
     return ds.sel(time=ds.time.dt.day == first_day)
+
+
+def interpolate_hourly(ds: xr.Dataset) -> xr.Dataset:
+    if len(ds.time) != 24:
+        ds = ds.resample(time="1h").interpolate(kind="nearest")
+    return ds
 
 
 def read_dataset(paths: list[Path]) -> xr.Dataset:
     paths = check_files(paths)
 
     def preprocess(ds: xr.Dataset) -> xr.Dataset:
-        return ds.pipe(only_first_day).pipe(drop_vars)
+        return ds.pipe(only_first_day).pipe(drop_vars).pipe(interpolate_hourly)
 
     ds = xr.open_mfdataset(
-        paths, preprocess=preprocess, parallel=False, chunks={"level": 10, "time": 1}
+        paths, preprocess=preprocess, parallel=False, join="outer", chunks={"level": 10, "time": 2}
     )
     return ds.pipe(fix_missing_vars).pipe(convert_units).pipe(fix_names)
 
@@ -335,7 +343,7 @@ def parse_daterange(
         return dates
     if len(dates) != 2:
         raise ValueError("need 2 datetime objects to define a date_range")
-    return pd.date_range(*dates, freq="d")
+    return pd.date_range(*dates, freq="D")
 
 
 class ReadCAMS2_82(GriddedReader):
@@ -411,7 +419,7 @@ class ReadCAMS2_82(GriddedReader):
         """
         Path to data file
         """
-        if self.data_dir is None and self._filepaths is None:  # type:ignore[unreachable]
+        if self.data_dir is None and self._filepaths is None:  # type: ignore[unreachable]
             raise AttributeError("data_dir or filepaths needs to be set before accessing")
         if self._filepaths is None:
             paths = []

@@ -585,10 +585,6 @@ class GriddedDataContainer:
         return deepcopy(self)
 
     @only_one_child
-    def cube_copy(self, data=None):
-        return self.children[0].copy(data=data)
-
-    @only_one_child
     def set_cube(self, cube, inplace=False):
         obj = self if inplace else self.copy()
         obj.children[0].cube = cube

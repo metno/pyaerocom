@@ -809,7 +809,7 @@ class ReadGridded(GriddedReader):
         ]
 
         df = pd.DataFrame(result, columns=header)
-        df.sort_values(
+        df = df.sort_values(
             [
                 "var_name",
                 "year",
@@ -822,7 +822,6 @@ class ReadGridded(GriddedReader):
                 "is_at_stations",
                 "3D",
             ],
-            inplace=True,
         )
 
         uv = df.vert_code.unique()

@@ -19,7 +19,7 @@ CAMS2_50_DOMAIN = SimpleNamespace(
     lon=(-25, 45),  # °E
 )
 
-DEFAULT_METADATA_NAME = "mf_stations_list_classification_2025.csv"
+DEFAULT_METADATA_NAME = "mf_stations_list_classification.csv"
 
 
 class Domain(Protocol):

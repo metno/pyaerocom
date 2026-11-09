@@ -162,13 +162,20 @@ def clean_filters(cfg: dict, obs_pattern: str) -> dict:
     return CFG
 
 
-def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION_PATH) -> dict:
+def get_CFG(
+    reportyear,
+    year,
+    model_dir,
+    omit_stations_path=DEFAULT_OMIT_STATION_PATH,
+    remove_urban_ebas_stations=True,
+) -> dict:
     """Get a configuration usable for emep reporting
 
     :param reportyear: year of reporting
     :param year: year of data
     :param model_dir: directory containing Base_hour.nc,Base_day.nc,Base_month.nc and Base_fullrun.nc
         or for trends directory containing years like 2005,2010,2015 again containing above files
+    :param remove_urban_ebas_stations: if True, remove all stations with *U in the station name from EBAS
 
     The current working directory of the experiment should have the following files/directories by default:
         - `data` output directory
@@ -191,7 +198,9 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
         # Setup for models used in analysis
         CFG = get_CFG(reportyear=2024,
                     year=2021,
-                    model_dir="/lustre/storeB/project/fou/kl/emep/ModelRuns/2024_REPORTING/EMEP01_rv5.3_metyear2021_emis2022")
+                    model_dir="/lustre/storeB/project/fou/kl/emep/ModelRuns/2024_REPORTING/EMEP01_rv5.3_metyear2021_emis2022",
+                    # remove_urban_ebas_stations=False, # keep or remove urban stations, default True=keep
+                    )
 
         CFG.update(dict(
             # proj_id="status-2024",
@@ -468,6 +477,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
             "vmro3",
             "vmro3max",
             "vmro3mda8",
+            "vmro3somo30",
             "vmrox",
             "vmrco",
             # PMs
@@ -529,11 +539,11 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
     # Station filters
 
     # This list of stations was generated using the script found here:
-    # https://gist.github.com/thorbjoernl/b7946882f1696722742053406d056e12.
+    # scripts/generate_ebas_height_ignore_list.py.
     # It excludes stations with a relative altitude (Elevation difference to the lowest
     # altitude in a 5km radius based on gtopo30) above 500m as well as stations that do not include
     # an altitude in the ebas file index.
-    # Last updated: ~2025-01-03
+    # Last updated: ~2026-06-02
     height_ignore_ebas = [
         "AM0001R",
         "AR0001R",
@@ -560,12 +570,14 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
         "DE0057G",
         "DE0060G",
         "DE0075R",
+        "DK0009R",
         "DZ0001G",
         "ES0005R",
         "ES0018G",
         "ES0022R",
         "ES0025U",
         "FI0009R",
+        "FI0090R",
         "FR0012R",
         "FR0019R",
         "FR0026R",
@@ -584,6 +596,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
         "IT0009R",
         "IT0019R",
         "IT0031U",
+        "JP0002G",
         "JP1021R",
         "KE0001G",
         "MK0007R",
@@ -642,12 +655,41 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
         "US9078R",
         "US9082U",
         "VN0001R",
+        # sites with missing altitudes
+        "DK0042R",
+        "ES0024U",
+        "GB0017R",
+        "IE0010U",
+        "IT0011R",
+        "IT0012R",
+        "LT0016R",
+        "NO0798R",
+        "NO1006R",
+        "NO1011R",
+        "RU0021R",
+        "SE0081R",
+        "SE0082R",
+        "SE0083R",
+        "SE0084R",
+        "SE0085R",
+        "SE0086R",
+        "SE0087R",
+        "SE0089R",
+        "SE0090R",
+        "SE0091R",
+        "SE0092R",
+        "UA0008R",
+        "US9028R",
     ]
+
+    urban_ignore_ebas = ["*U"] if remove_urban_ebas_stations else []
 
     EBAS_FILTER = {
         key: dict(
             **EBAS_FILTER,
-            station_id=_get_ignore_stations(key, year, omit_stations_path) + height_ignore_ebas,
+            station_id=_get_ignore_stations(key, year, omit_stations_path)
+            + height_ignore_ebas
+            + urban_ignore_ebas,
             negate="station_id",
         )
         for key in _get_ebas_species()
@@ -891,7 +933,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
             pyaro_config={
                 "name": "EEA-d-background-rural",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -906,6 +948,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -920,7 +963,6 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                     "concSso2_from_concso2",
                     "vmro3max_from_conco3",
                 ],
-                "dataset": "verified",
                 "station_area": [
                     "rural",
                     "rural-regional",
@@ -946,7 +988,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
             pyaro_config={
                 "name": "EEA-h-diurnal-background-rural",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -961,6 +1003,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -975,7 +1018,6 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                     "vmrno2_from_concno2",
                     "vmrox_from_vmrno2_vmro3",
                 ],
-                "dataset": "verified",
                 "station_area": [
                     "rural",
                     "rural-regional",
@@ -1006,7 +1048,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
             pyaro_config={
                 "name": "EEA-d-background-suburban",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -1021,6 +1063,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -1035,7 +1078,6 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                     "concSso2_from_concso2",
                     "vmro3max_from_conco3",
                 ],
-                "dataset": "verified",
                 "station_area": ["suburban"],
                 "station_type": [
                     "background",
@@ -1056,7 +1098,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
             pyaro_config={
                 "name": "EEA-h-diurnal-background-suburban",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -1071,6 +1113,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -1085,7 +1128,6 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                     "vmrno2_from_concno2",
                     "vmrox_from_vmrno2_vmro3",
                 ],
-                "dataset": "verified",
                 "station_area": ["suburban"],
                 "station_type": [
                     "background",
@@ -1111,7 +1153,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
             pyaro_config={
                 "name": "EEA-d-background-urban",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -1126,6 +1168,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -1140,7 +1183,6 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                     "concSso2_from_concso2",
                     "vmro3max_from_conco3",
                 ],
-                "dataset": "verified",
                 "station_area": ["urban"],
                 "station_type": [
                     "background",
@@ -1161,7 +1203,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
             pyaro_config={
                 "name": "EEA-h-diurnal-background-urban",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -1176,6 +1218,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -1190,7 +1233,6 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                     "vmrno2_from_concno2",
                     "vmrox_from_vmrno2_vmro3",
                 ],
-                "dataset": "verified",
                 "station_area": ["urban"],
                 "station_type": [
                     "background",
@@ -1218,7 +1260,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
             pyaro_config={
                 "name": "EEA-d-all",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -1233,6 +1275,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -1247,7 +1290,6 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                     "concSso2_from_concso2",
                     "vmro3max_from_conco3",
                 ],
-                "dataset": "verified",
             },
             web_interface_name="EEA-all",
             obs_vert_type="Surface",
@@ -1264,7 +1306,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
             pyaro_config={
                 "name": "EEA-h-diurnal-all",
                 "reader_id": "eeareader",
-                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download",
+                "filename_or_obj_or_url": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA-AQDS/download/verified/catalog.parquet",
                 "name_map": {
                     "PM2.5": "concpm25",
                     "PM10": "concpm10",
@@ -1279,6 +1321,7 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                             (f"{year}-01-01 00:00:00", f"{year + 1}-01-01 00:00:00")
                         ],
                     },
+                    "data_range": {"minimum": 0.0},
                     "valleyfloor_relaltitude": {
                         "topo": "/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/GTOPO30/merged",
                         "radius": 5000,
@@ -1293,7 +1336,6 @@ def get_CFG(reportyear, year, model_dir, omit_stations_path=DEFAULT_OMIT_STATION
                     "vmrno2_from_concno2",
                     "vmrox_from_vmrno2_vmro3",
                 ],
-                "dataset": "verified",
             },
             web_interface_name="EEA-h-all",
             obs_vert_type="Surface",

@@ -5,6 +5,7 @@ General helper methods for the pyaerocom library.
 from __future__ import annotations
 
 import logging
+import math
 import math as ma
 from datetime import datetime
 
@@ -26,18 +27,16 @@ from pyaerocom.exceptions import (
     ResamplingError,
     VariableDefinitionError,
 )
+from pyaerocom.units import Unit
+from pyaerocom.units.datetime import TsType, is_year, to_pandas_timestamp
 from pyaerocom.units.datetime.time_config import (
     PANDAS_RESAMPLE_OFFSETS,
     TS_TYPE_DATETIME_CONV,
-    TS_TYPE_TO_PANDAS_FREQ,
     TS_TYPE_TO_FREQ_NAME,
     TS_TYPE_TO_NUMPY_FREQ,
+    TS_TYPE_TO_PANDAS_FREQ,
 )
-from pyaerocom.units.datetime import TsType, is_year, to_pandas_timestamp
 from pyaerocom.variable_helpers import get_variable
-
-from pyaerocom.units import Unit
-import math
 
 logger = logging.getLogger(__name__)
 
@@ -795,7 +794,7 @@ def calc_climatology(s, start, stop, min_count=None, set_year=None, resample_how
     if not isinstance(start, pd.Timestamp):
         start, stop = start_stop(start, stop)
     sc = s[start:stop]
-    sc.dropna(inplace=True)
+    sc = sc.dropna()
 
     if len(sc) == 0:
         raise ValueError(
@@ -812,7 +811,7 @@ def calc_climatology(s, start, stop, min_count=None, set_year=None, resample_how
     # clim.columns = clim.columns.droplevel(0)
     clim.columns = ["data", "std", "numobs"]
     idx = [np.datetime64(f"{set_year}-{x:02d}-15") for x in clim.index.values]
-    clim.set_index(pd.DatetimeIndex(idx), inplace=True)
+    clim = clim.set_index(pd.DatetimeIndex(idx))
     if min_count is not None:
         mask = clim["numobs"] < min_count
         clim.loc[mask, "data"] = np.nan
@@ -874,7 +873,7 @@ def resample_timeseries(ts, freq, how=None, min_num_obs=None):
         # df = resampler.agg([how, 'count'])
         invalid = numobs < min_num_obs
         if np.any(invalid):
-            data.values[invalid] = np.nan
+            data.mask(invalid, other=np.nan, inplace=True)
     if offset is not None:
         data.index = data.index + offset
     return data
