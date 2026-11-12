@@ -8,6 +8,8 @@ import shutil
 import aerovaldb
 from attrs import define, field
 
+import numpy as np
+
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import sort_dict_by_name
 from pyaerocom.aeroval import EvalSetup
@@ -1238,6 +1240,8 @@ class ExperimentOutput(ProjectOutput):
                 if midpoint not in current[model_name]["z"]:
                     current[model_name]["z"].append(midpoint)
                 # current[model_name]["z"] = sorted(current[model_name]["z"])
+
+                # The height is not necessarily read in the correct order, so it important to get the sorted indcies to sort the heigts and values
                 sorted_indices = sorted(
                     range(len(current[model_name]["z"])),
                     key=lambda i: current[model_name]["z"][i],
@@ -1263,22 +1267,69 @@ class ExperimentOutput(ProjectOutput):
                         perstr = f"{per}-{season}"
 
                         if perstr not in current[model_name]["obs"][freq]:
-                            current[model_name]["obs"][freq][perstr] = []
+                            current[model_name]["obs"][freq][perstr] = {
+                                "time": [],
+                                "data": [],
+                            }
+
+                            # ["time"] = []
+                            # current[model_name]["obs"][freq][perstr]["data"] = []
                         if perstr not in current[model_name]["mod"][freq]:
-                            current[model_name]["mod"][freq][perstr] = []
+                            current[model_name]["mod"][freq][perstr] = {
+                                "time": [],
+                                "data": [],
+                            }
+                            # current[model_name]["mod"][freq][perstr]["data"] = []
 
-                        current[model_name]["obs"][freq][perstr].append(
-                            profile_viz["obs"][freq][perstr]
-                        )
-                        current[model_name]["mod"][freq][perstr].append(
-                            profile_viz["mod"][freq][perstr]
-                        )
+                        if isinstance(
+                            profile_viz["obs"][freq][perstr]["data"], np.ndarray
+                        ) or isinstance(profile_viz["obs"][freq][perstr]["data"], list):
+                            current[model_name]["obs"][freq][perstr]["data"].append(
+                                [float(i) for i in profile_viz["obs"][freq][perstr]["data"]]
+                            )
+                            current[model_name]["obs"][freq][perstr]["time"].append(
+                                [int(i) for i in profile_viz["obs"][freq][perstr]["time"]]
+                            )
+                        else:
+                            current[model_name]["obs"][freq][perstr]["data"].append(
+                                profile_viz["obs"][freq][perstr]["data"]
+                            )
+                            current[model_name]["obs"][freq][perstr]["time"].append(
+                                profile_viz["obs"][freq][perstr]["time"]
+                            )
+                        if isinstance(
+                            profile_viz["mod"][freq][perstr]["data"], np.ndarray
+                        ) or isinstance(profile_viz["mod"][freq][perstr]["data"], list):
+                            current[model_name]["mod"][freq][perstr]["data"].append(
+                                [float(i) for i in profile_viz["mod"][freq][perstr]["data"]]
+                            )
+                            current[model_name]["mod"][freq][perstr]["time"].append(
+                                [int(i) for i in profile_viz["mod"][freq][perstr]["time"]]
+                            )
+                        else:
+                            current[model_name]["mod"][freq][perstr]["data"].append(
+                                profile_viz["mod"][freq][perstr]["data"]
+                            )
+                            current[model_name]["mod"][freq][perstr]["time"].append(
+                                profile_viz["mod"][freq][perstr]["time"]
+                            )
 
-                        current[model_name]["obs"][freq][perstr] = [
-                            current[model_name]["obs"][freq][perstr][i] for i in sorted_indices
+                        current[model_name]["obs"][freq][perstr]["data"] = [
+                            current[model_name]["obs"][freq][perstr]["data"][i]
+                            for i in sorted_indices
                         ]
-                        current[model_name]["mod"][freq][perstr] = [
-                            current[model_name]["mod"][freq][perstr][i] for i in sorted_indices
+                        current[model_name]["mod"][freq][perstr]["data"] = [
+                            current[model_name]["mod"][freq][perstr]["data"][i]
+                            for i in sorted_indices
+                        ]
+
+                        current[model_name]["obs"][freq][perstr]["time"] = [
+                            current[model_name]["obs"][freq][perstr]["time"][i]
+                            for i in sorted_indices
+                        ]
+                        current[model_name]["mod"][freq][perstr]["time"] = [
+                            current[model_name]["mod"][freq][perstr]["time"][i]
+                            for i in sorted_indices
                         ]
 
                 if "metadata" not in current[model_name]:

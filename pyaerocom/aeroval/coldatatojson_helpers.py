@@ -1623,9 +1623,21 @@ def process_profile_data_for_regions(
             for season in seasons:
                 use_dummy = coldata is None
                 perstr = f"{per}-{season}"
+
+                if perstr not in output["mod"][freq]:
+                    output["mod"][freq][perstr] = {
+                        "time": np.nan,
+                        "data": np.nan,
+                    }
+                if perstr not in output["obs"][freq]:
+                    output["obs"][freq][perstr] = {
+                        "time": np.nan,
+                        "data": np.nan,
+                    }
                 if use_dummy:
-                    output["obs"][freq][perstr] = np.nan
-                    output["mod"][freq][perstr] = np.nan
+                    # output["obs"][freq][perstr] = np.nan
+                    # output["mod"][freq][perstr] = np.nan
+                    pass
                 else:
                     try:
                         per_season_subset = _select_period_season_coldata(
@@ -1640,15 +1652,25 @@ def process_profile_data_for_regions(
                             "Mean of empty slice",
                             "All-NaN slice encountered",
                         ):
-                            output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
-                            output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
+                            # breakpoint()
+                            output["mod"][freq][perstr]["time"] = np.array(subset.time)
+                            output["obs"][freq][perstr]["time"] = np.array(subset.time)
+
+                            output["mod"][freq][perstr]["data"] = np.nanmean(
+                                subset.data[1, :, :], axis=1
+                            )
+                            output["obs"][freq][perstr]["data"] = np.nanmean(
+                                subset.data[0, :, :], axis=1
+                            )
+                            # output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
+                            # output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
 
                     except (DataCoverageError, TemporalResolutionError) as e:
                         msg = f"Failed to access subset timeseries, and will skip. Reason was: {e}"
                         logger.info(msg)
 
-                        output["obs"][freq][perstr] = np.nan
-                        output["mod"][freq][perstr] = np.nan
+                        # output["obs"][freq][perstr] = np.nan
+                        # output["mod"][freq][perstr] = np.nan
 
     return output
 
@@ -1693,9 +1715,21 @@ def process_profile_data_for_stations(
             for season in seasons:
                 use_dummy = coldata is None
                 perstr = f"{per}-{season}"
+
+                if perstr not in output["mod"][freq]:
+                    output["mod"][freq][perstr] = {
+                        "time": np.nan,
+                        "data": np.nan,
+                    }
+                if perstr not in output["obs"][freq]:
+                    output["obs"][freq][perstr] = {
+                        "time": np.nan,
+                        "data": np.nan,
+                    }
                 if use_dummy:
-                    output["obs"][freq][perstr] = np.nan
-                    output["mod"][freq][perstr] = np.nan
+                    # output["obs"][freq][perstr] = np.nan
+                    # output["mod"][freq][perstr] = np.nan
+                    pass
                 else:
                     try:
                         per_season_subset = _select_period_season_coldata(
@@ -1714,15 +1748,24 @@ def process_profile_data_for_stations(
                             "Mean of empty slice",
                             "All-NaN slice encountered",
                         ):
-                            output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
-                            output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
+                            output["mod"][freq][perstr]["time"] = np.array(subset.time)
+                            output["obs"][freq][perstr]["time"] = np.array(subset.time)
+
+                            output["mod"][freq][perstr]["data"] = np.nanmean(
+                                subset.data[1, :, :], axis=1
+                            )
+                            output["obs"][freq][perstr]["data"] = np.nanmean(
+                                subset.data[0, :, :], axis=1
+                            )
+                            # output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
+                            # output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
 
                     except (DataCoverageError, TemporalResolutionError) as e:
                         msg = f"Failed to access subset timeseries, and will skip. Reason was: {e}"
                         logger.info(msg)
 
-                        output["obs"][freq][perstr] = np.nan
-                        output["mod"][freq][perstr] = np.nan
+                        # output["obs"][freq][perstr] = np.nan
+                        # output["mod"][freq][perstr] = np.nan
 
     return output
 
