@@ -1262,74 +1262,68 @@ class ExperimentOutput(ProjectOutput):
                 if freq not in current[model_name]["mod"]:
                     current[model_name]["mod"][freq] = {}
 
+                if "time" not in current[model_name]:
+                    current[model_name]["time"] = {}
+
+                if freq not in current[model_name]["time"]:
+                    current[model_name]["time"][freq] = {}
+
                 for per in periods:
                     for season in seasons:
                         perstr = f"{per}-{season}"
 
                         if perstr not in current[model_name]["obs"][freq]:
-                            current[model_name]["obs"][freq][perstr] = {
-                                "time": [],
-                                "data": [],
-                            }
+                            current[model_name]["obs"][freq][perstr] = []
 
-                            # ["time"] = []
-                            # current[model_name]["obs"][freq][perstr]["data"] = []
                         if perstr not in current[model_name]["mod"][freq]:
-                            current[model_name]["mod"][freq][perstr] = {
-                                "time": [],
-                                "data": [],
-                            }
-                            # current[model_name]["mod"][freq][perstr]["data"] = []
+                            current[model_name]["mod"][freq][perstr] = []
 
-                        if isinstance(
-                            profile_viz["obs"][freq][perstr]["data"], np.ndarray
-                        ) or isinstance(profile_viz["obs"][freq][perstr]["data"], list):
-                            current[model_name]["obs"][freq][perstr]["data"].append(
-                                [float(i) for i in profile_viz["obs"][freq][perstr]["data"]]
-                            )
-                            current[model_name]["obs"][freq][perstr]["time"].append(
-                                [int(i) for i in profile_viz["obs"][freq][perstr]["time"]]
+                        if perstr not in current[model_name]["time"][freq]:
+                            current[model_name]["time"][freq][perstr] = []
+
+                        # Adds obs to output dict
+                        if isinstance(profile_viz["obs"][freq][perstr], np.ndarray) or isinstance(
+                            profile_viz["obs"][freq][perstr], list
+                        ):
+                            current[model_name]["obs"][freq][perstr].append(
+                                [float(i) for i in profile_viz["obs"][freq][perstr]]
                             )
                         else:
-                            current[model_name]["obs"][freq][perstr]["data"].append(
-                                profile_viz["obs"][freq][perstr]["data"]
+                            current[model_name]["obs"][freq][perstr].append(
+                                profile_viz["obs"][freq][perstr]
                             )
-                            current[model_name]["obs"][freq][perstr]["time"].append(
-                                profile_viz["obs"][freq][perstr]["time"]
-                            )
-                        if isinstance(
-                            profile_viz["mod"][freq][perstr]["data"], np.ndarray
-                        ) or isinstance(profile_viz["mod"][freq][perstr]["data"], list):
-                            current[model_name]["mod"][freq][perstr]["data"].append(
-                                [float(i) for i in profile_viz["mod"][freq][perstr]["data"]]
-                            )
-                            current[model_name]["mod"][freq][perstr]["time"].append(
-                                [int(i) for i in profile_viz["mod"][freq][perstr]["time"]]
+                        # Adds mod to output dict
+                        if isinstance(profile_viz["mod"][freq][perstr], np.ndarray) or isinstance(
+                            profile_viz["mod"][freq][perstr], list
+                        ):
+                            current[model_name]["mod"][freq][perstr].append(
+                                [float(i) for i in profile_viz["mod"][freq][perstr]]
                             )
                         else:
-                            current[model_name]["mod"][freq][perstr]["data"].append(
-                                profile_viz["mod"][freq][perstr]["data"]
+                            current[model_name]["mod"][freq][perstr].append(
+                                profile_viz["mod"][freq][perstr]
                             )
-                            current[model_name]["mod"][freq][perstr]["time"].append(
-                                profile_viz["mod"][freq][perstr]["time"]
+                        # Adds time to output dict
+                        if isinstance(profile_viz["time"][freq][perstr], np.ndarray) or isinstance(
+                            profile_viz["time"][freq][perstr], list
+                        ):
+                            current[model_name]["time"][freq][perstr].append(
+                                [float(i) for i in profile_viz["time"][freq][perstr]]
+                            )
+                        else:
+                            current[model_name]["time"][freq][perstr].append(
+                                profile_viz["time"][freq][perstr]
                             )
 
-                        current[model_name]["obs"][freq][perstr]["data"] = [
-                            current[model_name]["obs"][freq][perstr]["data"][i]
-                            for i in sorted_indices
+                        current[model_name]["obs"][freq][perstr] = [
+                            current[model_name]["obs"][freq][perstr][i] for i in sorted_indices
                         ]
-                        current[model_name]["mod"][freq][perstr]["data"] = [
-                            current[model_name]["mod"][freq][perstr]["data"][i]
-                            for i in sorted_indices
+                        current[model_name]["mod"][freq][perstr] = [
+                            current[model_name]["mod"][freq][perstr][i] for i in sorted_indices
                         ]
 
-                        current[model_name]["obs"][freq][perstr]["time"] = [
-                            current[model_name]["obs"][freq][perstr]["time"][i]
-                            for i in sorted_indices
-                        ]
-                        current[model_name]["mod"][freq][perstr]["time"] = [
-                            current[model_name]["mod"][freq][perstr]["time"][i]
-                            for i in sorted_indices
+                        current[model_name]["time"][freq][perstr] = [
+                            current[model_name]["time"][freq][perstr][i] for i in sorted_indices
                         ]
 
                 if "metadata" not in current[model_name]:
