@@ -293,8 +293,6 @@ class ColocatedData(BaseModel):
         elif isinstance(val, np.ndarray):
             return str(val)
 
-        
-
     @property
     def obs_name(self):
         if "obs_name" in self.metadata:
@@ -302,8 +300,8 @@ class ColocatedData(BaseModel):
 
         if isinstance(self.data_source[0], str):
             return self.data_source[0]
-        
-        val = self.data_source[0].values    
+
+        val = self.data_source[0].values
         if isinstance(val, str):
             return val
         elif isinstance(val, np.ndarray):
