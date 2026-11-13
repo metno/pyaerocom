@@ -8,6 +8,8 @@ import shutil
 import aerovaldb
 from attrs import define, field
 
+import numpy as np
+
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import sort_dict_by_name
 from pyaerocom.aeroval import EvalSetup
@@ -582,6 +584,7 @@ class ExperimentOutput(ProjectOutput):
         mrv = mcfg.model_rename_vars
 
         mvar_aliases = get_aliases(mod_var)
+
         for ovar, mvars in mcfg.model_add_vars.items():
             if obs_var in mvars:
                 # for evaluation of entries in model_add_vars, the output json
@@ -698,6 +701,7 @@ class ExperimentOutput(ProjectOutput):
             # obs dataset is not part of experiment
             return False
         # first, check model_add_vars
+
         for ocfg in obs_matches:
             if self._check_ovar_mvar_entry(mcfg, mod_var, ocfg, obs_var):
                 return True
@@ -1192,6 +1196,21 @@ class ExperimentOutput(ProjectOutput):
                     timeseries, project, experiment, location, network, obsvar, layer
                 )
 
+    def _add_profile_to_dict(self, data: np.ndarray | list | float, is_time: bool):
+        cast = int if is_time else float
+
+        if isinstance(data, np.ndarray):
+            if is_time:
+                return [cast(i) for i in data.astype("datetime64[ms]").astype("int")][:]
+            else:
+                return [cast(i) for i in data][:]
+        elif isinstance(data, list):
+            return [cast(i) for i in data][:]
+        elif isinstance(data, float):
+            return data
+        else:
+            raise ValueError(f"profile data must be array, list or float, not {type(data)}")
+
     def add_profile_entry(
         self,
         data: ColocatedData,
@@ -1214,6 +1233,7 @@ class ExperimentOutput(ProjectOutput):
             current = self.avdb.get_profiles(
                 self.proj_id, self.exp_id, location, network, obsvar, default={}
             )
+
             current = recursive_defaultdict(current)
 
             for freq, coldata in data.items():
@@ -1228,12 +1248,9 @@ class ExperimentOutput(ProjectOutput):
                 if "z" not in current[model_name]:
                     current[model_name]["z"] = [midpoint]  # initialize with midpoint
 
-                if (
-                    midpoint > current[model_name]["z"][-1]
-                ):  # only store incremental increases in the layers
+                if midpoint not in current[model_name]["z"]:
                     current[model_name]["z"].append(midpoint)
 
-                # old boilerplate to get around recursive_default_dict issues
                 if "obs" not in current[model_name]:
                     current[model_name]["obs"] = {}
 
@@ -1246,21 +1263,39 @@ class ExperimentOutput(ProjectOutput):
                 if freq not in current[model_name]["mod"]:
                     current[model_name]["mod"][freq] = {}
 
+                if "time" not in current[model_name]:
+                    current[model_name]["time"] = {}
+
+                if freq not in current[model_name]["time"]:
+                    current[model_name]["time"][freq] = {}
+
                 for per in periods:
                     for season in seasons:
                         perstr = f"{per}-{season}"
 
                         if perstr not in current[model_name]["obs"][freq]:
-                            current[model_name]["obs"][freq][perstr] = []
-                        if perstr not in current[model_name]["mod"][freq]:
-                            current[model_name]["mod"][freq][perstr] = []
+                            current[model_name]["obs"][freq][perstr] = {}
 
-                        current[model_name]["obs"][freq][perstr].append(
-                            profile_viz["obs"][freq][perstr]
-                        )
-                        current[model_name]["mod"][freq][perstr].append(
-                            profile_viz["mod"][freq][perstr]
-                        )
+                        if perstr not in current[model_name]["mod"][freq]:
+                            current[model_name]["mod"][freq][perstr] = {}
+
+                        if perstr not in current[model_name]["time"][freq]:
+                            current[model_name]["time"][freq][perstr] = {}
+
+                        if midpoint not in current[model_name]["obs"][freq][perstr]:
+                            current[model_name]["obs"][freq][perstr][midpoint] = (
+                                self._add_profile_to_dict(profile_viz["obs"][freq][perstr], False)
+                            )
+
+                        if midpoint not in current[model_name]["mod"][freq][perstr]:
+                            current[model_name]["mod"][freq][perstr][midpoint] = (
+                                self._add_profile_to_dict(profile_viz["mod"][freq][perstr], False)
+                            )
+
+                        if midpoint not in current[model_name]["time"][freq][perstr]:
+                            current[model_name]["time"][freq][perstr][midpoint] = (
+                                self._add_profile_to_dict(profile_viz["time"][freq][perstr], True)
+                            )
 
                 if "metadata" not in current[model_name]:
                     current[model_name]["metadata"] = {
