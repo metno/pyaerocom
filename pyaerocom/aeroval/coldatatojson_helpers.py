@@ -1689,7 +1689,7 @@ def process_profile_data_for_stations(
     Returns:
         output (dict): Dictionary to write to json
     """
-    output = {"obs": {}, "mod": {}}
+    output = {"obs": {}, "mod": {}, "time": {}}
 
     for freq, coldata in data.items():
         if freq not in output["obs"]:
@@ -1727,7 +1727,6 @@ def process_profile_data_for_stations(
                             "All-NaN slice encountered",
                         ):
                             output["time"][freq][perstr] = np.array(subset.time)
-
                             output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :], axis=1)
                             output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :], axis=1)
 

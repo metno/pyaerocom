@@ -1196,6 +1196,21 @@ class ExperimentOutput(ProjectOutput):
                     timeseries, project, experiment, location, network, obsvar, layer
                 )
 
+    def _add_profile_to_dict(self, data: np.ndarray | list | float, is_time: bool):
+        cast = int if is_time else float
+
+        if isinstance(data, np.ndarray):
+            if is_time:
+                return [cast(i) for i in data.astype("datetime64[ms]").astype("int")][:]
+            else:
+                return [cast(i) for i in data][:]
+        elif isinstance(data, list):
+            return [cast(i) for i in data][:]
+        elif isinstance(data, float):
+            return data
+        else:
+            raise ValueError(f"profile data must be array, list or float, not {type(data)}")
+
     def add_profile_entry(
         self,
         data: ColocatedData,
@@ -1218,6 +1233,7 @@ class ExperimentOutput(ProjectOutput):
             current = self.avdb.get_profiles(
                 self.proj_id, self.exp_id, location, network, obsvar, default={}
             )
+
             current = recursive_defaultdict(current)
 
             for freq, coldata in data.items():
@@ -1232,24 +1248,9 @@ class ExperimentOutput(ProjectOutput):
                 if "z" not in current[model_name]:
                     current[model_name]["z"] = [midpoint]  # initialize with midpoint
 
-                # if (
-                #     midpoint > current[model_name]["z"][-1]
-                # ):  # only store incremental increases in the layers
-                #     current[model_name]["z"].append(midpoint)
-
                 if midpoint not in current[model_name]["z"]:
                     current[model_name]["z"].append(midpoint)
-                # current[model_name]["z"] = sorted(current[model_name]["z"])
 
-                # The height is not necessarily read in the correct order, so it important to get the sorted indcies to sort the heigts and values
-                sorted_indices = sorted(
-                    range(len(current[model_name]["z"])),
-                    key=lambda i: current[model_name]["z"][i],
-                )
-
-                current[model_name]["z"] = [current[model_name]["z"][i] for i in sorted_indices]
-
-                # old boilerplate to get around recursive_default_dict issues
                 if "obs" not in current[model_name]:
                     current[model_name]["obs"] = {}
 
@@ -1273,58 +1274,28 @@ class ExperimentOutput(ProjectOutput):
                         perstr = f"{per}-{season}"
 
                         if perstr not in current[model_name]["obs"][freq]:
-                            current[model_name]["obs"][freq][perstr] = []
+                            current[model_name]["obs"][freq][perstr] = {}
 
                         if perstr not in current[model_name]["mod"][freq]:
-                            current[model_name]["mod"][freq][perstr] = []
+                            current[model_name]["mod"][freq][perstr] = {}
 
                         if perstr not in current[model_name]["time"][freq]:
-                            current[model_name]["time"][freq][perstr] = []
+                            current[model_name]["time"][freq][perstr] = {}
 
-                        # Adds obs to output dict
-                        if isinstance(profile_viz["obs"][freq][perstr], np.ndarray) or isinstance(
-                            profile_viz["obs"][freq][perstr], list
-                        ):
-                            current[model_name]["obs"][freq][perstr].append(
-                                [float(i) for i in profile_viz["obs"][freq][perstr]]
-                            )
-                        else:
-                            current[model_name]["obs"][freq][perstr].append(
-                                profile_viz["obs"][freq][perstr]
-                            )
-                        # Adds mod to output dict
-                        if isinstance(profile_viz["mod"][freq][perstr], np.ndarray) or isinstance(
-                            profile_viz["mod"][freq][perstr], list
-                        ):
-                            current[model_name]["mod"][freq][perstr].append(
-                                [float(i) for i in profile_viz["mod"][freq][perstr]]
-                            )
-                        else:
-                            current[model_name]["mod"][freq][perstr].append(
-                                profile_viz["mod"][freq][perstr]
-                            )
-                        # Adds time to output dict
-                        if isinstance(profile_viz["time"][freq][perstr], np.ndarray) or isinstance(
-                            profile_viz["time"][freq][perstr], list
-                        ):
-                            current[model_name]["time"][freq][perstr].append(
-                                [float(i) for i in profile_viz["time"][freq][perstr]]
-                            )
-                        else:
-                            current[model_name]["time"][freq][perstr].append(
-                                profile_viz["time"][freq][perstr]
+                        if midpoint not in current[model_name]["obs"][freq][perstr]:
+                            current[model_name]["obs"][freq][perstr][midpoint] = (
+                                self._add_profile_to_dict(profile_viz["obs"][freq][perstr], False)
                             )
 
-                        current[model_name]["obs"][freq][perstr] = [
-                            current[model_name]["obs"][freq][perstr][i] for i in sorted_indices
-                        ]
-                        current[model_name]["mod"][freq][perstr] = [
-                            current[model_name]["mod"][freq][perstr][i] for i in sorted_indices
-                        ]
+                        if midpoint not in current[model_name]["mod"][freq][perstr]:
+                            current[model_name]["mod"][freq][perstr][midpoint] = (
+                                self._add_profile_to_dict(profile_viz["mod"][freq][perstr], False)
+                            )
 
-                        current[model_name]["time"][freq][perstr] = [
-                            current[model_name]["time"][freq][perstr][i] for i in sorted_indices
-                        ]
+                        if midpoint not in current[model_name]["time"][freq][perstr]:
+                            current[model_name]["time"][freq][perstr][midpoint] = (
+                                self._add_profile_to_dict(profile_viz["time"][freq][perstr], True)
+                            )
 
                 if "metadata" not in current[model_name]:
                     current[model_name]["metadata"] = {
