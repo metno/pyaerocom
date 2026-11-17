@@ -35,7 +35,29 @@ DEFAULT_AERONET_PATH = Path("/lustre/storeB/users/danielh/cams282/src/")
 DEFAULT_OPENAQ_PATH = Path("/lustre/storeB/users/danielh/cams282/src/openaq/")
 DEFAULT_VPROFILES_PATH = Path("/lustre/storeB/project/fou/kl/v-profiles")
 DEFAULT_ICOS_PATH = Path("/lustre/storeB/project/aerocom/aerocom1/AEROCOM_OBSDATA/ICOS/NRT/")
-VPROFILES_EXCLUDE_LIST = ["AP_0-20000-0-03808-C","AP_0-20000-0-07014-A","AP_0-20000-0-07110-A","AP_0-20000-0-07145-A","AP_0-20000-0-07606-A","AP_0-20000-0-07617-A","AP_0-20000-0-07774-A","AP_0-20000-0-78990-A","AP_0-20008-0-LAU-A","AP_0-203-10-LNG-A"]
+VPROFILES_EXCLUDE_LIST = [
+    "AP_0-20000-0-03808-C",
+    "AP_0-20000-0-07014-A",
+    "AP_0-20000-0-07110-A",
+    "AP_0-20000-0-07145-A",
+    "AP_0-20000-0-07606-A",
+    "AP_0-20000-0-07617-A",
+    "AP_0-20000-0-07774-A",
+    "AP_0-20000-0-78990-A",
+    "AP_0-20008-0-LAU-A",
+    "AP_0-203-10-LNG-A"
+    "AP_0-20008-0-BIR-A", 
+    "AP_0-756-4-EERLCL61-A",
+    "AP_0-380-5-1-B",
+    "AP_0-20000-0-06447-B",
+    "AP_0-20000-0-11538-B",
+    "AP_0-20000-0-06418-B",
+    "AP_0-20000-0-14015-B",
+    "AP_0-20000-0-03005-C",
+    "AP_0-620-3704-5480-C",
+    "AP_0-20008-0-EDT-B",
+    "AP_0-20000-0-06610-C",
+]
 DEFAULT_MODEL_PATH = DATA_FOLDER_PATH
 
 
