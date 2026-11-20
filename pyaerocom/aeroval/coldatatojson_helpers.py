@@ -1616,21 +1616,26 @@ def process_profile_data_for_regions(
     Returns:
         output (dict): Dictionary to write to json
     """
-    output = {"obs": {}, "mod": {}}
+    output = {"obs": {}, "mod": {}, "time": {}}
 
     for freq, coldata in data.items():
         if freq not in output["obs"]:
             output["obs"][freq] = {}
         if freq not in output["mod"]:
             output["mod"][freq] = {}
+        if freq not in output["time"]:
+            output["time"][freq] = {}
 
         for per in periods:
             for season in seasons:
                 use_dummy = coldata is None
                 perstr = f"{per}-{season}"
+
                 if use_dummy:
                     output["obs"][freq][perstr] = np.nan
                     output["mod"][freq][perstr] = np.nan
+                    output["time"][freq][perstr] = np.nan
+
                 else:
                     try:
                         per_season_subset = _select_period_season_coldata(
@@ -1645,8 +1650,10 @@ def process_profile_data_for_regions(
                             "Mean of empty slice",
                             "All-NaN slice encountered",
                         ):
-                            output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
-                            output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
+                            output["time"][freq][perstr] = np.array(subset.time)
+
+                            output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :], axis=1)
+                            output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :], axis=1)
 
                     except (DataCoverageError, TemporalResolutionError) as e:
                         msg = f"Failed to access subset timeseries, and will skip. Reason was: {e}"
@@ -1654,6 +1661,7 @@ def process_profile_data_for_regions(
 
                         output["obs"][freq][perstr] = np.nan
                         output["mod"][freq][perstr] = np.nan
+                        output["time"][freq][perstr] = np.nan
 
     return output
 
@@ -1686,21 +1694,25 @@ def process_profile_data_for_stations(
     Returns:
         output (dict): Dictionary to write to json
     """
-    output = {"obs": {}, "mod": {}}
+    output = {"obs": {}, "mod": {}, "time": {}}
 
     for freq, coldata in data.items():
         if freq not in output["obs"]:
             output["obs"][freq] = {}
         if freq not in output["mod"]:
             output["mod"][freq] = {}
+        if freq not in output["time"]:
+            output["time"][freq] = {}
 
         for per in periods:
             for season in seasons:
                 use_dummy = coldata is None
                 perstr = f"{per}-{season}"
+
                 if use_dummy:
                     output["obs"][freq][perstr] = np.nan
                     output["mod"][freq][perstr] = np.nan
+                    output["time"][freq][perstr] = np.nan
                 else:
                     try:
                         per_season_subset = _select_period_season_coldata(
@@ -1719,8 +1731,9 @@ def process_profile_data_for_stations(
                             "Mean of empty slice",
                             "All-NaN slice encountered",
                         ):
-                            output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :])
-                            output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :])
+                            output["time"][freq][perstr] = np.array(subset.time)
+                            output["mod"][freq][perstr] = np.nanmean(subset.data[1, :, :], axis=1)
+                            output["obs"][freq][perstr] = np.nanmean(subset.data[0, :, :], axis=1)
 
                     except (DataCoverageError, TemporalResolutionError) as e:
                         msg = f"Failed to access subset timeseries, and will skip. Reason was: {e}"
@@ -1728,6 +1741,7 @@ def process_profile_data_for_stations(
 
                         output["obs"][freq][perstr] = np.nan
                         output["mod"][freq][perstr] = np.nan
+                        output["time"][freq][perstr] = np.nan
 
     return output
 
