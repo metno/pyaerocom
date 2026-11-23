@@ -4,12 +4,13 @@ import os
 import pathlib
 import shutil
 import tempfile
+from functools import partial
 
 import numpy as np
 import pandas as pd
 
 from pyaerocom import const
-from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer, calc_od550lt1ang
+from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer, calc_od550lt1ang, make_proxy
 from pyaerocom.exceptions import AeronetReadError
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.stationdata import StationData
@@ -102,6 +103,11 @@ class ReadAeronetSunV3(ReadAeronetBase):
         "proxyod550no3": ["od440aer", "od500aer", "ang4487aer"],
         "proxyzaerosol": ["od440aer", "od500aer", "ang4487aer"],
         "proxyzdust": ["od440aer", "od500aer", "ang4487aer"],
+        "proxymec550so4": ["od440aer"],
+        "proxymec550ss": ["od440aer"],
+        "proxymec550oa": ["od440aer"],
+        "proxymec550bc": ["od440aer"],
+        "proxymec550dust": ["od440aer"],
     }
 
     #: Functions that are used to compute additional variables (i.e. one
@@ -120,6 +126,11 @@ class ReadAeronetSunV3(ReadAeronetBase):
         "proxyod550no3": calc_od550aer,
         "proxyzaerosol": calc_od550aer,
         "proxyzdust": calc_od550aer,
+        "proxymec550so4": partial(make_proxy, "od440aer", "proxymec550so4", "m2 g-1"),
+        "proxymec550ss": partial(make_proxy, "od440aer", "proxymec550so4", "m2 g-1"),
+        "proxymec550oa": partial(make_proxy, "od440aer", "proxymec550so4", "m2 g-1"),
+        "proxymec550bc": partial(make_proxy, "od440aer", "proxymec550so4", "m2 g-1"),
+        "proxymec550dust": partial(make_proxy, "od440aer", "proxymec550so4", "m2 g-1"),
     }
 
     UNITS = {

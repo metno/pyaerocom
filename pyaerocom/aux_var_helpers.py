@@ -9,6 +9,20 @@ from pyaerocom.units.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversio
 from pyaerocom.variable_helpers import get_variable
 
 
+def make_proxy(from_name, to_name, to_unit, data):
+
+    flags = data.data_flagged[from_name]
+    new_var_data = data[from_name]
+
+    if to_name not in data.var_info:
+        data.var_info[to_name] = {}
+    data.var_info[to_name] = data.var_info[from_name]
+    data.var_info[to_name]["units"] = to_unit
+
+    data.data_flagged[to_name] = flags
+    return new_var_data
+
+
 def calc_ang4487aer(data):
     """Compute Angstrom coefficient (440-870nm) from 440 and 870 nm AODs
 

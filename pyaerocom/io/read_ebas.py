@@ -7,6 +7,7 @@ from collections.abc import Iterator
 import numpy as np
 from geonum.atmosphere import T0_STD, p0
 from tqdm import tqdm
+from functools import partial
 
 from pyaerocom import ConfigReader
 from pyaerocom._lowlevel_helpers import BrowseDict
@@ -31,6 +32,7 @@ from pyaerocom.aux_var_helpers import (
     make_proxy_drydep_from_O3,
     make_proxy_wetdep_from_O3,
     vmrx_to_concx,
+    make_proxy,
 )
 from pyaerocom.units import UnitConversionError
 from pyaerocom.exceptions import (
@@ -297,6 +299,12 @@ class ReadEbas(ReadUngriddedBase):
         "proxywetpm25": ["concprcpoxs", "pr"],
         # Testing
         "wetrdnpr": ["pr"],
+        # Load proxies (all use O3 for now)
+        "proxyloadso4": ["vmro3"],
+        "proxyloadss": ["vmro3"],
+        "proxyloadoa": ["vmro3"],
+        "proxyloadbc": ["vmro3"],
+        "proxyloaddust": ["vmro3"],
     }
 
     #: Meta information supposed to be migrated to computed variables
@@ -371,6 +379,22 @@ class ReadEbas(ReadUngriddedBase):
         "proxywetpm25": compute_wetoxs_from_concprcpoxs,
         # Testing
         "wetrdnpr": compute_wetrdnpr_from_concprcprdn,
+        # Load proxies (all use O3 for now)
+        "proxyloadso4": partial(
+            make_proxy, from_name="vmro3", to_name="proxyloadso4", to_unit="kg m-2"
+        ),
+        "proxyloadss": partial(
+            make_proxy, from_name="vmro3", to_name="proxyloadss", to_unit="kg m-2"
+        ),
+        "proxyloadoa": partial(
+            make_proxy, from_name="vmro3", to_name="proxyloadoa", to_unit="kg m-2"
+        ),
+        "proxyloadbc": partial(
+            make_proxy, from_name="vmro3", to_name="proxyloadbc", to_unit="kg m-2"
+        ),
+        "proxyloaddust": partial(
+            make_proxy, from_name="vmro3", to_name="proxyloaddust", to_unit="kg m-2"
+        ),
     }
 
     #: Custom reading options for individual variables. Keys need to be valid
@@ -559,7 +583,7 @@ class ReadEbas(ReadUngriddedBase):
     @property
     def all_station_names(self):
         # ToDo: this should probably not be part of this class
-        """List of all available station names in EBAS database"""
+        """List of all available staloadtion names in EBAS database"""
         if self._all_stats is None:
             self._all_stats = self.file_index.ALL_STATION_NAMES
         return self._all_stats
