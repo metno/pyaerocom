@@ -1,0 +1,255 @@
+abs550aer:
+  coordinates: Column
+  formula: x.abs550aer
+  new_name: abs550aer
+  units: '1'
+
+concbc:
+  coordinates: Surface
+  formula: (x.ps/287.0/x.ts)*x.mmrbc[:,{LL},:,:]*1e9
+  new_name: concbc
+  units: ug m-3
+concdust:
+  coordinates: Surface
+  formula: (x.ps/287.0/x.ts)*x.mmrdust[:,{LL},:,:]*1e9
+  new_name: concdust
+  units: ug m-3
+concoa:
+  coordinates: Surface
+  formula: (x.ps/287.0/x.ts)*x.mmroa[:,{LL},:,:]*1e9
+  new_name: concoa
+  units: ug m-3
+
+concso4:
+  coordinates: Surface
+  formula: (x.ps/287.0/x.ts)*x.mmrso4[:,{LL},:,:]*1e9
+  new_name: concso4
+  units: ug m-3
+
+concso2:
+  coordinates: Surface
+  formula: (x.ps/287.0/x.ts)*x.so2[:,{LL},:,:]*1e9*64.066/28.97
+  new_name: concso2
+  units: ug m-3
+concss:
+  coordinates: Surface
+  formula: (x.ps/287.0/x.ts)*x.mmrss[:,{LL},:,:]*1e9
+  new_name: concss
+  units: ug m-3
+
+drybc:
+  coordinates: Surface
+  formula: (x.drybc)*1e6*24*3600
+  new_name: drybc
+  units: mg m-2 d-1
+drydust:
+  coordinates: Surface
+  formula: (x.drydust)*1e6*24*3600
+  new_name: drydust
+  units: mg m-2 d-1
+dryoa:
+  coordinates: Surface
+  formula: (x.dryoa)*1e6*24*3600
+  new_name: dryoa
+  units: mg m-2 d-1
+dryso2:
+  coordinates: Surface
+  formula: (x.dryso2)*1e6*24*3600
+  new_name: dryso2
+  units: mg m-2 d-1
+dryso4:
+  coordinates: Surface
+  formula: (x.dryso4)*1e6*24*3600
+  new_name: dryso4
+  units: mg m-2 d-1
+dryss:
+  coordinates: Surface
+  formula: (x.dryss)*1e6*24*3600
+  new_name: dryss
+  units: mg m-2 d-1
+
+
+emidust:
+  coordinates: Surface
+  formula: (x.emidust)*1e6*24*3600
+  new_name: emidust
+  units: mg m-2 d-1
+emibc:
+  coordinates: Surface
+  formula: (x.emibc)*1e6*24*3600
+  new_name: emibc
+  units: mg m-2 d-1
+emidms:
+  coordinates: Surface
+  formula: (x.emidms)*1e6*24*3600
+  new_name: emidms
+  units: mg m-2 d-1
+emioa:
+  coordinates: Surface
+  formula: (x.emioa)*1e6*24*3600
+  new_name: emioa
+  units: mg m-2 d-1
+emiso2:
+  coordinates: Surface
+  formula: (x.emiso2)*1e6*24*3600
+  new_name: emiso2
+  units: mg m-2 d-1
+emiso4:
+  coordinates: Surface
+  formula: (x.emiso4)*1e6*24*3600
+  new_name: emiso4
+  units: mg m-2 d-1
+emiss:
+  coordinates: Surface
+  formula: (x.emiss)*1e6*24*3600
+  new_name: emiss
+  units: mg m-2 d-1
+emiisop:
+  coordinates: Surface
+  formula: (x.emiisop)*1e6*24*3600
+  new_name: emiisop
+  units: mg m-2 d-1
+
+emidms:
+  coordinates: Surface
+  formula: (x.emidms)*1e6*24*3600
+  new_name: emidms
+  units: mg m-2 d-1
+loaddust:
+  coordinates: Column
+  formula: x.loaddust*1e6
+  new_name: loaddust
+  units: mg m-2
+loadss:
+  coordinates: Column
+  formula: x.loadss*1e6
+  new_name: loadss
+  units: mg m-2 
+od550aer:
+  coordinates: Column
+  formula: x.od550aer
+  new_name: od550aer
+  units: '1'
+od550bc:
+  coordinates: Column
+  formula: x.od550bc
+  new_name: od550bc
+  units: '1'
+od550csaer:
+  coordinates: Column
+  formula: x.od550csaer
+  new_name: od550csaer
+  units: '1'
+
+od440aer:
+  coordinates: Column
+  formula: x.od440aer
+  new_name: od440aer
+  units: '1'
+
+od550dust:
+  coordinates: Column
+  formula: x.od550dust
+  new_name: od550dust
+  units: '1'
+
+od550gt1aer:
+  coordinates: Column
+  formula: x.od550gt1aer
+  new_name: od550gt1aer
+  units: '1'
+
+od550lt1aer:
+  coordinates: Column
+  formula: x.od550lt1aer
+  new_name: od550lt1aer
+  units: '1'
+
+od550lt1dust:
+  coordinates: Column
+  formula: x.od550lt1dust
+  new_name: od550lt1dust
+  units: '1'
+od550oa:
+  coordinates: Column
+  formula: x.od550oa
+  new_name: od550oa
+  units: '1'
+od550so4:
+  coordinates: Column
+  formula: x.od550so4
+  new_name: od550so4
+  units: '1'
+od550ss:
+  coordinates: Column
+  formula: x.od550ss
+  new_name: od550ss
+  units: '1'
+
+
+pr:
+  coordinates: Surface
+  formula: x.pr
+  new_name: pr
+  units: kg m-2 s-1
+
+prmm:
+  coordinates: Surface
+  formula: 1000*x.pr*3600*24/1000
+  new_name: prmm
+  units: mm day-1
+
+prmm_v2: #For rr_ens_mean
+  coordinates: Surface
+  formula: x.pr
+  new_name: prmm
+  units: mm day-1
+
+ts:
+  coordinates: Surface
+  formula: x.ts
+  new_name: ts
+  units: K
+ta:
+  coordinates: Level
+  formula: x.ta
+  new_name: ta
+  units: K
+
+sst:
+  coordinates: Surface
+  formula: x.ts*x.sftlf
+  new_name: sst
+  units: K
+
+wetso4:
+  coordinates: Surface
+  formula: -(x.wetso4)*1e6*24*3600
+  new_name: wetso4
+  units: mg m-2 d-1
+wetss:
+  coordinates: Surface
+  formula: -(x.wetss)*1e6*24*3600
+  new_name: wetss
+  units: mg m-2 d-1
+wetso2:
+  coordinates: Surface
+  formula: -(x.wetso2)*1e6*24*3600
+  new_name: wetso2
+  units: mg m-2 d-1
+wetbc:
+  coordinates: Surface
+  formula: -(x.wetbc)*1e6*24*3600
+  new_name: wetbc
+  units: mg m-2 d-1
+wetdust:
+  coordinates: Surface
+  formula: (x.wetdust)*1e6*24*3600
+  new_name: wetdust
+  units: mg m-2 d-1
+wetoa:
+  coordinates: Surface
+  formula: -(x.wetoa)*1e6*24*3600
+  new_name: wetoa
+  units: mg m-2 d-1
+

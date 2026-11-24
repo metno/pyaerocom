@@ -9,6 +9,7 @@ pytest_plugins = [
     "tests.fixtures.mscw_ctm",
     "tests.fixtures.tm5",
     "tests.fixtures.emep_ci",
+    "tests.fixtures.cmip_ci",
     "tests.fixtures.ebas",
     "tests.fixtures.aeronet",
     "tests.fixtures.stations",

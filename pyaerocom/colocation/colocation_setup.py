@@ -18,14 +18,13 @@ from pydantic import (
 from pydantic_core import PydanticCustomError
 
 from pyaerocom import const
-from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom._lowlevel_helpers import LayerLimits, RegridResDeg
+from pyaerocom.climatology_config import ClimatologyConfig
 from pyaerocom.config_reader import ALL_REGION_NAME
 from pyaerocom.helpers import start_stop
 from pyaerocom.io.pyaro.pyaro_config import PyaroConfig
 
 logger = logging.getLogger(__name__)
-
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -87,7 +86,7 @@ class ColocationSetup(BaseModel):
     start
         Start time of colocation. Input can be integer denoting the year or
         anything that can be converted  into :class:`pandas.Timestamp` using
-        :func:`pyaerocom.helpers.to_pandas_timestamp`. If None, than the first
+        :func:`pyaerocom.helpers.to_pandas_timestamp`. If None, the first
         available date in the model data is used.
     stop
         stop time of colocation. int or anything that can be converted into
