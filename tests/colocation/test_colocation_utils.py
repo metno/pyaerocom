@@ -74,13 +74,26 @@ S4 = create_fake_station_data(
 
 S4["concpm10"][0:5] = range(5)
 
+S5 = create_fake_station_data(
+    "concpm10",
+    {"concpm10": {"units": "ug m-3"}},
+    10,
+    "2010-01-01",
+    "2010-12-31",
+    "D",
+    {"ts_type": "daily"},
+)
+
+S5["concpm10"][23] = np.nan
+S5["concpm10"][66] = np.nan
+
 
 @pytest.mark.parametrize(
     "stat_data,stat_data_ref,var,var_ref,ts_type,resample_how,min_num_obs, use_climatology_ref,num_valid",
     [
         (
-            S4,
-            S3,
+            S4,  # model data daily from 1st march 2020 to end of 2011
+            S3,  # obs data 13daily for 2010
             "concpm10",
             "concpm10",
             "monthly",
@@ -100,6 +113,7 @@ S4["concpm10"][0:5] = range(5)
             False,
             11,
         ),
+        (S5, S2, "concpm10", "concpm10", "daily", "mean", 25, {}, 363),
         (S1, S2, "concpm10", "concpm10", "monthly", "mean", 25, {}, 11),
         (S2, S1, "concpm10", "concpm10", "monthly", "mean", 25, {}, 11),
     ],
