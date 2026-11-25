@@ -165,6 +165,10 @@ def fix_missing_vars(ds: xr.Dataset) -> xr.Dataset:
     make the rest of the variables, filled with nans.
     Log a warning when this is done
     """
+    if "time_bounds" in ds.data_vars:
+        ds = ds.drop_vars("time_bounds")
+    if "nv" in ds.dims:
+        ds = ds.drop_dims("nv")
     vars_list = [i for i in ds.data_vars]
     nb_vars = len(vars_list)
     if nb_vars < 11:
